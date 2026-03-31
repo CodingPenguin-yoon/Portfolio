@@ -1,5 +1,6 @@
 site:
   name: 조윤호
+  # TODO: Replace with the production portfolio domain for canonical / OG URLs.
   site: 'https://example.com'
   base: '/'
   trailingSlash: false
@@ -9,9 +10,9 @@ site:
 # Default SEO metadata
 metadata:
   title:
-    default: 조윤호
+    default: 조윤호 | 운영 자동화 · 플랫폼 엔지니어
     template: '%s | 조윤호'
-  description: '운영 자동화 백엔드, 인프라 워크플로우, 질문 중심 정보 구조를 통해 복잡한 운영과 판단 과정을 제어 가능한 시스템으로 바꾸는 엔지니어의 포트폴리오입니다.'
+  description: 'GitHub Actions, Kubernetes, NCP, Slack, Proxmox, Terraform, Ansible를 연결해 분산된 운영 절차를 재현 가능하고 추적 가능한 실행 구조로 정리한 조윤호의 포트폴리오입니다.'
   robots:
     index: true
     follow: true

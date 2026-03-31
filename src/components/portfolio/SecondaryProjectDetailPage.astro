@@ -1,0 +1,153 @@
+---
+import Button from '~/components/ui/Button.astro';
+import ProjectSignatureBlock from '~/components/portfolio/ProjectSignatureBlock.astro';
+import ProjectNarrativeGrid from '~/components/portfolio/ProjectNarrativeGrid.astro';
+import type { PortfolioProject, SecondaryProjectDetailCopy } from '~/data/portfolio';
+
+export interface Props {
+  project: PortfolioProject;
+}
+
+const { project } = Astro.props;
+const detail = project.detail as SecondaryProjectDetailCopy;
+const showGitHub = Boolean(project.repoHref);
+
+const metaItems = [
+  { label: '유형', value: project.projectType },
+  project.period ? { label: '기간', value: project.period } : null,
+  { label: '역할', value: project.role },
+  { label: '기술 스택', value: project.coreStack.join(' / ') },
+].filter((item): item is { label: string; value: string } => Boolean(item));
+
+const sectionLinks = [
+  { label: '문제', href: '#problem' },
+  { label: '흐름', href: '#flow' },
+  { label: '회고', href: '#learning' },
+];
+---
+
+<div class="relative">
+  <section class="relative overflow-hidden border-b border-slate-800/80">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.08),transparent_36%),radial-gradient(circle_at_84%_18%,rgba(6,182,212,0.08),transparent_28%)]"></div>
+
+    <div class="portfolio-section relative !pb-10 md:!pb-12">
+      <div class="grid gap-7 xl:grid-cols-[minmax(0,1.04fr)_minmax(300px,0.96fr)] xl:items-start">
+        <div class="max-w-4xl">
+          <p class="portfolio-eyebrow text-green-300">{detail.hero.eyebrow}</p>
+          <h1 class="mt-4 text-[2.35rem] font-bold tracking-tight text-slate-50 sm:text-[3rem] sm:leading-[1.06] xl:text-[3.1rem]">
+            {project.fullTitle}
+          </h1>
+          <p class="mt-3 max-w-[42rem] text-base font-medium leading-7 text-cyan-100/82 [text-wrap:pretty]">{project.tagline}</p>
+          <p class="mt-4 max-w-[40rem] text-lg leading-8 text-slate-100/90 [text-wrap:pretty]">{detail.hero.lead}</p>
+
+          <div class="mt-6 portfolio-panel-accent sm:px-5 sm:py-5">
+            <p class="portfolio-eyebrow text-green-300">{detail.hero.resultTitle}</p>
+            <p class="mt-3 text-base leading-7 text-slate-100/92">{detail.hero.result}</p>
+          </div>
+
+          {detail.hero.emphasis ? <p class="mt-4 max-w-3xl text-sm leading-6 text-slate-300/82">{detail.hero.emphasis}</p> : null}
+        </div>
+
+        <aside class="grid gap-3 xl:sticky xl:top-[calc(var(--aw-header-offset)+1.5rem)]">
+          {project.visual.src ? (
+            <figure class="overflow-hidden rounded-[1.55rem] border border-slate-800/80 bg-slate-950/92 shadow-2xl shadow-slate-950/35">
+              <div class="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/88 px-4 py-3">
+                <span class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">{project.visual.label}</span>
+                <span class="portfolio-eyebrow text-cyan-300">{project.title}</span>
+              </div>
+              <div class="bg-slate-950/80 p-3">
+                <img
+                  src={project.visual.src}
+                  alt={project.visual.alt}
+                  class="block h-auto w-full rounded-[1rem] object-contain object-top"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </figure>
+          ) : null}
+
+        </aside>
+
+        <div class="xl:col-span-2">
+          <section class="mt-1">
+            <p class="portfolio-eyebrow text-cyan-300">요약</p>
+            <div class="mt-4">
+              <ProjectNarrativeGrid narrative={project.narrative} />
+            </div>
+          </section>
+
+          <dl class="mt-6 grid gap-3 border-t border-slate-800/70 pt-4 sm:grid-cols-2">
+            {metaItems.map((item) => (
+              <div class="portfolio-meta">
+                <dt class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">{item.label}</dt>
+                <dd class="mt-2 text-sm leading-6 text-slate-200/92">{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            {showGitHub ? (
+              <Button variant="primary" href={project.repoHref} target="_blank">
+                {detail.hero.primaryCtaLabel}
+              </Button>
+            ) : null}
+            <Button variant="secondary" href="/">
+              {detail.hero.secondaryCtaLabel}
+            </Button>
+          </div>
+
+          <div class="mt-6">
+            <p class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-500">페이지 목차</p>
+            <nav class="mt-3 flex flex-wrap gap-2">
+              {sectionLinks.map((item) => (
+                <a
+                  href={item.href}
+                  class="rounded-full border border-slate-700/80 bg-slate-900/72 px-3 py-1.5 text-sm text-slate-200 transition hover:border-green-500/35 hover:text-green-200"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="problem" class="portfolio-anchor-section-tight">
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)]">
+      <article class="portfolio-card-muted space-y-6">
+        <div>
+          <p class="portfolio-eyebrow text-cyan-300">{detail.problemBlock.eyebrow}</p>
+          <h2 class="mt-3 text-[1.85rem] font-bold tracking-tight text-slate-50 sm:text-[2.25rem] sm:leading-[1.08]">{detail.problemBlock.title}</h2>
+          <p class="mt-4 text-base leading-7 text-slate-300/88">{detail.problemBlock.body}</p>
+        </div>
+
+        <div class="portfolio-panel">
+          <h3 class="text-lg font-semibold tracking-tight text-slate-50">{detail.problemBlock.structureTitle}</h3>
+          <p class="mt-3 text-sm leading-6 text-slate-300/88">{detail.problemBlock.structureBody}</p>
+        </div>
+      </article>
+
+      <div id="flow">
+        <ProjectSignatureBlock flow={detail.flow} compact />
+      </div>
+    </div>
+  </section>
+
+  <section id="learning" class="portfolio-anchor-section-tight border-t border-slate-800/70">
+    <div class="max-w-3xl">
+      <p class="portfolio-eyebrow text-green-300">{detail.learning.eyebrow}</p>
+      <h2 class="mt-3 text-[1.8rem] font-bold tracking-tight text-slate-50 sm:text-[2.2rem]">{detail.learning.title}</h2>
+    </div>
+
+    <div class="mt-5 grid gap-3">
+      {detail.learning.items.map((item) => (
+        <article class="portfolio-panel text-sm leading-6 text-slate-200/88">
+          {item}
+        </article>
+      ))}
+    </div>
+  </section>
+</div>

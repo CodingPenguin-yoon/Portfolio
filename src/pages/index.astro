@@ -1,1032 +1,237 @@
 ---
-import Layout from '~/layouts/PageLayout.astro';
-import Header from '~/components/widgets/Header.astro';
-import Hero from '~/components/widgets/Hero.astro';
-import Content from '~/components/widgets/Content.astro';
-import Features3 from '~/components/widgets/Features3.astro';
-import Steps from '~/components/widgets/Steps.astro';
-import CallToAction from '~/components/widgets/CallToAction.astro';
-import {
-  focusAreas,
-  heroTags,
-  portfolioProfile,
-  profilePoints,
-  snapshotItems,
-  selectedProjects,
-  toolkit,
-  type PortfolioProject,
-  experienceTimeline,
-} from '~/data/portfolio';
-import type { CallToAction as CallToActionType } from '~/types';
+import PageLayout from '~/layouts/PageLayout.astro';
+import Button from '~/components/ui/Button.astro';
+import HomeProjectSpotlightCard from '~/components/portfolio/HomeProjectSpotlightCard.astro';
+import { mainProjects, portfolioActionLinks, portfolioHome, portfolioProfile, portfolioProjects, secondaryProjects } from '~/data/portfolio';
 
 const metadata = {
-  title: `${portfolioProfile.name} | 운영 자동화 · 플랫폼 포트폴리오`,
+  title: `${portfolioProfile.name} | ${portfolioProfile.role}`,
   description: portfolioProfile.intro,
   ignoreTitleTemplate: true,
 };
 
-const headerLinks = [
-  { text: '소개', href: '#about' },
-  { text: '대표 프로젝트', href: '#projects' },
-  { text: '핵심 역량', href: '#focus' },
-  { text: '설계 원칙', href: '#experience' },
-  { text: '연락하기', href: '#contact' },
+const heroHeadlineLines = portfolioHome.hero.headline.split('\n');
+const secondaryCta = portfolioHome.hero.secondaryCta;
+const directLinks = portfolioActionLinks;
+const selectedProjects = portfolioProjects.slice(0, 3);
+const labProject = secondaryProjects[0];
+const getLinkActionLabel = (item: (typeof directLinks)[number]) =>
+  item.download ? '다운로드' : item.external ? '외부 링크' : '열기';
+
+const signalCards = [
+  {
+    label: '집중 영역',
+    value: '프로비저닝 / 배포 / 추적',
+    tone: 'cyan',
+  },
+  {
+    label: '실행 패턴',
+    value: '요청 -> 실행 -> 기록',
+    tone: 'green',
+  },
+  {
+    label: '기술 스택',
+    value: 'FastAPI / Terraform / Kubernetes / Actions',
+    tone: 'slate',
+  },
+  {
+    label: '프로젝트',
+    value: selectedProjects.map((project) => project.title).join(' / '),
+    tone: 'slate',
+  },
 ];
-
-const visibleSocials = [
-  { label: 'GitHub', href: portfolioProfile.socials.github },
-  { label: 'LinkedIn', href: portfolioProfile.socials.linkedin },
-  { label: 'Blog', href: portfolioProfile.socials.blog },
-].filter(({ href }) => href);
-
-const withExternalTarget = (href: string) => (href.startsWith('http') ? { target: '_blank' as const } : {});
-const escapeHtmlAttribute = (value: string) =>
-  value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-const heroActions: CallToActionType[] = [{ variant: 'primary', text: '대표 프로젝트 보기', href: '#projects' }];
-
-if (portfolioProfile.socials.github) {
-  heroActions.push({
-    variant: 'secondary',
-    text: 'GitHub 보기',
-    href: portfolioProfile.socials.github,
-    ...withExternalTarget(portfolioProfile.socials.github),
-  });
-}
-
-const heroTerminalSuggestions = ['help', 'projects', 'focus', 'contact'];
-const floatingTerminalSuggestions = ['top', 'klepaas', 'heimdall', 'argus'];
-
-const terminalCommandCatalog = [
-  {
-    key: 'help',
-    aliases: ['help', '?'],
-    output: [
-      'whoami',
-      'projects / klepaas / heimdall / argus',
-      'about / focus / experience / toolkit / contact',
-      'top / github / clear',
-    ],
-  },
-  {
-    key: 'whoami',
-    aliases: ['whoami'],
-    output: [portfolioProfile.role],
-  },
-  {
-    key: 'ls projects/',
-    aliases: ['ls projects/', 'projects', 'ls'],
-    output: selectedProjects.map((project) => project.title),
-    action: { type: 'scroll', target: '#projects' },
-  },
-  {
-    key: 'klepaas',
-    aliases: ['klepaas', 'k-le-paas'],
-    output: ['K-Le-PaaS 프로젝트로 이동합니다.'],
-    action: { type: 'scroll', target: '#klepaas' },
-  },
-  {
-    key: 'heimdall',
-    aliases: ['heimdall'],
-    output: ['Heimdall 프로젝트로 이동합니다.'],
-    action: { type: 'scroll', target: '#heimdall' },
-  },
-  {
-    key: 'argus',
-    aliases: ['argus'],
-    output: ['Argus 프로젝트로 이동합니다.'],
-    action: { type: 'scroll', target: '#argus' },
-  },
-  {
-    key: 'cat focus.txt',
-    aliases: ['cat focus.txt', 'focus'],
-    output: focusAreas.slice(0, 4).map(({ title }) => `▸ ${title}`),
-    action: { type: 'scroll', target: '#focus' },
-  },
-  {
-    key: 'about',
-    aliases: ['about', 'intro'],
-    output: ['소개 섹션으로 이동합니다.'],
-    action: { type: 'scroll', target: '#about' },
-  },
-  {
-    key: 'experience',
-    aliases: ['experience', 'principles'],
-    output: ['설계 원칙 섹션으로 이동합니다.'],
-    action: { type: 'scroll', target: '#experience' },
-  },
-  {
-    key: 'toolkit',
-    aliases: ['toolkit', 'stack'],
-    output: ['기술 섹션으로 이동합니다.'],
-    action: { type: 'scroll', target: '#toolkit' },
-  },
-  {
-    key: 'contact',
-    aliases: ['contact', 'mail'],
-    output: ['연락하기 섹션으로 이동합니다.'],
-    action: { type: 'scroll', target: '#contact' },
-  },
-  {
-    key: 'top',
-    aliases: ['top', 'home', 'cd ~'],
-    output: ['페이지 맨 위로 이동합니다.'],
-    action: { type: 'scrollTop' },
-  },
-  {
-    key: 'open github',
-    aliases: ['open github', 'github'],
-    output: [
-      portfolioProfile.socials.github ? 'GitHub를 새 탭에서 엽니다.' : 'GitHub 링크가 아직 설정되지 않았습니다.',
-    ],
-    action: portfolioProfile.socials.github ? { type: 'link', href: portfolioProfile.socials.github } : undefined,
-  },
-  {
-    key: 'clear',
-    aliases: ['clear'],
-    output: [],
-  },
-] as const;
-
-const heroPanel = `
-  <div
-    class="relative overflow-hidden rounded-lg border border-slate-700/80 bg-slate-900/95 shadow-2xl shadow-green-500/10 font-mono"
-    data-terminal-root
-    data-terminal-role="hero"
-    data-terminal-empty-text="명령어를 입력하면 답변과 함께 섹션 이동도 할 수 있습니다."
-  >
-    <div class="flex items-center gap-2 border-b border-slate-700/50 bg-slate-800/80 px-4 py-3">
-      <div class="flex gap-1.5">
-        <span class="h-3 w-3 rounded-full bg-red-500/80"></span>
-        <span class="h-3 w-3 rounded-full bg-yellow-500/80"></span>
-        <span class="h-3 w-3 rounded-full bg-green-500/80"></span>
-      </div>
-      <span class="ml-2 text-xs text-slate-400">~/portfolio</span>
-    </div>
-
-    <div class="space-y-4 p-5 text-sm">
-      <div class="rounded-xl border border-slate-700/60 bg-slate-950/40 p-4">
-        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-500">Interactive terminal</p>
-        <p class="mt-2 leading-relaxed text-slate-300">
-          명령어를 입력하면 답변과 함께 섹션 이동도 실행할 수 있습니다. 예시를 눌러 바로 시작할 수도 있습니다.
-        </p>
-      </div>
-
-      <div class="space-y-3" data-terminal-response aria-live="polite">
-        <div
-          class="rounded-xl border border-dashed border-slate-700/60 bg-slate-950/30 px-4 py-3 leading-relaxed text-slate-500"
-          data-terminal-empty
-        >
-          명령어를 입력하면 답변과 함께 섹션 이동도 할 수 있습니다.
-        </div>
-      </div>
-
-      <div class="rounded-xl border border-slate-700/60 bg-slate-800/30 p-4">
-        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-500">Try these</p>
-        <div class="mt-3 flex flex-wrap gap-2">
-          ${heroTerminalSuggestions
-            .map(
-              (command) => `
-                <button
-                  type="button"
-                  class="rounded-full border border-slate-600/60 bg-slate-900/80 px-3 py-1 text-xs text-cyan-300 transition hover:border-green-500/50 hover:text-green-400"
-                  data-terminal-suggestion="${command}"
-                >
-                  ${command}
-                </button>
-              `
-            )
-            .join('')}
-        </div>
-      </div>
-
-      <form
-        class="flex items-center gap-3 rounded-xl border border-slate-700/60 bg-slate-950/70 px-4 py-3"
-        data-terminal-form
-      >
-        <span class="text-green-400">$</span>
-        <label class="sr-only" for="hero-terminal-input">명령어 입력</label>
-        <input
-          id="hero-terminal-input"
-          class="w-full bg-transparent text-cyan-300 outline-none placeholder:text-slate-500"
-          type="text"
-          name="command"
-          autocomplete="off"
-          spellcheck="false"
-          placeholder="help, projects, focus, contact"
-          data-terminal-input
-        />
-        <span class="hidden h-4 w-2 shrink-0 bg-green-400 terminal-cursor md:inline-block"></span>
-      </form>
-    </div>
-  </div>
-`;
-
-const profilePanel = `
-  <div class="relative overflow-hidden rounded-lg border border-slate-700/80 bg-slate-900/95 shadow-2xl shadow-cyan-500/10">
-    <div class="flex items-center gap-2 border-b border-slate-700/50 bg-slate-800/80 px-4 py-3 font-mono">
-      <div class="flex gap-1.5">
-        <span class="h-3 w-3 rounded-full bg-red-500/80"></span>
-        <span class="h-3 w-3 rounded-full bg-yellow-500/80"></span>
-        <span class="h-3 w-3 rounded-full bg-green-500/80"></span>
-      </div>
-      <span class="ml-2 text-xs text-slate-400">project-map.txt</span>
-    </div>
-
-    <div class="space-y-4 p-5">
-      ${snapshotItems
-        .map(
-          ({ title, description }) => `
-            <div class="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
-              <p class="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">${title}</p>
-              <p class="mt-2 text-sm leading-relaxed text-slate-200">${description}</p>
-            </div>
-          `
-        )
-        .join('')}
-
-      ${
-        visibleSocials.length
-          ? `
-            <div class="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
-              <p class="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">Links</p>
-              <div class="mt-3 flex flex-wrap gap-2">
-                ${visibleSocials
-                  .map(
-                    ({ label, href }) => `
-                      <a
-                        class="rounded-full border border-slate-600/60 bg-slate-900/70 px-3 py-1 text-xs font-mono text-cyan-300 transition hover:border-green-500/50 hover:text-green-400"
-                        href="${href}"
-                        ${href.startsWith('http') ? 'target="_blank" rel="noopener noreferrer"' : ''}
-                      >
-                        ${label}
-                      </a>
-                    `
-                  )
-                  .join('')}
-              </div>
-            </div>
-          `
-          : ''
-      }
-    </div>
-  </div>
-`;
-
-const buildProjectPanel = (project: PortfolioProject) => `
-  <div class="group relative overflow-hidden rounded-lg border border-slate-700/80 bg-slate-900/95 shadow-2xl shadow-cyan-500/10 transition-all duration-300 hover:border-green-500/40 hover:shadow-green-500/15">
-    <div class="flex items-center justify-between gap-3 border-b border-slate-700/50 bg-gradient-to-r from-slate-800/80 to-slate-800/40 px-5 py-4">
-      <span class="text-xs font-mono uppercase tracking-wider text-green-400">${project.kicker}</span>
-      <span class="rounded-full border border-slate-600/50 bg-slate-800 px-3 py-1 text-xs font-mono text-cyan-300">${project.meta}</span>
-    </div>
-
-    <div class="p-5">
-      <div class="overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-950/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-        <div class="flex items-center justify-between border-b border-slate-700/60 bg-slate-900/90 px-4 py-3">
-          <span class="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">${project.visual.label}</span>
-          <span class="text-xs font-mono text-cyan-300">${project.title}</span>
-        </div>
-
-        <div class="aspect-[16/9] overflow-hidden bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.16),transparent_35%),linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.92))]">
-          ${
-            project.visual.src
-              ? `
-                <button
-                  type="button"
-                  class="group relative flex h-full w-full cursor-zoom-in items-center justify-center p-3 text-left sm:p-4"
-                  data-project-image-trigger
-                  data-project-image-src="${escapeHtmlAttribute(project.visual.src)}"
-                  data-project-image-alt="${escapeHtmlAttribute(project.visual.alt)}"
-                  data-project-image-title="${escapeHtmlAttribute(project.title)}"
-                  data-project-image-caption="${escapeHtmlAttribute(project.visual.caption)}"
-                  aria-label="${escapeHtmlAttribute(`${project.title} 대표 화면 크게 보기`)}"
-                >
-                  <img
-                    src="${project.visual.src}"
-                    alt="${project.visual.alt}"
-                    class="h-full w-full rounded-xl border border-slate-700/60 bg-slate-950/90 object-contain object-center shadow-2xl shadow-slate-950/60 transition duration-300 group-hover:scale-[1.01]"
-                    loading="lazy"
-                  />
-                  <span class="pointer-events-none absolute bottom-5 right-5 rounded-full border border-cyan-500/35 bg-black/80 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.18em] text-cyan-200 shadow-lg shadow-black/60 backdrop-blur-sm">
-                    Click to zoom
-                  </span>
-                </button>
-              `
-              : `
-                <div class="flex h-full flex-col items-center justify-center px-6 text-center">
-                  <span class="rounded-full border border-slate-700/70 bg-slate-900/70 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">
-                    Image Slot Ready
-                  </span>
-                  <p class="mt-4 max-w-sm text-sm leading-relaxed text-slate-300/80">
-                    실제 프로젝트 이미지를 받으면 이 영역에 대표 화면을 바로 연결할 수 있습니다.
-                  </p>
-                </div>
-              `
-          }
-        </div>
-      </div>
-
-      <div class="mt-4 rounded-xl border border-slate-700/60 bg-slate-800/35 p-4">
-        <p class="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">Screen Note</p>
-        <p class="mt-2 text-sm leading-relaxed text-slate-300/82">${project.visual.caption}</p>
-      </div>
-
-      <div class="mt-5 grid gap-3">
-        ${project.panelPoints
-          .map(
-            (point) => `
-              <div class="rounded-xl border ${
-                point.tone === 'roadmap' ? 'border-cyan-500/30 bg-cyan-950/20' : 'border-slate-700/60 bg-slate-800/40'
-              } p-4">
-                <p class="text-xs font-mono uppercase tracking-[0.18em] ${
-                  point.tone === 'roadmap' ? 'text-cyan-300' : 'text-slate-500'
-                }">${point.label}</p>
-                <p class="mt-2 text-sm leading-relaxed ${
-                  point.tone === 'roadmap' ? 'text-cyan-100/90' : 'text-slate-200'
-                }">${point.value}</p>
-              </div>
-            `
-          )
-          .join('')}
-      </div>
-
-      <div class="mt-5 flex flex-wrap gap-2">
-        ${project.stack
-          .map(
-            (item) => `
-              <span class="rounded-full border border-slate-600/50 bg-slate-800 px-3 py-1 text-xs font-mono text-cyan-300 transition hover:border-green-500/50 hover:text-green-400">${item}</span>
-            `
-          )
-          .join('')}
-      </div>
-    </div>
-  </div>
-`;
-
-const contactActions: CallToActionType[] = [];
-
-if (portfolioProfile.socials.github) {
-  contactActions.push({
-    variant: 'primary',
-    text: 'GitHub',
-    href: portfolioProfile.socials.github,
-    ...withExternalTarget(portfolioProfile.socials.github),
-  });
-}
-
-if (portfolioProfile.resumeHref) {
-  contactActions.push({
-    variant: 'secondary',
-    text: '이력서',
-    href: portfolioProfile.resumeHref,
-    ...withExternalTarget(portfolioProfile.resumeHref),
-  });
-}
-
-if (portfolioProfile.email) {
-  contactActions.push({
-    variant: 'secondary',
-    text: '연락하기',
-    href: `mailto:${portfolioProfile.email}`,
-  });
-}
-
-if (!contactActions.length && portfolioProfile.socials.blog) {
-  contactActions.push({
-    variant: 'primary',
-    text: '작업 기록',
-    href: portfolioProfile.socials.blog,
-  });
-}
 ---
 
-<Layout metadata={metadata}>
-  <Fragment slot="announcement"></Fragment>
-  <Fragment slot="header">
-    <Header links={headerLinks} actions={[{ text: '연락하기', href: '#contact' }]} isSticky />
-  </Fragment>
+<PageLayout metadata={metadata}>
+  <section class="relative overflow-hidden border-b border-slate-800/80">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(6,182,212,0.12),transparent_32%),radial-gradient(circle_at_82%_14%,rgba(34,197,94,0.14),transparent_26%),linear-gradient(180deg,rgba(2,6,23,0.78),rgba(2,6,23,0))]"></div>
+    <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
 
-  <Hero image={heroPanel} actions={heroActions}>
-    <Fragment slot="title">
-      {portfolioProfile.name}
-      <span class="mt-3 block font-heading text-sm uppercase tracking-[0.24em] text-slate-400 md:text-base">
-        {portfolioProfile.nameEn}
-      </span>
-      <span class="mt-5 block text-accent">{portfolioProfile.role}</span>
-    </Fragment>
+    <div class="portfolio-section relative !pb-12 md:!pb-16">
+      <div class="grid gap-6 xl:grid-cols-12 xl:items-start">
+        <div class="xl:col-span-7">
+          <p class="portfolio-eyebrow text-cyan-300">{portfolioHome.hero.eyebrow}</p>
+          <div class="mt-4">
+            <p class="text-2xl font-semibold tracking-tight text-slate-50 sm:text-[2rem]">{portfolioProfile.name}</p>
+            <p class="mt-2 text-sm font-medium uppercase tracking-[0.18em] text-slate-400">{portfolioProfile.role}</p>
+          </div>
 
-    <Fragment slot="subtitle">{portfolioProfile.intro}</Fragment>
+          <h1 class="mt-6 text-[clamp(2rem,4vw,3.8rem)] font-bold leading-[0.95] tracking-[-0.04em] text-slate-50">
+            {heroHeadlineLines.map((line) => (
+              <span class="block">{line}</span>
+            ))}
+          </h1>
 
-    <Fragment slot="content">
-      <div class="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-muted">
-        {
-          heroTags.map((tag) => (
-            <span class="rounded-md border border-slate-700/50 bg-slate-800/80 px-4 py-2 font-mono tracking-[0.04em]">
-              {tag}
-            </span>
-          ))
-        }
-      </div>
-    </Fragment>
+          <p class="mt-6 max-w-[48rem] text-lg leading-8 text-slate-100/92 [text-wrap:pretty]">{portfolioHome.hero.lead}</p>
+          <p class="mt-4 max-w-[44rem] text-base leading-7 text-slate-300/84 [text-wrap:pretty]">{portfolioHome.hero.supporting}</p>
 
-    <Fragment slot="bg">
-      <div
-        class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(34,197,94,0.15),transparent_50%),radial-gradient(circle_at_80%_20%,rgba(6,182,212,0.1),transparent_30%)]"
-      >
-      </div>
-    </Fragment>
-  </Hero>
-
-  <Content
-    id="about"
-    title="복잡한 작업을 제어 가능한 흐름으로 바꿉니다"
-    subtitle={portfolioProfile.summary}
-    image={profilePanel}
-    items={profilePoints}
-  >
-    <Fragment slot="bg">
-      <div class="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(30,41,59,0.5))]"></div>
-    </Fragment>
-
-    <Fragment slot="content">
-      <p class="leading-relaxed text-slate-300/85">
-        세 프로젝트는 각각 운영 제어, 인프라 자동화, 금융 데이터 가공을 다루지만, 공통적으로 복잡한 입력과 상태를 사람이
-        다시 사용할 수 있는 흐름으로 정리한다는 점에서 연결됩니다.
-      </p>
-    </Fragment>
-  </Content>
-
-  {
-    selectedProjects.map((project, index) => (
-      <div id={project.sectionId} class="scroll-mt-24">
-        <Content
-          id={index === 0 ? 'projects' : undefined}
-          isReversed={index % 2 === 1}
-          isAfterContent={index > 0}
-          title={index === 0 ? '대표 프로젝트' : undefined}
-          subtitle={
-            index === 0 ? '한 줄 요약, 구현한 내용, 설계 포인트, 프로젝트 의미 기준으로 정리했습니다.' : undefined
-          }
-          image={buildProjectPanel(project)}
-          items={[
-            { title: project.implementationLabel, description: project.implementation },
-            { title: '설계 포인트', description: project.designPoint },
-            { title: project.significanceLabel, description: project.significance },
-          ]}
-        >
-          <Fragment slot="content">
-            <p class="font-mono text-sm font-semibold uppercase tracking-[0.24em] text-green-400">{project.kicker}</p>
-            <h3 class="mt-3 text-3xl font-bold tracking-tight text-slate-100 sm:text-4xl">{project.title}</h3>
-            <p class="mt-4 leading-relaxed text-slate-300/85">{project.summary}</p>
-
-            <div class="mt-6">
-              <a
-                class="inline-flex items-center rounded-full border border-green-500/50 bg-green-500/10 px-4 py-2 text-sm font-mono text-green-300 transition hover:border-green-400 hover:bg-green-500/20 hover:text-green-200"
-                href={project.repoHref}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                GitHub 저장소 보기
-              </a>
-            </div>
-
-            <div class="mt-5 flex flex-wrap gap-2">
-              <span class="rounded-full border border-slate-700/60 bg-slate-800/60 px-3 py-1 text-xs font-mono text-cyan-300">
-                {project.meta}
+          <div class="mt-6 flex flex-wrap gap-2.5">
+            {portfolioHome.hero.featureChips.map((chip) => (
+              <span class="rounded-full border border-slate-700/80 bg-slate-900/72 px-3 py-1.5 text-[11px] font-mono uppercase tracking-[0.16em] text-slate-200">
+                {chip}
               </span>
-              {project.highlightNote && (
-                <span class="rounded-full border border-cyan-500/30 bg-cyan-950/20 px-3 py-1 text-xs font-mono text-cyan-200">
-                  {project.highlightNote}
-                </span>
-              )}
-            </div>
-          </Fragment>
-        </Content>
-      </div>
-    ))
-  }
-
-  <Features3
-    id="focus"
-    tagline="Capability"
-    title="핵심 역량"
-    subtitle="운영 자동화, 인프라 워크플로우, 금융 데이터 분석·가공 설계 기준으로 현재 작업 범위를 정리했습니다."
-    columns={3}
-    defaultIcon="tabler:square-rounded-check-filled"
-    items={focusAreas}
-    classes={{
-      headline: {
-        subtitle: 'mx-auto max-w-3xl text-xl text-slate-300/80',
-      },
-      items: {
-        title: 'text-lg font-semibold text-slate-100',
-        description: 'text-slate-300/75 leading-relaxed',
-      },
-    }}
-  >
-    <Fragment slot="bg">
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.08),transparent_45%)]"></div>
-    </Fragment>
-  </Features3>
-
-  <Steps
-    id="experience"
-    title="설계 원칙"
-    subtitle="프로젝트는 달라도, 아래 기준은 공통으로 적용합니다."
-    items={experienceTimeline}
-    classes={{
-      container: 'max-w-[54rem]',
-      headline: {
-        container: 'mb-10 max-w-2xl text-left md:mx-0',
-        title: 'text-4xl lg:text-[2.8rem]',
-        subtitle: 'mt-3 max-w-2xl text-base leading-relaxed text-slate-300/75',
-      },
-      items: {
-        container: 'space-y-3',
-        panel: 'items-start',
-        title: 'text-[1.9rem] leading-tight tracking-tight text-slate-100',
-        description: 'mt-3 max-w-3xl text-base leading-8 text-slate-300/78',
-        icon: 'h-11 w-11 border-blue-500/60 bg-slate-900/90 text-slate-100',
-      },
-    }}
-  />
-
-  <Features3
-    id="toolkit"
-    title="기술"
-    subtitle="기술은 일반론보다 각 프로젝트와 연결해서 정리했습니다."
-    columns={3}
-    defaultIcon="tabler:point-filled"
-    items={toolkit}
-    classes={{
-      headline: {
-        subtitle: 'mx-auto max-w-3xl text-xl text-slate-300/80',
-      },
-      items: {
-        title: 'text-lg font-semibold text-slate-100',
-        description: 'text-slate-300/75 leading-relaxed',
-      },
-    }}
-  />
-
-  <CallToAction
-    id="contact"
-    title="이런 문제를 함께 풀 수 있습니다"
-    subtitle="운영 자동화 백엔드, 인프라 provisioning 워크플로우, 배포·롤백·모니터링 통합, 금융 데이터 분석·가공 설계를 다룹니다."
-    actions={contactActions}
-  >
-    <Fragment slot="bg">
-      <div
-        class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(34,197,94,0.12),transparent_50%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.1),transparent_40%)]"
-      >
-      </div>
-    </Fragment>
-  </CallToAction>
-
-  <div
-    class="pointer-events-none fixed bottom-5 right-5 z-[70] hidden max-md:hidden"
-    data-terminal-floating-shell
-    aria-hidden="true"
-  >
-    <button
-      type="button"
-      class="pointer-events-auto hidden items-center gap-2 rounded-full border border-slate-700/80 bg-slate-900/95 px-4 py-3 font-mono text-sm text-cyan-300 shadow-2xl shadow-cyan-500/10 transition hover:border-green-500/40 hover:text-green-300"
-      data-terminal-floating-trigger
-    >
-      <span class="text-green-400">$</span>
-      <span>open console</span>
-    </button>
-
-    <div
-      class="pointer-events-auto hidden w-[22rem] overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-900/95 shadow-2xl shadow-cyan-500/15 backdrop-blur"
-      data-terminal-floating-window
-    >
-      <div
-        class="relative overflow-hidden font-mono"
-        data-terminal-root
-        data-terminal-role="floating"
-        data-terminal-empty-text="top, klepaas, heimdall, argus 같은 명령으로 바로 이동할 수 있습니다."
-      >
-        <div class="flex items-center justify-between gap-3 border-b border-slate-700/50 bg-slate-800/80 px-4 py-3">
-          <div class="flex items-center gap-2">
-            <div class="flex gap-1.5">
-              <span class="h-3 w-3 rounded-full bg-red-500/80"></span>
-              <span class="h-3 w-3 rounded-full bg-yellow-500/80"></span>
-              <span class="h-3 w-3 rounded-full bg-green-500/80"></span>
-            </div>
-            <span class="ml-2 text-xs text-slate-400">~/navigator</span>
+            ))}
           </div>
 
-          <button
-            type="button"
-            class="rounded-full border border-slate-700/60 bg-slate-900/70 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-slate-400 transition hover:border-slate-500 hover:text-slate-200"
-            data-terminal-floating-hide
-          >
-            hide
-          </button>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <Button variant="primary" href={portfolioHome.hero.primaryCta.href}>
+              {portfolioHome.hero.primaryCta.label}
+            </Button>
+            {secondaryCta ? (
+              <Button
+                variant="secondary"
+                href={secondaryCta.href}
+                class="px-4 py-2.5 text-sm md:px-5"
+                {...(secondaryCta.download ? { download: true } : {})}
+              >
+                {secondaryCta.label}
+              </Button>
+            ) : null}
+          </div>
         </div>
 
-        <div class="space-y-3 p-4 text-[13px]">
-          <div class="space-y-3" data-terminal-response aria-live="polite">
-            <div
-              class="rounded-xl border border-dashed border-slate-700/60 bg-slate-950/30 px-4 py-3 leading-relaxed text-slate-500"
-              data-terminal-empty
+        <aside class="grid gap-3 sm:grid-cols-2 xl:col-span-5 xl:grid-cols-2">
+          {signalCards.map((card) => (
+            <article
+              class:list={[
+                'rounded-[1.35rem] border px-5 py-5',
+                card.tone === 'green'
+                  ? 'border-green-500/20 bg-green-950/10'
+                  : card.tone === 'cyan'
+                    ? 'border-cyan-500/20 bg-cyan-950/10'
+                    : 'border-slate-800/80 bg-slate-950/62',
+              ]}
             >
-              top, klepaas, heimdall, argus 같은 명령으로 바로 이동할 수 있습니다.
-            </div>
-          </div>
+              <p class="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-400">{card.label}</p>
+              <p class="mt-3 text-lg font-semibold tracking-tight text-slate-50 [text-wrap:balance]">{card.value}</p>
+            </article>
+          ))}
+        </aside>
 
-          <div class="rounded-xl border border-slate-700/60 bg-slate-800/30 p-3">
-            <div class="flex flex-wrap gap-2">
-              {
-                floatingTerminalSuggestions.map((command) => (
-                  <button
-                    type="button"
-                    class="rounded-full border border-slate-600/60 bg-slate-900/80 px-3 py-1 text-[11px] text-cyan-300 transition hover:border-green-500/50 hover:text-green-400"
-                    data-terminal-suggestion={command}
-                  >
-                    {command}
-                  </button>
-                ))
-              }
-            </div>
+        <div id={portfolioHome.purposeSection.id} class="xl:col-span-12">
+          <div class="grid auto-rows-fr gap-3 lg:grid-cols-3">
+            {portfolioHome.purposeSection.cards.map((card) => (
+              <article class="rounded-[1.45rem] border border-slate-800/80 bg-slate-950/62 p-5 sm:p-6">
+                <p class="portfolio-eyebrow text-cyan-300">{card.title}</p>
+                <p class="mt-4 text-base leading-7 text-slate-100/88 [text-wrap:pretty]">{card.description}</p>
+              </article>
+            ))}
           </div>
+        </div>
 
-          <form
-            class="flex items-center gap-3 rounded-xl border border-slate-700/60 bg-slate-950/70 px-4 py-3"
-            data-terminal-form
+        <div class="xl:col-span-12">
+          <div class="grid gap-3 xl:grid-cols-3">
+            {selectedProjects.map((project, index) => (
+              <a
+                href={`#project-${project.slug}`}
+                class="rounded-[1.45rem] border border-slate-800/80 bg-slate-950/62 p-5 transition hover:border-green-500/30 hover:bg-slate-950/82"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">0{index + 1}</p>
+                    <h2 class="mt-3 text-2xl font-semibold tracking-tight text-slate-50">{project.title}</h2>
+                  </div>
+                  <span class="rounded-full border border-slate-700/80 px-2.5 py-1 text-[10px] font-mono uppercase tracking-[0.16em] text-slate-300">
+                    {project.projectType}
+                  </span>
+                </div>
+                <p class="mt-4 text-sm leading-6 text-slate-300/84 [text-wrap:pretty]">{project.resultLine}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id={portfolioHome.approachSection.id} class="border-b border-slate-800/70 bg-slate-950/40">
+    <div class="portfolio-section-tight">
+      <div class="flex flex-col gap-3">
+        <p class="portfolio-eyebrow text-green-300">{portfolioHome.approachSection.eyebrow}</p>
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <h2 class="max-w-[34rem] text-[2rem] font-bold tracking-tight text-slate-50 sm:text-[2.4rem] sm:leading-[1.02]">
+            {portfolioHome.approachSection.title}
+          </h2>
+          <p class="max-w-[36rem] text-base leading-7 text-slate-300/82 [text-wrap:pretty]">{portfolioHome.approachSection.description}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-3 lg:grid-cols-3">
+        {portfolioHome.approachSection.cards.map((card) => (
+          <article class="rounded-[1.45rem] border border-slate-800/80 bg-slate-950/62 p-5 sm:p-6">
+            <div class="flex h-12 w-12 items-center justify-center rounded-[1rem] border border-green-500/20 bg-green-950/10 text-base font-mono text-green-300">
+              {card.index}
+            </div>
+            <h3 class="mt-5 text-xl font-semibold tracking-tight text-slate-50">{card.title}</h3>
+            <p class="mt-3 text-sm leading-6 text-slate-300/84 [text-wrap:pretty]">{card.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id={portfolioHome.projectsSection.id} class="portfolio-anchor-section-tight">
+    <div class="flex flex-col gap-3">
+      <p class="portfolio-eyebrow text-cyan-300">{portfolioHome.projectsSection.eyebrow}</p>
+      <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <h2 class="text-[2rem] font-bold tracking-tight text-slate-50 sm:text-[2.4rem] sm:leading-[1.02]">
+          {portfolioHome.projectsSection.title}
+        </h2>
+        <p class="max-w-[36rem] text-base leading-7 text-slate-300/82 [text-wrap:pretty]">{portfolioHome.projectsSection.description}</p>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-5">
+      {mainProjects[0] ? (
+        <div id={`project-${mainProjects[0].slug}`}>
+          <HomeProjectSpotlightCard project={mainProjects[0]} />
+        </div>
+      ) : null}
+
+      <div class="grid gap-5 xl:grid-cols-2">
+        {mainProjects[1] ? (
+          <div id={`project-${mainProjects[1].slug}`}>
+            <HomeProjectSpotlightCard project={mainProjects[1]} compact />
+          </div>
+        ) : null}
+
+        {labProject ? (
+          <div id={`project-${labProject.slug}`}>
+            <HomeProjectSpotlightCard project={labProject} compact />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  </section>
+
+  {directLinks.length ? (
+    <section id={portfolioHome.contactSection.id} class="border-t border-slate-800/70 portfolio-anchor-section-tight">
+      <div class="flex flex-col gap-3">
+        <p class="portfolio-eyebrow text-green-300">{portfolioHome.contactSection.eyebrow}</p>
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <h2 class="text-[2rem] font-bold tracking-tight text-slate-50 sm:text-[2.2rem] sm:leading-[1.02]">
+            {portfolioHome.contactSection.title}
+          </h2>
+          <p class="max-w-[30rem] text-base leading-7 text-slate-300/82 [text-wrap:pretty]">{portfolioHome.contactSection.description}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {directLinks.map((item) => (
+          <a
+            class="flex h-full flex-col justify-between gap-4 rounded-[1.35rem] border border-slate-800/80 bg-slate-950/62 p-5 transition hover:border-green-500/30 hover:bg-slate-950/84"
+            href={item.href}
+            {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            {...(item.download ? { download: true } : {})}
           >
-            <span class="text-green-400">$</span>
-            <label class="sr-only" for="floating-terminal-input">플로팅 콘솔 명령어 입력</label>
-            <input
-              id="floating-terminal-input"
-              class="w-full bg-transparent text-cyan-300 outline-none placeholder:text-slate-500"
-              type="text"
-              name="command"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="top, klepaas, heimdall, argus"
-              data-terminal-input
-            />
-            <span class="h-4 w-2 shrink-0 bg-green-400 terminal-cursor"></span>
-          </form>
-        </div>
+            <div>
+              <p class="portfolio-eyebrow text-cyan-300">{item.label}</p>
+              <p class="mt-3 text-sm leading-6 text-slate-100/90 [text-wrap:pretty]">{item.description}</p>
+            </div>
+            <span class="text-xs font-mono uppercase tracking-[0.16em] text-slate-500">{getLinkActionLabel(item)}</span>
+          </a>
+        ))}
       </div>
-    </div>
-  </div>
-
-  <div
-    class="pointer-events-none fixed inset-0 z-[90] hidden flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-sm sm:p-6"
-    data-project-lightbox
-    role="dialog"
-    aria-modal="true"
-    aria-hidden="true"
-    aria-label="프로젝트 화면 확대 보기"
-  >
-    <button
-      type="button"
-      class="absolute inset-0 cursor-zoom-out"
-      data-project-lightbox-close
-      aria-label="확대 화면 닫기"
-    >
-    </button>
-
-    <div class="relative z-10 flex w-full max-w-6xl flex-col gap-3">
-      <div class="flex items-center justify-between gap-4 rounded-full border border-slate-700/80 bg-slate-900/95 px-4 py-3">
-        <div class="min-w-0">
-          <p class="truncate text-xs font-mono uppercase tracking-[0.18em] text-cyan-300" data-project-lightbox-title>
-            Project Screen
-          </p>
-          <p class="truncate text-xs text-slate-400">이미지를 다시 클릭하면 닫힙니다.</p>
-        </div>
-
-        <button
-          type="button"
-          class="shrink-0 rounded-full border border-slate-700/70 bg-slate-950/90 px-3 py-1 text-xs font-mono uppercase tracking-[0.16em] text-slate-300 transition hover:border-slate-500 hover:text-slate-100"
-          data-project-lightbox-close
-          data-project-lightbox-close-button
-        >
-          Close
-        </button>
-      </div>
-
-      <button
-        type="button"
-        class="block overflow-hidden rounded-2xl border border-slate-700/80 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.12),transparent_35%),linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.94))] shadow-2xl shadow-cyan-950/20"
-        data-project-lightbox-close
-        aria-label="확대 화면 닫기"
-      >
-        <img
-          src=""
-          alt=""
-          class="max-h-[78vh] w-full object-contain object-center"
-          data-project-lightbox-image
-        />
-      </button>
-
-      <p class="mx-auto max-w-4xl text-center text-sm leading-relaxed text-slate-300/82" data-project-lightbox-caption>
-      </p>
-    </div>
-  </div>
-
-  <script is:inline define:vars={{ terminalCommandCatalog }}>
-    const normalizeTerminalCommand = (value) => value.trim().replace(/\s+/g, ' ').toLowerCase();
-
-    const buildTerminalAliasMap = (commands) => {
-      const aliasMap = new Map();
-
-      for (const command of commands) {
-        for (const alias of command.aliases) {
-          aliasMap.set(normalizeTerminalCommand(alias), command);
-        }
-      }
-
-      return aliasMap;
-    };
-
-    const terminalAliasMap = buildTerminalAliasMap(terminalCommandCatalog);
-
-    const createTerminalEmptyState = (root) => {
-      const emptyState = document.createElement('div');
-      emptyState.className =
-        'rounded-xl border border-dashed border-slate-700/60 bg-slate-950/30 px-4 py-3 leading-relaxed text-slate-500';
-      emptyState.dataset.terminalEmpty = 'true';
-      emptyState.textContent = root.dataset.terminalEmptyText || '아직 표시할 답변이 없습니다.';
-      return emptyState;
-    };
-
-    const createTerminalResponse = (outputLines) => {
-      const response = document.createElement('div');
-      response.className = 'rounded-xl border border-slate-700/60 bg-slate-950/40 px-4 py-3 text-slate-300';
-      response.dataset.terminalResponseBody = 'true';
-
-      for (const line of outputLines) {
-        const paragraph = document.createElement('p');
-        paragraph.textContent = line;
-        response.append(paragraph);
-      }
-
-      return response;
-    };
-
-    const runTerminalAction = (action) => {
-      if (!action?.type) {
-        return;
-      }
-
-      if (action.type === 'scrollTop') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-
-      if (action.type === 'scroll' && action.target) {
-        const target = document.querySelector(action.target);
-
-        if (target instanceof HTMLElement) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        return;
-      }
-
-      if (action.type === 'link' && action.href) {
-        window.open(action.href, '_blank', 'noopener,noreferrer');
-      }
-    };
-
-    const hydrateTerminal = (root) => {
-      if (root.dataset.terminalReady === 'true') {
-        return;
-      }
-
-      root.dataset.terminalReady = 'true';
-
-      const response = root.querySelector('[data-terminal-response]');
-      const form = root.querySelector('[data-terminal-form]');
-      const input = root.querySelector('[data-terminal-input]');
-      const suggestionButtons = root.querySelectorAll('[data-terminal-suggestion]');
-
-      if (
-        !(response instanceof HTMLElement) ||
-        !(form instanceof HTMLFormElement) ||
-        !(input instanceof HTMLInputElement)
-      ) {
-        return;
-      }
-
-      const syncEmptyState = () => {
-        const hasResponse = Boolean(response.querySelector('[data-terminal-response-body]'));
-        const emptyState = response.querySelector('[data-terminal-empty]');
-
-        if (!hasResponse && !emptyState) {
-          response.append(createTerminalEmptyState(root));
-        }
-
-        if (hasResponse && emptyState) {
-          emptyState.remove();
-        }
-      };
-
-      const appendCommand = (rawCommand) => {
-        const normalized = normalizeTerminalCommand(rawCommand);
-
-        if (!normalized) {
-          return;
-        }
-
-        const matchedCommand = terminalAliasMap.get(normalized);
-
-        if (matchedCommand?.key === 'clear') {
-          response.replaceChildren(createTerminalEmptyState(root));
-          return;
-        }
-
-        const outputLines = matchedCommand
-          ? matchedCommand.output
-          : [`command not found: ${rawCommand}`, 'type `help` to see supported commands'];
-
-        response.replaceChildren(createTerminalResponse(outputLines));
-        syncEmptyState();
-
-        if (matchedCommand?.action) {
-          runTerminalAction(matchedCommand.action);
-        }
-      };
-
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const rawCommand = input.value.trim();
-
-        if (!rawCommand) {
-          return;
-        }
-
-        appendCommand(rawCommand);
-        input.value = '';
-        input.focus();
-      });
-
-      for (const button of suggestionButtons) {
-        button.addEventListener('click', () => {
-          if (!(button instanceof HTMLButtonElement)) {
-            return;
-          }
-
-          input.value = button.dataset.terminalSuggestion || '';
-          form.requestSubmit();
-        });
-      }
-
-      syncEmptyState();
-    };
-
-    const hydrateFloatingDock = () => {
-      const shell = document.querySelector('[data-terminal-floating-shell]');
-      const heroTerminal = document.querySelector('[data-terminal-role="hero"]');
-
-      if (!(shell instanceof HTMLElement) || shell.dataset.terminalFloatingReady === 'true') {
-        return;
-      }
-
-      shell.dataset.terminalFloatingReady = 'true';
-
-      const windowEl = shell.querySelector('[data-terminal-floating-window]');
-      const trigger = shell.querySelector('[data-terminal-floating-trigger]');
-      const hideButtons = shell.querySelectorAll('[data-terminal-floating-hide]');
-
-      if (!(windowEl instanceof HTMLElement) || !(trigger instanceof HTMLButtonElement)) {
-        return;
-      }
-
-      let isVisible = false;
-      let isOpen = true;
-
-      const syncDock = () => {
-        shell.classList.toggle('hidden', !isVisible);
-        shell.setAttribute('aria-hidden', String(!isVisible));
-        windowEl.classList.toggle('hidden', !isVisible || !isOpen);
-        trigger.classList.toggle('hidden', !isVisible || isOpen);
-      };
-
-      const openDock = () => {
-        isOpen = true;
-        syncDock();
-
-        const input = shell.querySelector('[data-terminal-input]');
-
-        if (input instanceof HTMLInputElement) {
-          requestAnimationFrame(() => input.focus());
-        }
-      };
-
-      trigger.addEventListener('click', openDock);
-
-      hideButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-          isOpen = false;
-          syncDock();
-        });
-      });
-
-      if (heroTerminal instanceof HTMLElement) {
-        const observer = new IntersectionObserver(
-          (entries) => {
-            const entry = entries[0];
-            const heroVisible = Boolean(entry?.isIntersecting && entry.intersectionRatio > 0.18);
-            isVisible = !heroVisible;
-            syncDock();
-          },
-          { threshold: [0, 0.18, 0.5] }
-        );
-
-        observer.observe(heroTerminal);
-      } else {
-        isVisible = true;
-        syncDock();
-      }
-    };
-
-    const hydrateProjectLightbox = () => {
-      const overlay = document.querySelector('[data-project-lightbox]');
-
-      if (!(overlay instanceof HTMLElement)) {
-        return;
-      }
-
-      const image = overlay.querySelector('[data-project-lightbox-image]');
-      const title = overlay.querySelector('[data-project-lightbox-title]');
-      const caption = overlay.querySelector('[data-project-lightbox-caption]');
-      const closeButton = overlay.querySelector('[data-project-lightbox-close-button]');
-
-      if (!(image instanceof HTMLImageElement) || !(title instanceof HTMLElement) || !(caption instanceof HTMLElement)) {
-        return;
-      }
-
-      const closeLightbox = () => {
-        overlay.classList.add('hidden', 'pointer-events-none');
-        overlay.setAttribute('aria-hidden', 'true');
-        image.removeAttribute('src');
-        image.alt = '';
-        title.textContent = 'Project Screen';
-        caption.textContent = '';
-        document.documentElement.classList.remove('overflow-hidden');
-      };
-
-      if (overlay.dataset.projectLightboxReady !== 'true') {
-        overlay.dataset.projectLightboxReady = 'true';
-
-        overlay.querySelectorAll('[data-project-lightbox-close]').forEach((button) => {
-          button.addEventListener('click', closeLightbox);
-        });
-
-        document.addEventListener('keydown', (event) => {
-          if (event.key === 'Escape' && overlay.getAttribute('aria-hidden') === 'false') {
-            closeLightbox();
-          }
-        });
-      }
-
-      document.querySelectorAll('[data-project-image-trigger]').forEach((button) => {
-        if (!(button instanceof HTMLButtonElement) || button.dataset.projectImageReady === 'true') {
-          return;
-        }
-
-        button.dataset.projectImageReady = 'true';
-
-        button.addEventListener('click', () => {
-          const { projectImageSrc, projectImageAlt, projectImageTitle, projectImageCaption } = button.dataset;
-
-          if (!projectImageSrc) {
-            return;
-          }
-
-          image.src = projectImageSrc;
-          image.alt = projectImageAlt || '';
-          title.textContent = projectImageTitle || 'Project Screen';
-          caption.textContent = projectImageCaption || '';
-          overlay.classList.remove('hidden', 'pointer-events-none');
-          overlay.setAttribute('aria-hidden', 'false');
-          document.documentElement.classList.add('overflow-hidden');
-
-          if (closeButton instanceof HTMLButtonElement) {
-            requestAnimationFrame(() => closeButton.focus());
-          }
-        });
-      });
-    };
-
-    const bootTerminals = () => {
-      document.querySelectorAll('[data-terminal-root]').forEach((root) => {
-        if (root instanceof HTMLElement) {
-          hydrateTerminal(root);
-        }
-      });
-
-      hydrateFloatingDock();
-      hydrateProjectLightbox();
-    };
-
-    bootTerminals();
-    document.addEventListener('astro:page-load', bootTerminals);
-  </script>
-</Layout>
+    </section>
+  ) : null}
+</PageLayout>

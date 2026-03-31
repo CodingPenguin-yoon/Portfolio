@@ -1,0 +1,262 @@
+---
+import Button from '~/components/ui/Button.astro';
+import ProjectSignatureBlock from '~/components/portfolio/ProjectSignatureBlock.astro';
+import ProjectNarrativeGrid from '~/components/portfolio/ProjectNarrativeGrid.astro';
+import type { MainProjectDetailCopy, PortfolioProject } from '~/data/portfolio';
+
+export interface Props {
+  project: PortfolioProject;
+  relatedProjects?: PortfolioProject[];
+}
+
+const { project, relatedProjects = [] } = Astro.props;
+const detail = project.detail as MainProjectDetailCopy;
+const showGitHub = Boolean(project.repoHref);
+const flowKind = detail.flow.kind;
+const isProvisioning = flowKind === 'provisioning';
+
+const metaItems = [
+  { label: '유형', value: project.projectType },
+  project.period ? { label: '기간', value: project.period } : null,
+  { label: '역할', value: project.role },
+].filter((item): item is { label: string; value: string } => Boolean(item));
+
+const relatedLinks = relatedProjects.filter((item) => item.slug !== project.slug).slice(0, 2);
+const sectionLinks = [
+  { label: '문제', href: '#problem' },
+  { label: '아키텍처', href: '#implementation' },
+  { label: '흐름', href: '#flow' },
+  { label: '결과', href: '#results' },
+];
+---
+
+<div class="relative">
+  <section class="relative overflow-hidden border-b border-slate-800/80">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.09),transparent_32%),radial-gradient(circle_at_82%_18%,rgba(6,182,212,0.08),transparent_28%)]"></div>
+
+    <div class="portfolio-section relative !pb-10 md:!pb-12">
+      <div class:list={['grid gap-8 xl:items-start', isProvisioning ? 'xl:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)]' : 'xl:grid-cols-[minmax(0,1.03fr)_minmax(320px,0.97fr)]']}>
+        {isProvisioning ? (
+          <aside class="grid gap-3 xl:sticky xl:top-[calc(var(--aw-header-offset)+1.5rem)]">
+            {project.visual.src ? (
+              <figure class="overflow-hidden rounded-[1.6rem] border border-slate-800/80 bg-slate-950/92 shadow-2xl shadow-slate-950/35">
+                <div class="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/88 px-4 py-3">
+                  <span class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">{project.visual.label}</span>
+                  <span class="portfolio-eyebrow text-green-300">{project.title}</span>
+                </div>
+                <div class="bg-slate-950/80 p-3">
+                  <img
+                    src={project.visual.src}
+                    alt={project.visual.alt}
+                    class="block h-auto w-full rounded-[1rem] object-contain object-top"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              </figure>
+            ) : null}
+
+          </aside>
+        ) : null}
+
+        <div class:list={[isProvisioning ? 'xl:order-2' : '']}>
+          <p class="portfolio-eyebrow text-cyan-300">{detail.hero.eyebrow}</p>
+          <h1 class="mt-4 text-[2.45rem] font-bold tracking-tight text-slate-50 sm:text-[3.15rem] sm:leading-[1.04] xl:text-[3.35rem]">
+            {project.fullTitle}
+          </h1>
+          <p class="mt-3 max-w-[42rem] text-base font-medium leading-7 text-cyan-100/82 [text-wrap:pretty]">{project.tagline}</p>
+          <p class="mt-4 max-w-[44rem] text-lg leading-8 text-slate-100/90 [text-wrap:pretty]">{detail.hero.lead}</p>
+
+          <div class="mt-6 portfolio-panel-accent sm:px-5 sm:py-5">
+            <p class="portfolio-eyebrow text-green-300">{detail.hero.resultTitle}</p>
+            <p class="mt-3 text-base leading-7 text-slate-100/92 [text-wrap:pretty]">{detail.hero.result}</p>
+          </div>
+        </div>
+
+        {!isProvisioning ? (
+          <aside class="grid gap-3 xl:sticky xl:top-[calc(var(--aw-header-offset)+1.5rem)]">
+            {project.visual.src ? (
+              <figure class="overflow-hidden rounded-[1.6rem] border border-slate-800/80 bg-slate-950/92 shadow-2xl shadow-slate-950/35">
+                <div class="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/88 px-4 py-3">
+                  <span class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">{project.visual.label}</span>
+                  <span class="portfolio-eyebrow text-green-300">{project.detail.flow.eyebrow}</span>
+                </div>
+                <div class="bg-slate-950/80 p-3">
+                  <img
+                    src={project.visual.src}
+                    alt={project.visual.alt}
+                    class="block h-auto w-full rounded-[1rem] object-contain object-top"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              </figure>
+            ) : null}
+
+          </aside>
+        ) : null}
+
+        <div class:list={['xl:col-span-2', isProvisioning ? 'xl:order-3' : '']}>
+          <section class="mt-1">
+            <p class="portfolio-eyebrow text-cyan-300">요약</p>
+            <div class="mt-4">
+              <ProjectNarrativeGrid narrative={project.narrative} />
+            </div>
+          </section>
+
+          {metaItems.length ? (
+            <dl class="mt-6 grid gap-3 border-t border-slate-800/70 pt-4 sm:grid-cols-3">
+              {metaItems.map((item) => (
+                <div class="portfolio-meta">
+                  <dt class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">{item.label}</dt>
+                  <dd class="mt-2 text-sm leading-6 text-slate-200/92">{item.value}</dd>
+                </div>
+              ))}
+              <div class="portfolio-meta sm:col-span-3">
+                <dt class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">기술 스택</dt>
+                <dd class="mt-3 flex flex-wrap gap-2">
+                  {project.coreStack.map((stack) => (
+                    <span class="portfolio-chip">{stack}</span>
+                  ))}
+                </dd>
+              </div>
+            </dl>
+          ) : null}
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            {showGitHub ? (
+              <Button variant="primary" href={project.repoHref} target="_blank">
+                {detail.hero.primaryCtaLabel}
+              </Button>
+            ) : null}
+            <Button variant="secondary" href="/">
+              {detail.hero.secondaryCtaLabel}
+            </Button>
+          </div>
+
+          <div class="mt-6">
+            <p class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-500">페이지 목차</p>
+            <nav class="mt-3 flex flex-wrap gap-2">
+              {sectionLinks.map((item) => (
+                <a
+                  href={item.href}
+                  class="rounded-full border border-slate-700/80 bg-slate-900/72 px-3 py-1.5 text-sm text-slate-200 transition hover:border-green-500/35 hover:text-green-200"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="problem" class="portfolio-anchor-section-tight">
+    <div class="grid gap-5 xl:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)]">
+      <article class="portfolio-card-muted">
+        <p class="portfolio-eyebrow text-cyan-300">{detail.problem.eyebrow}</p>
+        <h2 class="mt-3 text-[1.85rem] font-bold tracking-tight text-slate-50 sm:text-[2.3rem] sm:leading-[1.08]">{detail.problem.title}</h2>
+
+        {detail.problem.highlights?.length ? (
+          <ul class="mt-5 grid gap-3">
+            {detail.problem.highlights.map((item) => (
+              <li class="portfolio-panel-accent text-sm font-medium leading-6 text-slate-100/92">{item}</li>
+            ))}
+          </ul>
+        ) : null}
+
+        <div class="mt-5 space-y-4 text-base leading-7 text-slate-300/88">
+          {detail.problem.paragraphs.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
+        </div>
+      </article>
+
+      <div id="flow">
+        <ProjectSignatureBlock flow={detail.flow} compact />
+      </div>
+    </div>
+  </section>
+
+  <section id="implementation" class="portfolio-anchor-section-tight border-y border-slate-800/70 bg-slate-950/38">
+    <div class="grid gap-5 xl:grid-cols-[minmax(0,1.06fr)_minmax(320px,0.94fr)]">
+      <section class:list={['portfolio-card', isProvisioning ? 'border-green-500/20' : '']}>
+        <p class="portfolio-eyebrow text-green-300">{detail.implementation.eyebrow}</p>
+        <h2 class="mt-3 text-[1.75rem] font-semibold tracking-tight text-slate-50 sm:text-[2.15rem] sm:leading-[1.08]">{detail.implementation.title}</h2>
+        <p class="mt-4 text-base leading-7 text-slate-300/86">{detail.implementation.description}</p>
+
+        <ul class="mt-5 grid auto-rows-fr gap-3 sm:grid-cols-2">
+          {detail.implementation.items.map((item) => (
+            <li class="portfolio-panel flex h-full items-center text-sm leading-6 text-slate-100/90">
+              {item}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div class="grid gap-5">
+        {detail.implementation.asideItems?.length ? (
+          <section class="portfolio-card-muted">
+            {detail.implementation.asideTitle ? <p class="portfolio-eyebrow text-cyan-300">{detail.implementation.asideTitle}</p> : null}
+            <ul class="mt-4 grid gap-3">
+              {detail.implementation.asideItems.map((item) => (
+                <li class="portfolio-panel text-sm leading-6 text-slate-300/84">{item}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <section id="decisions" class="portfolio-card-muted">
+          <p class="portfolio-eyebrow text-cyan-300">{detail.decisions.eyebrow}</p>
+          <h2 class="mt-3 text-[1.55rem] font-semibold tracking-tight text-slate-50 sm:text-[1.8rem]">{detail.decisions.title}</h2>
+          <div class="mt-4 grid gap-3">
+            {detail.decisions.items.map((decision) => (
+              <article class="portfolio-panel">
+                <h3 class="text-base font-semibold tracking-tight text-slate-50">{decision.title}</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-300/84">{decision.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" class="portfolio-anchor-section-tight">
+    <div class="grid gap-5 xl:grid-cols-2">
+      <section class="portfolio-card border-green-500/22 bg-green-950/10">
+        <p class="portfolio-eyebrow text-green-300">{detail.results.eyebrow}</p>
+        <h2 class="mt-3 text-[1.65rem] font-semibold tracking-tight text-slate-50 sm:text-[1.9rem]">{detail.results.title}</h2>
+        <ul class="mt-5 grid gap-3">
+          {detail.results.items.map((item) => (
+            <li class="portfolio-panel-accent text-sm leading-6 text-slate-100/90">{item}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="portfolio-card-muted">
+        <p class="portfolio-eyebrow text-cyan-300">{detail.learning.eyebrow}</p>
+        <h2 class="mt-3 text-[1.65rem] font-semibold tracking-tight text-slate-50 sm:text-[1.9rem]">{detail.learning.title}</h2>
+        <ul class="mt-5 grid gap-3">
+          {detail.learning.items.map((item) => (
+            <li class="portfolio-panel text-sm leading-6 text-slate-200/88">{item}</li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  </section>
+
+  <div class="portfolio-shell pb-12">
+    <div class="flex flex-wrap gap-4 border-t border-slate-800/70 pt-6 text-sm text-slate-300">
+      <a class="transition hover:text-green-200" href="/">
+        홈으로 이동
+      </a>
+      {relatedLinks.map((item) => (
+        <a class="transition hover:text-green-200" href={item.directHref}>
+          {item.title}
+        </a>
+      ))}
+    </div>
+  </div>
+</div>

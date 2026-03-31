@@ -1,0 +1,15 @@
+---
+import MainProjectDetailPage from '~/components/portfolio/MainProjectDetailPage.astro';
+import SecondaryProjectDetailPage from '~/components/portfolio/SecondaryProjectDetailPage.astro';
+import type { PortfolioProject } from '~/data/portfolio';
+
+export interface Props {
+  project: PortfolioProject;
+  relatedProjects?: PortfolioProject[];
+}
+
+const { project, relatedProjects = [] } = Astro.props;
+const isSecondary = project.tier === 'secondary';
+---
+
+{isSecondary ? <SecondaryProjectDetailPage project={project} /> : <MainProjectDetailPage project={project} relatedProjects={relatedProjects} />}

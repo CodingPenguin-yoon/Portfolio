@@ -16,6 +16,16 @@ import astrowind from './vendor/integration';
 import { readingTimeRemarkPlugin, responsiveTablesRehypePlugin, lazyImagesRehypePlugin } from './src/utils/frontmatter';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const tolerateTrailingSlash: AstroIntegration = {
+  name: 'tolerate-trailing-slash',
+  hooks: {
+    'astro:config:setup': ({ updateConfig }) => {
+      // Some browsers/dev navigation paths still land on `/foo/` even when links are `/foo`.
+      // Accept both forms so local detail pages do not 404.
+      updateConfig({ trailingSlash: 'ignore' });
+    },
+  },
+};
 
 const hasExternalScripts = false;
 const whenExternalScripts = (items: (() => AstroIntegration) | (() => AstroIntegration)[] = []) =>
@@ -69,6 +79,7 @@ export default defineConfig({
     astrowind({
       config: './src/config.yaml',
     }),
+    tolerateTrailingSlash,
   ],
 
   image: {

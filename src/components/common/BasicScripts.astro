@@ -40,9 +40,35 @@ import { UI } from 'astrowind:config';
     }
   }
 
-  const onLoad = function () {
-    let lastKnownScrollPosition = window.scrollY;
-    let ticking = true;
+    const onLoad = function () {
+      let lastKnownScrollPosition = window.scrollY;
+      let ticking = true;
+      let lastSyncedHash = '';
+
+      const syncHeaderOffset = function () {
+        const headerInner = document.querySelector('#header [data-aw-header-inner]');
+        const fallbackOffset = 88;
+        const offset = headerInner instanceof HTMLElement ? Math.ceil(headerInner.getBoundingClientRect().height) : fallbackOffset;
+
+        document.documentElement.style.setProperty('--aw-header-offset', `${offset}px`);
+      };
+
+      const syncHashTarget = function () {
+        if (!window.location.hash || window.location.hash === lastSyncedHash) {
+          return;
+        }
+
+        const targetId = decodeURIComponent(window.location.hash.slice(1));
+        const target = document.getElementById(targetId);
+        if (!(target instanceof HTMLElement)) {
+          return;
+        }
+
+        lastSyncedHash = window.location.hash;
+        window.requestAnimationFrame(() => {
+          target.scrollIntoView({ block: 'start' });
+        });
+      };
 
     attachEvent('#header nav', 'click', function () {
       document.querySelector('[data-aw-toggle-menu]')?.classList.remove('expanded');
@@ -52,6 +78,7 @@ import { UI } from 'astrowind:config';
       document.getElementById('header')?.classList.remove('bg-page');
       document.querySelector('#header nav')?.classList.add('hidden');
       document.querySelector('#header > div > div:last-child')?.classList.add('hidden');
+      syncHeaderOffset();
     });
 
     attachEvent('[data-aw-toggle-menu]', 'click', function (_, elem) {
@@ -62,6 +89,7 @@ import { UI } from 'astrowind:config';
       document.getElementById('header')?.classList.toggle('bg-page');
       document.querySelector('#header nav')?.classList.toggle('hidden');
       document.querySelector('#header > div > div:last-child')?.classList.toggle('hidden');
+      window.requestAnimationFrame(syncHeaderOffset);
     });
 
     attachEvent('[data-aw-toggle-color-scheme]', 'click', function () {
@@ -117,6 +145,7 @@ import { UI } from 'astrowind:config';
       document.getElementById('header')?.classList.remove('bg-page');
       document.querySelector('#header nav')?.classList.add('hidden');
       document.querySelector('#header > div > div:last-child')?.classList.add('hidden');
+      syncHeaderOffset();
     });
 
     function applyHeaderStylesOnScroll() {
@@ -129,7 +158,9 @@ import { UI } from 'astrowind:config';
       }
       ticking = false;
     }
+    syncHeaderOffset();
     applyHeaderStylesOnScroll();
+    syncHashTarget();
 
     attachEvent([document], 'scroll', function () {
       lastKnownScrollPosition = window.scrollY;
@@ -141,6 +172,9 @@ import { UI } from 'astrowind:config';
         ticking = true;
       }
     });
+
+    window.onresize = syncHeaderOffset;
+    window.addEventListener('hashchange', syncHashTarget);
   };
   const onPageShow = function () {
     document.documentElement.classList.add('motion-safe:scroll-smooth');
@@ -152,6 +186,9 @@ import { UI } from 'astrowind:config';
     document.getElementById('header')?.classList.remove('h-screen');
     document.getElementById('header')?.classList.remove('expanded');
     document.querySelector('#header nav')?.classList.add('hidden');
+    const headerInner = document.querySelector('#header [data-aw-header-inner]');
+    const offset = headerInner instanceof HTMLElement ? Math.ceil(headerInner.getBoundingClientRect().height) : 88;
+    document.documentElement.style.setProperty('--aw-header-offset', `${offset}px`);
   };
 
   window.onload = onLoad;

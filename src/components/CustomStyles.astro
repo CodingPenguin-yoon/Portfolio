@@ -20,6 +20,8 @@ import '@fontsource/ibm-plex-mono/500.css';
     --aw-font-serif: 'IBM Plex Sans KR';
     --aw-font-heading: 'DungGeunMo';
     --aw-font-mono: 'IBM Plex Mono', monospace;
+    --aw-header-offset: 88px;
+    --aw-anchor-offset: calc(var(--aw-header-offset) + 1.5rem);
 
     /* Terminal green/cyan accent */
     --aw-color-primary: rgb(34 197 94);
@@ -27,8 +29,8 @@ import '@fontsource/ibm-plex-mono/500.css';
     --aw-color-accent: rgb(6 182 212);
 
     /* Dark background */
-    --aw-color-bg-page: rgb(15 23 42);
-    --aw-color-bg-page-dark: rgb(30 41 59);
+    --aw-color-bg-page: rgb(2 6 23);
+    --aw-color-bg-page-dark: rgb(15 23 42);
 
     /* Light text */
     --aw-color-text-heading: rgb(248 250 252);
@@ -42,16 +44,28 @@ import '@fontsource/ibm-plex-mono/500.css';
   }
 
   html {
-    background-color: rgb(15 23 42);
+    background-color: rgb(2 6 23);
+    scroll-behavior: smooth;
+    scroll-padding-top: var(--aw-anchor-offset);
   }
 
   body {
     background:
-      radial-gradient(ellipse at top, rgb(30 41 59 / 0.8), transparent 50%),
-      radial-gradient(circle at 80% 20%, rgb(6 182 212 / 0.1), transparent 30%),
-      linear-gradient(180deg, rgb(15 23 42) 0%, rgb(30 41 59) 100%);
+      radial-gradient(circle at top, rgb(34 197 94 / 0.08), transparent 0%, transparent 36%),
+      radial-gradient(circle at 82% 10%, rgb(6 182 212 / 0.08), transparent 0%, transparent 24%),
+      linear-gradient(180deg, rgb(2 6 23) 0%, rgb(6 11 25) 32%, rgb(15 23 42) 100%);
     font-family: var(--aw-font-sans), sans-serif;
+    line-height: 1.65;
+    letter-spacing: -0.01em;
     min-height: 100vh;
+  }
+
+  main :where(section[id], article[id], div[id]) {
+    scroll-margin-top: var(--aw-anchor-offset);
+  }
+
+  .portfolio-anchor-section {
+    scroll-margin-top: var(--aw-anchor-offset);
   }
 
   .dark {
@@ -90,10 +104,26 @@ import '@fontsource/ibm-plex-mono/500.css';
     animation: blink 1s step-end infinite;
   }
 
+  :where(a, button, summary, input, textarea, select, [tabindex]):focus-visible {
+    outline: 2px solid rgb(74 222 128 / 0.95);
+    outline-offset: 3px;
+  }
+
+  :where(main) {
+    isolation: isolate;
+  }
+
   h1,
   h2,
   h3,
   .font-heading {
     letter-spacing: 0.01em;
+  }
+
+  @media (max-width: 767px) {
+    body {
+      font-size: 16.5px;
+      line-height: 1.72;
+    }
   }
 </style>

@@ -1,0 +1,162 @@
+---
+import PageLayout from '~/layouts/PageLayout.astro';
+import Button from '~/components/ui/Button.astro';
+import SectionHeader from '~/components/portfolio/SectionHeader.astro';
+import ProjectNarrativeGrid from '~/components/portfolio/ProjectNarrativeGrid.astro';
+import { mainProjects, portfolioActionLinks, portfolioProfile, portfolioResume } from '~/data/portfolio';
+
+const metadata = {
+  title: `${portfolioProfile.name} 이력서`,
+  description: '조윤호의 이력서를 HTML 구조로 다시 정리한 페이지입니다.',
+  ignoreTitleTemplate: true,
+};
+
+const contactLinks = portfolioActionLinks;
+---
+
+<PageLayout metadata={metadata}>
+  <section class="relative overflow-hidden border-b border-slate-800/80">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.1),transparent_36%),radial-gradient(circle_at_82%_18%,rgba(6,182,212,0.08),transparent_26%)]"></div>
+
+    <div class="portfolio-section relative">
+      <div class="grid gap-8 xl:grid-cols-[minmax(0,1.02fr)_minmax(280px,0.98fr)]">
+        <div>
+          <p class="portfolio-eyebrow text-cyan-300">이력서</p>
+          <h1 class="mt-5 text-4xl font-bold tracking-tight text-slate-50 sm:text-5xl">{portfolioProfile.name} | {portfolioProfile.role}</h1>
+          <p class="mt-6 max-w-4xl text-xl leading-9 text-slate-100/92">{portfolioProfile.intro}</p>
+          <p class="mt-5 max-w-3xl text-base leading-8 text-slate-200/86">{portfolioResume.headline}</p>
+          <p class="mt-4 max-w-3xl text-base leading-8 text-slate-300/82">{portfolioResume.summary}</p>
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            <Button variant="primary" href={portfolioProfile.resumeHref} download>
+              이력서 PDF 다운로드
+            </Button>
+            <Button variant="secondary" href="/">
+              포트폴리오 홈으로 이동
+            </Button>
+          </div>
+        </div>
+
+        {contactLinks.length ? (
+          <aside class="rounded-[1.7rem] border border-slate-800/75 bg-slate-900/55 p-6">
+            <p class="portfolio-eyebrow text-green-300">연락 및 링크</p>
+            <div class="mt-5 grid gap-3">
+              {contactLinks.map((item) => (
+                <a
+                  class="rounded-2xl border border-slate-800/70 bg-slate-950/65 p-4 transition hover:border-green-500/35 hover:text-green-200"
+                  href={item.href}
+                  {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  {...(item.download ? { download: true } : {})}
+                >
+                  <p class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">{item.label}</p>
+                  <p class="mt-2 text-base leading-8 text-slate-200/90">{item.description}</p>
+                </a>
+              ))}
+            </div>
+          </aside>
+        ) : null}
+      </div>
+    </div>
+  </section>
+
+  <section class="portfolio-section">
+    <SectionHeader eyebrow={portfolioResume.skillsTitle} title="이력서 기준 기술 스택" description="PDF 이력서에 적은 기술을 역할별로 다시 정리했습니다." />
+
+    <div class="mt-8 grid gap-4 xl:grid-cols-3">
+      {portfolioResume.skills.map((group) => (
+        <article class="rounded-[1.6rem] border border-slate-800/75 bg-slate-950/76 p-6">
+          <p class="portfolio-eyebrow text-cyan-300">{group.label}</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {group.items.map((item) => (
+              <span class="rounded-full border border-slate-800 bg-slate-900/78 px-3 py-1.5 text-xs font-mono text-slate-200">
+                {item}
+              </span>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="border-t border-slate-800/70 portfolio-anchor-section">
+    <div class="portfolio-section">
+      <SectionHeader
+        eyebrow={portfolioResume.projectsTitle}
+        title="이력서에 적은 대표 프로젝트"
+        description={portfolioResume.projectsDescription}
+      />
+
+      <div class="mt-8 grid gap-5">
+        {mainProjects.map((project) => (
+          <article class="rounded-[1.75rem] border border-slate-800/75 bg-slate-950/80 p-6 sm:p-7">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div class="max-w-3xl">
+                <p class="portfolio-eyebrow text-cyan-300">{project.projectType}</p>
+                <h2 class="mt-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-[2rem]">{project.fullTitle}</h2>
+                {project.period ? <p class="mt-3 text-sm font-mono text-slate-400">{project.period}</p> : null}
+                <p class="mt-4 text-base leading-8 text-slate-300/86">{project.summary}</p>
+              </div>
+
+              <div class="min-w-[220px] rounded-[1.35rem] border border-slate-800/70 bg-slate-900/58 px-4 py-4">
+                <p class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">내 역할</p>
+                <p class="mt-3 text-sm leading-7 text-slate-100/90">{project.role}</p>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <ProjectNarrativeGrid narrative={project.narrative} compact />
+            </div>
+
+            <div class="mt-6 flex flex-wrap gap-2">
+              {project.coreStack.map((stack) => (
+                <span class="rounded-full border border-slate-800 bg-slate-900/78 px-3 py-1.5 text-xs font-mono text-slate-200">
+                  {stack}
+                </span>
+              ))}
+            </div>
+
+            <div class="mt-6 flex flex-wrap gap-3">
+              <Button variant="secondary" href={project.directHref}>
+                자세히 보기
+              </Button>
+              {project.repoHref ? (
+                <Button variant="link" href={project.repoHref} target="_blank">
+                  저장소 보기
+                </Button>
+              ) : null}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="border-t border-slate-800/70 portfolio-anchor-section">
+    <div class="portfolio-section">
+      <div class="grid gap-5 xl:grid-cols-2">
+        <article class="rounded-[1.7rem] border border-slate-800/75 bg-slate-950/80 p-6 sm:p-7">
+          <p class="portfolio-eyebrow text-green-300">{portfolioResume.educationTitle}</p>
+          <div class="mt-5 grid gap-4">
+            {portfolioResume.education.map((item) => (
+              <div class="rounded-[1.3rem] border border-slate-800/70 bg-slate-900/58 px-4 py-4">
+                <h2 class="text-lg font-semibold tracking-tight text-slate-50">{item.title}</h2>
+                <p class="mt-2 text-sm leading-7 text-slate-300/84">{item.detail}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article class="rounded-[1.7rem] border border-slate-800/75 bg-slate-950/80 p-6 sm:p-7">
+          <p class="portfolio-eyebrow text-green-300">{portfolioResume.certificationsTitle}</p>
+          <div class="mt-5 grid gap-3">
+            {portfolioResume.certifications.map((item) => (
+              <div class="rounded-[1.3rem] border border-slate-800/70 bg-slate-900/58 px-4 py-4 text-base leading-7 text-slate-100/90">
+                {item}
+              </div>
+            ))}
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</PageLayout>

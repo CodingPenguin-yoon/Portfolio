@@ -1,0 +1,1269 @@
+---
+import { Icon } from 'astro-icon/components';
+import PageLayout from '~/layouts/PageLayout.astro';
+import { homeAbout, homeCapabilities, homeHero, homeNavigation, homeProjects } from '~/data/home';
+import { portfolioProfile } from '~/data/portfolio';
+
+const metadata = {
+  title: 'Yunho Cho | Platform Engineer',
+  description: '빌드, 배포, 서버 운영을 자동화하는 플랫폼 엔지니어 조윤호의 홈페이지입니다.',
+  ignoreTitleTemplate: true,
+};
+
+const githubHref = portfolioProfile.socials.github || 'https://github.com/CodingPenguin-yoon';
+const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : undefined;
+---
+
+<PageLayout metadata={metadata}>
+  <header slot="header" class="home-header">
+    <div class="header-inner">
+      <a class="home-brand" href="#top" aria-label="맨 위로 이동">
+        <span class="brand-mark">YH</span>
+        <span class="brand-name">CHO YUNHO</span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="주요 네비게이션">
+        {homeNavigation.map((item) => <a href={item.href}>{item.label}</a>)}
+      </nav>
+
+      <div class="header-actions">
+        <a href={githubHref} target="_blank" rel="noreferrer" aria-label="GitHub 열기" title="GitHub">
+          <Icon name="tabler:brand-github" />
+        </a>
+        <a href={portfolioProfile.resumePageHref} aria-label="이력서 열기" title="이력서">
+          <Icon name="tabler:file-text" />
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="home-page">
+    <section id="top" class="home-hero" aria-labelledby="hero-title">
+      <img
+        class="hero-background"
+        src="/projects/klepaas-dashboard.png"
+        alt=""
+        aria-hidden="true"
+        fetchpriority="high"
+      />
+      <div class="hero-shade" aria-hidden="true"></div>
+
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="hero-eyebrow">{homeHero.eyebrow}</p>
+          <h1 id="hero-title">
+            {homeHero.headline.map((line) => <span>{line}</span>)}
+          </h1>
+          <p class="hero-description">{homeHero.description}</p>
+
+          <div class="hero-actions">
+            <a href="#projects">
+              프로젝트 보기
+              <Icon name="tabler:arrow-down" />
+            </a>
+            <a href={portfolioProfile.resumePageHref}>
+              이력서
+              <Icon name="tabler:arrow-up-right" />
+            </a>
+          </div>
+        </div>
+
+        <nav class="project-index" aria-label="프로젝트 바로가기">
+          {
+            homeProjects.map((project) => (
+              <a class={`index-${project.tone}`} href={`#${project.id}`}>
+                <span>{project.index}</span>
+                <strong>{project.name}</strong>
+              </a>
+            ))
+          }
+        </nav>
+      </div>
+    </section>
+
+    <section id="projects" class="projects-intro" aria-labelledby="projects-title">
+      <div class="section-inner intro-layout">
+        <p class="section-label">Selected projects / 2025-2026</p>
+        <h2 id="projects-title">Projects.</h2>
+        <p>반복하기 싫어서 만든 네 가지 프로젝트.</p>
+      </div>
+    </section>
+
+    {
+      homeProjects.map((project, projectIndex) => (
+        <section
+          id={project.id}
+          class:list={['project-band', `tone-${project.tone}`, { reverse: projectIndex % 2 === 1 }]}
+          aria-labelledby={`${project.id}-title`}
+        >
+          <div class="project-inner">
+            <div class="project-copy">
+              <div class="project-meta">
+                <span>{project.index}</span>
+                <span>{project.category}</span>
+              </div>
+
+              <h2 id={`${project.id}-title`}>
+                <a class="project-title-link" href={project.caseStudyHref}>
+                  {project.name}
+                </a>
+              </h2>
+              <p class="project-statement">{project.statement}</p>
+              <p class="project-description">{project.description}</p>
+
+              <ul class="project-tags" aria-label={`${project.name} 기술 스택`}>
+                {project.tags.map((tag) => (
+                  <li>{tag}</li>
+                ))}
+              </ul>
+
+              <div class="project-actions">
+                <a class="project-link" href={project.caseStudyHref}>
+                  Case study
+                  <Icon name="tabler:arrow-right" />
+                </a>
+                <a class="project-link" href={project.repository} target="_blank" rel="noreferrer">
+                  GitHub
+                  <Icon name="tabler:arrow-up-right" />
+                </a>
+              </div>
+            </div>
+
+            <div class="project-visual">
+              <a class="visual-link" href={project.caseStudyHref} aria-label={`${project.name} 케이스 스터디 보기`}>
+                {project.flow ? (
+                  <div class="flow-board" aria-label="Heimdall 자동화 흐름">
+                    <div class="flow-toolbar">
+                      <span class="flow-lights" aria-hidden="true">
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                      <span>LOCAL WORKSPACE</span>
+                    </div>
+                    <ol>
+                      {project.flow.map((step, index) => (
+                        <li>
+                          <span>0{index + 1}</span>
+                          <strong>{step}</strong>
+                        </li>
+                      ))}
+                    </ol>
+                    <div class="flow-result">
+                      <Icon name="tabler:circle-check-filled" />
+                      <span>Build, runtime and database ready</span>
+                    </div>
+                  </div>
+                ) : project.visual ? (
+                  <figure class="product-frame">
+                    <img
+                      src={project.visual.src}
+                      alt={project.visual.alt}
+                      loading="lazy"
+                      class:list={[{ 'object-top': project.visual.position === 'top' }]}
+                    />
+                    <figcaption>
+                      <span>{project.name}</span>
+                      <span>Product view</span>
+                    </figcaption>
+                  </figure>
+                ) : null}
+                <span class="visual-cta">
+                  Case study
+                  <Icon name="tabler:arrow-up-right" />
+                </span>
+              </a>
+            </div>
+          </div>
+        </section>
+      ))
+    }
+
+    <section id="about" class="about-section" aria-labelledby="about-title">
+      <div class="section-inner about-layout">
+        <p class="section-label">{homeAbout.eyebrow}</p>
+        <h2 id="about-title">{homeAbout.statement}</h2>
+
+        <div class="about-points">
+          {
+            homeAbout.supporting.map((item, index) => (
+              <p>
+                <span>0{index + 1}</span>
+                {item}
+              </p>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="capabilities" class="capabilities-section" aria-labelledby="capabilities-title">
+      <div class="section-inner">
+        <div class="capabilities-heading">
+          <p class="section-label">Capabilities</p>
+          <h2 id="capabilities-title">What I do.</h2>
+        </div>
+
+        <div class="capability-list">
+          {
+            homeCapabilities.map((capability) => (
+              <article>
+                <span>{capability.index}</span>
+                <h3>{capability.title}</h3>
+                <p>{capability.evidence}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact-section" aria-labelledby="contact-title">
+      <div class="section-inner contact-layout">
+        <div>
+          <p class="section-label">Contact</p>
+          <h2 id="contact-title">Let's talk.</h2>
+        </div>
+
+        <div class="contact-links">
+          {
+            emailHref ? (
+              <a href={emailHref}>
+                <Icon name="tabler:mail" />
+                <span>Email</span>
+                <Icon name="tabler:arrow-up-right" />
+              </a>
+            ) : null
+          }
+          <a href={githubHref} target="_blank" rel="noreferrer">
+            <Icon name="tabler:brand-github" />
+            <span>GitHub</span>
+            <Icon name="tabler:arrow-up-right" />
+          </a>
+          <a href={portfolioProfile.resumePageHref}>
+            <Icon name="tabler:file-text" />
+            <span>Resume</span>
+            <Icon name="tabler:arrow-up-right" />
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer slot="footer" class="home-footer">
+    <p>© 2026 Cho YunHo</p>
+    <p>Platform Engineer · Seoul</p>
+    <a href="#top" aria-label="맨 위로 이동" title="맨 위로">
+      <Icon name="tabler:arrow-up" />
+    </a>
+  </footer>
+</PageLayout>
+
+<style>
+  :global(html) {
+    scroll-padding-top: 4rem;
+  }
+
+  :global(body) {
+    letter-spacing: 0;
+  }
+
+  .home-header {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    height: 4rem;
+    border-bottom: 1px solid #31343a;
+    background: #0c0d10;
+    color: #ffffff;
+  }
+
+  .header-inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: min(100% - 2rem, 92rem);
+    height: 100%;
+    margin: 0 auto;
+  }
+
+  .home-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: max-content;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .brand-mark {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border: 1px solid #ffffff;
+    font-family: var(--aw-font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .brand-name,
+  .desktop-nav,
+  .section-label,
+  .project-meta,
+  .project-tags,
+  .project-link,
+  .flow-toolbar,
+  .flow-result,
+  .product-frame figcaption,
+  .home-footer {
+    font-family: var(--aw-font-mono);
+  }
+
+  .brand-name {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .desktop-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+
+  .desktop-nav a,
+  .header-actions a {
+    color: #d9dbe1;
+    text-decoration: none;
+  }
+
+  .desktop-nav a:hover,
+  .header-actions a:hover {
+    color: #ffffff;
+  }
+
+  .header-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .header-actions a {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border: 1px solid #31343a;
+    border-radius: 4px;
+  }
+
+  .header-actions :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .home-page {
+    overflow: hidden;
+    background: #f4f1e9;
+    color: #111214;
+    font-family: var(--aw-font-sans), sans-serif;
+    letter-spacing: 0;
+  }
+
+  .home-page :where(section[id]) {
+    scroll-margin-top: 4rem;
+  }
+
+  .home-page :where(a, button):focus-visible,
+  .home-header :where(a, button):focus-visible,
+  .home-footer :where(a, button):focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 3px;
+  }
+
+  .home-hero {
+    position: relative;
+    height: calc(100svh - 5.5rem);
+    min-height: 36rem;
+    max-height: 48rem;
+    background: #0c0d10;
+    color: #ffffff;
+  }
+
+  .hero-background,
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .hero-background {
+    object-fit: cover;
+    object-position: center top;
+    filter: grayscale(1) contrast(1.15) brightness(0.42);
+  }
+
+  .hero-shade {
+    background: #0c0d10;
+    opacity: 0.72;
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: min(100% - 2rem, 92rem);
+    height: 100%;
+    margin: 0 auto;
+    padding: 3.5rem 0 1.5rem;
+  }
+
+  .hero-copy {
+    max-width: 66rem;
+  }
+
+  .hero-eyebrow {
+    margin: 0 0 1.75rem;
+    color: #c7cad2;
+    font-family: var(--aw-font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+
+  .hero-copy h1 {
+    margin: 0;
+    color: #ffffff;
+    font-family: var(--aw-font-sans), sans-serif;
+    font-size: 3.25rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 0.95;
+  }
+
+  .hero-copy h1 span {
+    display: block;
+  }
+
+  .hero-description {
+    max-width: 39rem;
+    margin: 1.75rem 0 0;
+    color: #d7d9df;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .hero-actions a,
+  .project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .hero-actions a {
+    color: #ffffff;
+  }
+
+  .hero-actions :global(svg),
+  .project-link :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .project-index {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid #4a4d55;
+    background: #0c0d10;
+  }
+
+  .project-index a {
+    display: flex;
+    min-height: 4.25rem;
+    align-items: center;
+    gap: 0.75rem;
+    border-right: 1px solid #4a4d55;
+    color: #ffffff;
+    padding: 0.85rem 1rem;
+    text-decoration: none;
+  }
+
+  .project-index a:last-child {
+    border-right: 0;
+  }
+
+  .project-index a::before {
+    width: 0.5rem;
+    height: 2rem;
+    background: var(--project-color);
+    content: '';
+  }
+
+  .project-index a:hover {
+    background: #1b1d22;
+  }
+
+  .project-index span {
+    color: #9296a0;
+    font-family: var(--aw-font-mono);
+    font-size: 0.7rem;
+  }
+
+  .project-index strong {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .index-blue {
+    --project-color: #3e66f3;
+  }
+  .index-red {
+    --project-color: #f04f43;
+  }
+  .index-green {
+    --project-color: #16a66a;
+  }
+  .index-yellow {
+    --project-color: #f2b927;
+  }
+
+  .section-inner,
+  .project-inner {
+    width: min(100% - 2rem, 92rem);
+    margin: 0 auto;
+  }
+
+  .projects-intro {
+    border-bottom: 1px solid #17181b;
+    background: #f4f1e9;
+  }
+
+  .intro-layout {
+    display: grid;
+    grid-template-columns: 0.7fr 1fr 1fr;
+    gap: 2rem;
+    align-items: end;
+    padding: 4.5rem 0 3rem;
+  }
+
+  .section-label {
+    margin: 0;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .projects-intro h2,
+  .capabilities-heading h2 {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.05;
+  }
+
+  .projects-intro p:last-child {
+    max-width: 32rem;
+    margin: 0;
+    color: #4e5056;
+    line-height: 1.7;
+  }
+
+  .project-band {
+    border-bottom: 1px solid #17181b;
+  }
+
+  .project-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    gap: 5rem;
+    align-items: center;
+    min-height: 40rem;
+    padding: 5rem 0;
+  }
+
+  .project-band.reverse .project-copy {
+    order: 2;
+  }
+
+  .project-band.reverse .project-visual {
+    order: 1;
+  }
+
+  .tone-blue {
+    background: #3158df;
+    color: #ffffff;
+  }
+
+  .tone-red {
+    background: #ee5648;
+    color: #151515;
+  }
+
+  .tone-green {
+    background: #159865;
+    color: #111214;
+  }
+
+  .tone-yellow {
+    background: #f2bd35;
+    color: #151515;
+  }
+
+  .project-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+  }
+
+  .project-meta span:first-child {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border: 1px solid currentColor;
+  }
+
+  .project-copy h2 {
+    margin: 2.75rem 0 0;
+    color: inherit;
+    font-family: var(--aw-font-sans), sans-serif;
+    font-size: 4.5rem;
+    font-weight: 650;
+    letter-spacing: 0;
+    line-height: 0.95;
+  }
+
+  .project-title-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .project-title-link:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.12em;
+  }
+
+  .project-statement {
+    max-width: 36rem;
+    margin: 1.25rem 0 0;
+    font-size: 1.55rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .project-description {
+    max-width: 34rem;
+    margin: 1.25rem 0 0;
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
+    margin: 2rem 0 0;
+    padding: 1.1rem 0 0;
+    border-top: 1px solid currentColor;
+    list-style: none;
+    font-size: 0.7rem;
+  }
+
+  .project-tags li:not(:last-child)::after {
+    margin-left: 1rem;
+    content: '/';
+    opacity: 0.65;
+  }
+
+  .project-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .project-link {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.3rem;
+  }
+
+  .project-visual {
+    min-width: 0;
+  }
+
+  .visual-link {
+    position: relative;
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .visual-link .flow-board,
+  .visual-link .product-frame {
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .visual-link:hover .flow-board,
+  .visual-link:hover .product-frame {
+    transform: translate(-0.25rem, -0.25rem);
+    box-shadow: 1.15rem 1.15rem 0 #111214;
+  }
+
+  .visual-cta {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1px solid #111214;
+    border-radius: 4px;
+    background: #111214;
+    color: #ffffff;
+    padding: 0.55rem 0.7rem;
+    font-family: var(--aw-font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+  }
+
+  .visual-cta :global(svg) {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  .flow-board,
+  .product-frame {
+    border: 2px solid #111214;
+    border-radius: 4px;
+    background: #f7f5ee;
+    box-shadow: 0.9rem 0.9rem 0 #111214;
+    color: #111214;
+  }
+
+  .flow-toolbar {
+    display: flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #111214;
+    padding: 0 1rem;
+    font-size: 0.68rem;
+  }
+
+  .flow-lights {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .flow-lights i {
+    display: block;
+    width: 0.65rem;
+    height: 0.65rem;
+    border: 1px solid #111214;
+    border-radius: 50%;
+  }
+
+  .flow-lights i:nth-child(1) {
+    background: #ee5648;
+  }
+  .flow-lights i:nth-child(2) {
+    background: #f2bd35;
+  }
+  .flow-lights i:nth-child(3) {
+    background: #159865;
+  }
+
+  .flow-board ol {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .flow-board li {
+    display: flex;
+    min-height: 14rem;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #111214;
+    padding: 1.25rem;
+  }
+
+  .flow-board li:last-child {
+    border-right: 0;
+  }
+
+  .flow-board li span {
+    font-family: var(--aw-font-mono);
+    font-size: 0.72rem;
+  }
+
+  .flow-board li strong {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .flow-result {
+    display: flex;
+    min-height: 3.5rem;
+    align-items: center;
+    gap: 0.65rem;
+    border-top: 2px solid #111214;
+    background: #dce4ff;
+    padding: 0 1rem;
+    font-size: 0.72rem;
+  }
+
+  .flow-result :global(svg) {
+    width: 1.15rem;
+    height: 1.15rem;
+    color: #3158df;
+  }
+
+  .product-frame {
+    overflow: hidden;
+    margin: 0;
+  }
+
+  .product-frame img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #ffffff;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .product-frame img.object-top {
+    object-position: top;
+  }
+
+  .product-frame figcaption {
+    display: flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 2px solid #111214;
+    padding: 0 1rem;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+  }
+
+  .about-section {
+    background: #0c0d10;
+    color: #ffffff;
+  }
+
+  .about-layout {
+    padding: 6.5rem 0;
+  }
+
+  .about-layout h2 {
+    max-width: 65rem;
+    margin: 2rem 0 4.5rem;
+    color: #ffffff;
+    font-family: var(--aw-font-sans), sans-serif;
+    font-size: 4rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.12;
+  }
+
+  .about-points {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid #4a4d55;
+  }
+
+  .about-points p {
+    display: flex;
+    gap: 1.5rem;
+    margin: 0;
+    border-right: 1px solid #4a4d55;
+    padding: 1.5rem 1.5rem 0 0;
+    font-size: 1rem;
+  }
+
+  .about-points p:not(:first-child) {
+    padding-left: 1.5rem;
+  }
+
+  .about-points p:last-child {
+    border-right: 0;
+  }
+
+  .about-points span {
+    color: #8d919b;
+    font-family: var(--aw-font-mono);
+    font-size: 0.7rem;
+  }
+
+  .capabilities-section {
+    background: #f4f1e9;
+  }
+
+  .capabilities-section .section-inner {
+    display: grid;
+    grid-template-columns: 0.7fr 1.8fr;
+    gap: 5rem;
+    padding: 6rem 0;
+  }
+
+  .capabilities-heading h2 {
+    margin-top: 1.5rem;
+  }
+
+  .capability-list {
+    border-top: 2px solid #111214;
+  }
+
+  .capability-list article {
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    min-height: 8.5rem;
+    border-bottom: 1px solid #111214;
+  }
+
+  .capability-list article > span,
+  .capability-list article > p {
+    font-family: var(--aw-font-mono);
+    font-size: 0.7rem;
+  }
+
+  .capability-list h3 {
+    margin: 0;
+    color: #111214;
+    font-family: var(--aw-font-sans), sans-serif;
+    font-size: 1.45rem;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .capability-list p {
+    margin: 0;
+    color: #66686f;
+    text-align: right;
+  }
+
+  .contact-section {
+    background: #3158df;
+    color: #ffffff;
+  }
+
+  .contact-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: end;
+    padding: 6rem 0;
+  }
+
+  .contact-layout h2 {
+    margin: 1.5rem 0 0;
+    color: #ffffff;
+    font-family: var(--aw-font-sans), sans-serif;
+    font-size: 4rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.08;
+  }
+
+  .contact-links {
+    border-top: 1px solid #ffffff;
+  }
+
+  .contact-links a {
+    display: grid;
+    grid-template-columns: 2rem 1fr 2rem;
+    gap: 1rem;
+    align-items: center;
+    min-height: 4.5rem;
+    border-bottom: 1px solid #ffffff;
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  .contact-links a:hover {
+    background: #2448c8;
+  }
+
+  .contact-links :global(svg) {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .home-footer {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    min-height: 5rem;
+    padding: 0 max(1rem, calc((100% - 92rem) / 2));
+    border-top: 1px solid #31343a;
+    background: #0c0d10;
+    color: #a9acb4;
+    font-size: 0.68rem;
+  }
+
+  .home-footer p {
+    margin: 0;
+  }
+
+  .home-footer p:nth-child(2) {
+    justify-self: center;
+  }
+
+  .home-footer a {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    justify-self: end;
+    border: 1px solid #4a4d55;
+    border-radius: 4px;
+    color: #ffffff;
+  }
+
+  .home-footer :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .hero-copy h1 {
+      font-size: 4.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-copy h1 {
+      font-size: 6.75rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .hero-copy h1 {
+      font-size: 7.5rem;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .desktop-nav {
+      display: none;
+    }
+
+    .header-actions {
+      position: absolute;
+      top: 0.875rem;
+      right: 0;
+    }
+
+    .intro-layout,
+    .project-inner,
+    .capabilities-section .section-inner,
+    .contact-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .intro-layout,
+    .project-inner,
+    .capabilities-section .section-inner,
+    .contact-layout {
+      gap: 2.5rem;
+    }
+
+    .project-inner {
+      min-height: 0;
+      padding: 4.5rem 0;
+    }
+
+    .project-band.reverse .project-copy,
+    .project-band.reverse .project-visual {
+      order: initial;
+    }
+
+    .project-copy h2 {
+      font-size: 3.5rem;
+    }
+
+    .about-layout h2,
+    .contact-layout h2 {
+      font-size: 3rem;
+    }
+
+    .about-points {
+      grid-template-columns: 1fr;
+    }
+
+    .about-points p,
+    .about-points p:not(:first-child) {
+      border-right: 0;
+      border-bottom: 1px solid #4a4d55;
+      padding: 1.25rem 0;
+    }
+
+    .capability-list article {
+      grid-template-columns: 2.5rem 1fr;
+      padding: 1.25rem 0;
+    }
+
+    .capability-list article > p {
+      grid-column: 2;
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .brand-name {
+      display: none;
+    }
+
+    .header-actions {
+      display: none;
+    }
+
+    .home-hero {
+      min-height: 36rem;
+    }
+
+    .hero-inner {
+      padding-top: 2.5rem;
+    }
+
+    .hero-copy h1 {
+      font-size: 2.75rem;
+    }
+
+    .hero-description {
+      max-width: 20rem;
+      font-size: 0.94rem;
+    }
+
+    .project-index {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .project-index a {
+      min-height: 3.25rem;
+      padding: 0.6rem 0.7rem;
+    }
+
+    .project-index a:nth-child(2) {
+      border-right: 0;
+    }
+
+    .project-index a:nth-child(-n + 2) {
+      border-bottom: 1px solid #4a4d55;
+    }
+
+    .project-index a::before {
+      width: 0.35rem;
+      height: 1.4rem;
+    }
+
+    .project-index strong {
+      font-size: 0.78rem;
+    }
+
+    .intro-layout {
+      padding: 3.5rem 0 2.5rem;
+    }
+
+    .projects-intro h2,
+    .capabilities-heading h2 {
+      font-size: 2rem;
+    }
+
+    .project-inner {
+      padding: 3.75rem 0 4rem;
+    }
+
+    .project-copy h2 {
+      margin-top: 2rem;
+      font-size: 3rem;
+    }
+
+    .project-statement {
+      font-size: 1.35rem;
+    }
+
+    .flow-board,
+    .product-frame {
+      box-shadow: 0.5rem 0.5rem 0 #111214;
+    }
+
+    .flow-board ol {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .flow-board li {
+      min-height: 8rem;
+      border-bottom: 1px solid #111214;
+    }
+
+    .flow-board li:nth-child(2) {
+      border-right: 0;
+    }
+
+    .flow-board li:nth-child(n + 3) {
+      border-bottom: 0;
+    }
+
+    .about-layout {
+      padding: 5rem 0;
+    }
+
+    .about-layout h2,
+    .contact-layout h2 {
+      font-size: 2.5rem;
+    }
+
+    .capabilities-section .section-inner,
+    .contact-layout {
+      padding: 5rem 0;
+    }
+
+    .home-footer {
+      grid-template-columns: 1fr auto;
+    }
+
+    .home-footer p:nth-child(2) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 359px) {
+    .hero-copy h1 {
+      font-size: 2.5rem;
+    }
+  }
+</style>

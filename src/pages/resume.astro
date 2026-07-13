@@ -1,0 +1,314 @@
+---
+import { Icon } from 'astro-icon/components';
+import PageLayout from '~/layouts/PageLayout.astro';
+import { homeProjects } from '~/data/home';
+import { portfolioProfile } from '~/data/portfolio';
+import { resumeCertifications, resumeEducation, resumeProfile, resumeProjects, resumeSkillGroups } from '~/data/resume';
+import '~/assets/styles/resume.css';
+
+const metadata = {
+  title: '조윤호 | Platform Engineer Resume',
+  description: '플랫폼 엔지니어 조윤호의 기술, 프로젝트, 학력과 자격증을 정리한 이력서입니다.',
+  ignoreTitleTemplate: true,
+};
+
+const githubHref = portfolioProfile.socials.github || 'https://github.com/CodingPenguin-yoon';
+const email = portfolioProfile.email || 'code.penguin.yoon@gmail.com';
+const emailHref = `mailto:${email}`;
+const portfolioHref = portfolioProfile.shortUrl || 'https://yoonman.page';
+const pdfHref = portfolioProfile.resumeHref;
+
+const projects = resumeProjects.map((resume) => {
+  const project = homeProjects.find(({ id }) => id === resume.id);
+
+  if (!project) {
+    throw new Error(`Missing homepage project data for ${resume.id}`);
+  }
+
+  return { ...project, resume };
+});
+---
+
+<PageLayout metadata={metadata}>
+  <header slot="header" class="resume-header">
+    <div class="resume-header-inner">
+      <a class="resume-brand" href="/" aria-label="홈으로 이동">
+        <span class="resume-brand-mark">YH</span>
+        <span class="resume-brand-name">CHO YUNHO</span>
+      </a>
+
+      <nav class="resume-nav" aria-label="이력서 바로가기">
+        <a href="#profile">Profile</a>
+        <a href="#skills">Skills</a>
+        <a href="#projects">Projects</a>
+        <a href="#credentials">Credentials</a>
+      </nav>
+
+      <div class="resume-header-actions">
+        <a href={githubHref} target="_blank" rel="noreferrer" aria-label="GitHub 열기" title="GitHub">
+          <Icon name="tabler:brand-github" />
+        </a>
+        <a href={pdfHref} download aria-label="PDF 이력서 다운로드" title="PDF 다운로드">
+          <Icon name="tabler:download" />
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="resume-page">
+    <section class="resume-hero" aria-labelledby="resume-title">
+      <img class="resume-hero-image" src="/projects/heimdall.png" alt="" aria-hidden="true" fetchpriority="high" />
+      <div class="resume-hero-overlay" aria-hidden="true"></div>
+
+      <div class="resume-hero-inner">
+        <div class="resume-hero-copy">
+          <p class="resume-kicker">Resume / 2026</p>
+          <p class="resume-name-en">{resumeProfile.nameEn}</p>
+          <h1 id="resume-title">{resumeProfile.name}</h1>
+          <p class="resume-role">{resumeProfile.role}</p>
+          <p class="resume-statement">{resumeProfile.statement}</p>
+
+          <div class="resume-hero-actions">
+            <a href="#projects">
+              프로젝트
+              <Icon name="tabler:arrow-down" />
+            </a>
+            <a href={pdfHref} download>
+              PDF 다운로드
+              <Icon name="tabler:download" />
+            </a>
+            <button type="button" data-print-resume>
+              인쇄
+              <Icon name="tabler:printer" />
+            </button>
+          </div>
+        </div>
+
+        <dl class="resume-hero-facts">
+          <div>
+            <dt>Focus</dt>
+            <dd>{resumeProfile.secondaryRole}</dd>
+          </div>
+          <div>
+            <dt>Location</dt>
+            <dd>{resumeProfile.location}</dd>
+          </div>
+          <div>
+            <dt>Contact</dt>
+            <dd><a href={emailHref}>{email}</a></dd>
+          </div>
+          <div>
+            <dt>Version</dt>
+            <dd>{resumeProfile.updated}</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section id="profile" class="resume-section resume-profile" aria-labelledby="profile-title">
+      <div class="resume-section-inner resume-profile-grid">
+        <p class="resume-section-label">01 / Profile</p>
+        <div>
+          <h2 id="profile-title">한 번은 해도,<br />두 번은 자동화합니다.</h2>
+          <p>{resumeProfile.summary}</p>
+
+          <div class="resume-contact-row">
+            <a href={emailHref}>
+              <span>Email</span>
+              <strong>{email}</strong>
+            </a>
+            <a href={githubHref} target="_blank" rel="noreferrer">
+              <span>GitHub</span>
+              <strong>CodingPenguin-yoon</strong>
+            </a>
+            <a href={portfolioHref} target="_blank" rel="noreferrer">
+              <span>Portfolio</span>
+              <strong>yoonman.page</strong>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="skills" class="resume-section resume-skills" aria-labelledby="skills-title">
+      <div class="resume-section-inner">
+        <div class="resume-section-heading">
+          <p class="resume-section-label">02 / Skills</p>
+          <h2 id="skills-title">What I use.</h2>
+        </div>
+
+        <div class="resume-skill-grid">
+          {
+            resumeSkillGroups.map((group, index) => (
+              <section aria-labelledby={`skill-${index}`}>
+                <span>0{index + 1}</span>
+                <h3 id={`skill-${index}`}>{group.label}</h3>
+                <ul>
+                  {group.items.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </section>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="resume-section resume-projects" aria-labelledby="projects-title">
+      <div class="resume-section-inner">
+        <div class="resume-section-heading resume-projects-heading">
+          <div>
+            <p class="resume-section-label">03 / Selected projects</p>
+            <h2 id="projects-title">Built to be used.</h2>
+          </div>
+          <p>반복을 줄이고 운영을 분명하게 만든 네 가지 프로젝트.</p>
+        </div>
+
+        <div class="resume-project-list">
+          {
+            projects.map((project) => (
+              <article class:list={['resume-project', `resume-tone-${project.tone}`]}>
+                <div class="resume-project-meta">
+                  <span>{project.index}</span>
+                  <p>{project.resume.type}</p>
+                  <p>{project.resume.period}</p>
+                </div>
+
+                <div class="resume-project-copy">
+                  <p class="resume-project-category">{project.category}</p>
+                  <h3>
+                    <a href={project.caseStudyHref}>{project.name}</a>
+                  </h3>
+                  <p class="resume-project-title">{project.resume.title}</p>
+                  <p class="resume-project-summary">{project.resume.summary}</p>
+                  <p class="resume-project-role">{project.resume.role}</p>
+
+                  <ul class="resume-project-highlights">
+                    {project.resume.highlights.map((highlight) => (
+                      <li>{highlight}</li>
+                    ))}
+                  </ul>
+
+                  <ul class="resume-project-stack" aria-label={`${project.name} 기술 스택`}>
+                    {project.resume.stack.map((item) => (
+                      <li>{item}</li>
+                    ))}
+                  </ul>
+
+                  <div class="resume-project-links">
+                    <a href={project.caseStudyHref}>
+                      Case study
+                      <Icon name="tabler:arrow-right" />
+                    </a>
+                    <a href={project.repository} target="_blank" rel="noreferrer">
+                      GitHub
+                      <Icon name="tabler:arrow-up-right" />
+                    </a>
+                  </div>
+                </div>
+
+                {project.visual ? (
+                  <a
+                    class="resume-project-visual"
+                    href={project.caseStudyHref}
+                    aria-label={`${project.name} 상세 보기`}
+                  >
+                    <img src={project.visual.src} alt={project.visual.alt} loading="lazy" />
+                    <span>{project.name} / Product view</span>
+                  </a>
+                ) : null}
+              </article>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="credentials" class="resume-section resume-credentials" aria-labelledby="credentials-title">
+      <div class="resume-section-inner">
+        <div class="resume-section-heading">
+          <p class="resume-section-label">04 / Credentials</p>
+          <h2 id="credentials-title">Education & certifications.</h2>
+        </div>
+
+        <div class="resume-credential-grid">
+          <section aria-labelledby="education-title">
+            <p>Education</p>
+            <h3 id="education-title">{resumeEducation.school}</h3>
+            <dl>
+              <div>
+                <dt>Major</dt>
+                <dd>{resumeEducation.major}</dd>
+              </div>
+              <div>
+                <dt>Status</dt>
+                <dd>{resumeEducation.status}</dd>
+              </div>
+              <div>
+                <dt>Date</dt>
+                <dd>{resumeEducation.date}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section aria-labelledby="certifications-title">
+            <p>Certifications</p>
+            <h3 id="certifications-title">자격증</h3>
+            <ol>
+              {
+                resumeCertifications.map((certification, index) => (
+                  <li>
+                    <span>0{index + 1}</span>
+                    {certification}
+                  </li>
+                ))
+              }
+            </ol>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="resume-contact" aria-labelledby="contact-title">
+      <div class="resume-section-inner resume-contact-grid">
+        <div>
+          <p class="resume-section-label">Contact</p>
+          <h2 id="contact-title">Let's talk.</h2>
+        </div>
+        <div>
+          <a href={emailHref}>
+            <span>{email}</span>
+            <Icon name="tabler:arrow-up-right" />
+          </a>
+          <a href={githubHref} target="_blank" rel="noreferrer">
+            <span>github.com/CodingPenguin-yoon</span>
+            <Icon name="tabler:arrow-up-right" />
+          </a>
+          <a href={portfolioHref} target="_blank" rel="noreferrer">
+            <span>yoonman.page</span>
+            <Icon name="tabler:arrow-up-right" />
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer slot="footer" class="resume-footer">
+    <a href="/">
+      <Icon name="tabler:arrow-left" />
+      Back to portfolio
+    </a>
+    <span>© 2026 Cho YunHo</span>
+  </footer>
+</PageLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const printButton = document.querySelector<HTMLButtonElement>('[data-print-resume]');
+
+    if (printButton) {
+      printButton.onclick = () => window.print();
+    }
+  });
+</script>

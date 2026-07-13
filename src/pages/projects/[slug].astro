@@ -1,0 +1,17 @@
+---
+import CaseStudyPage from '~/components/portfolio/CaseStudyPage.astro';
+import { homeProjects } from '~/data/home';
+
+export const getStaticPaths = async () =>
+  homeProjects.map((project) => ({
+    params: { slug: project.id },
+    props: {
+      project,
+      relatedProjects: homeProjects.filter((item) => item.id !== project.id),
+    },
+  }));
+
+const { project, relatedProjects } = Astro.props;
+---
+
+<CaseStudyPage project={project} relatedProjects={relatedProjects} />

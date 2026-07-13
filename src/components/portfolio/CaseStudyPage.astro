@@ -1,0 +1,191 @@
+---
+import { Icon } from 'astro-icon/components';
+import PageLayout from '~/layouts/PageLayout.astro';
+import type { HomeProject } from '~/data/home';
+
+import '~/assets/styles/case-study.css';
+
+export interface Props {
+  project: HomeProject;
+  relatedProjects?: HomeProject[];
+}
+
+const { project, relatedProjects = [] } = Astro.props;
+const metadata = {
+  title: `${project.name} | Cho YunHo`,
+  description: project.description,
+  ignoreTitleTemplate: true,
+};
+---
+
+<PageLayout metadata={metadata}>
+  <header slot="header" class="case-header">
+    <div class="case-header-inner">
+      <a class="case-back" href="/#projects">
+        <Icon name="tabler:arrow-left" />
+        <span>Projects</span>
+      </a>
+
+      <a class="case-brand" href="/" aria-label="홈으로 이동">
+        <span>YH</span>
+        <strong>CHO YUNHO</strong>
+      </a>
+
+      <a
+        class="case-repo-icon"
+        href={project.repository}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={`${project.name} GitHub 저장소 열기`}
+      >
+        <Icon name="tabler:brand-github" />
+      </a>
+    </div>
+  </header>
+
+  <article class:list={['case-study', `case-tone-${project.tone}`]}>
+    <section class="case-hero" aria-labelledby="case-title">
+      {
+        project.visual ? (
+          <img class="case-hero-image" src={project.visual.src} alt="" aria-hidden="true" fetchpriority="high" />
+        ) : null
+      }
+      <div class="case-hero-overlay" aria-hidden="true"></div>
+      <div class="case-hero-steps" aria-hidden="true">
+        {project.detail.steps.map((step) => <span>{step.title}</span>)}
+      </div>
+
+      <div class="case-hero-inner">
+        <div class="case-kicker">
+          <span>Project {project.index}</span>
+          <span>{project.category}</span>
+        </div>
+
+        <div class="case-hero-copy">
+          <h1 id="case-title">{project.name}</h1>
+          <p class="case-statement">{project.statement}</p>
+          <p class="case-description">{project.description}</p>
+        </div>
+
+        <div class="case-hero-footer">
+          <dl>
+            <div>
+              <dt>Type</dt>
+              <dd>{project.detail.type}</dd>
+            </div>
+            <div>
+              <dt>Status</dt>
+              <dd>{project.detail.status}</dd>
+            </div>
+            <div>
+              <dt>Stack</dt>
+              <dd>{project.tags.join(' · ')}</dd>
+            </div>
+          </dl>
+
+          <a class="case-scroll" href="#why">
+            Case study
+            <Icon name="tabler:arrow-down" />
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="why" class="case-section case-why" aria-labelledby="why-title">
+      <div class="case-section-inner case-two-column">
+        <p class="case-label">01 / Purpose</p>
+        <div>
+          <h2 id="why-title">{project.detail.problemTitle}</h2>
+          <p>{project.detail.problem}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="case-section case-flow" aria-labelledby="flow-title">
+      <div class="case-section-inner">
+        <div class="case-section-heading">
+          <p class="case-label">02 / Process</p>
+          <h2 id="flow-title">How it works.</h2>
+        </div>
+
+        <ol class="case-flow-list">
+          {
+            project.detail.steps.map((step, index) => (
+              <li>
+                <span>0{index + 1}</span>
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    {
+      project.visual ? (
+        <section class="case-section case-product" aria-labelledby="product-title">
+          <div class="case-section-inner">
+            <div class="case-section-heading case-product-heading">
+              <div>
+                <p class="case-label">03 / Product</p>
+                <h2 id="product-title">Product view.</h2>
+              </div>
+              <a href={project.repository} target="_blank" rel="noreferrer">
+                GitHub
+                <Icon name="tabler:arrow-up-right" />
+              </a>
+            </div>
+
+            <figure class="case-product-frame">
+              <img src={project.visual.src} alt={project.visual.alt} loading="lazy" />
+              <figcaption>
+                <span>{project.name}</span>
+                <span>{project.visual.alt}</span>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+      ) : null
+    }
+
+    <section class="case-section case-result" aria-labelledby="result-title">
+      <div class="case-section-inner case-two-column">
+        <p class="case-label">{project.visual ? '04' : '03'} / Result</p>
+        <div>
+          <h2 id="result-title">{project.detail.resultTitle}</h2>
+          <p>{project.detail.result}</p>
+          <a href={project.repository} target="_blank" rel="noreferrer">
+            View on GitHub
+            <Icon name="tabler:arrow-up-right" />
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <nav class="case-related" aria-label="다른 프로젝트">
+      <div class="case-section-inner">
+        <p class="case-label">Next projects</p>
+        <div class="case-related-list">
+          {
+            relatedProjects.map((related) => (
+              <a class={`related-${related.tone}`} href={related.caseStudyHref}>
+                <span>{related.index}</span>
+                <strong>{related.name}</strong>
+                <Icon name="tabler:arrow-up-right" />
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </nav>
+  </article>
+
+  <footer slot="footer" class="case-footer">
+    <a href="/#projects">
+      <Icon name="tabler:arrow-left" />
+      Back to projects
+    </a>
+    <span>© 2026 Cho YunHo</span>
+  </footer>
+</PageLayout>

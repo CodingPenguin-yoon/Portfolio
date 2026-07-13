@@ -19,6 +19,9 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
+# Local source images are copied into public/projects when used.
+/*.png
+
 pnpm-lock.yaml
 
 .astro

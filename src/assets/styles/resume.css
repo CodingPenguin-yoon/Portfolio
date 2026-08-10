@@ -56,6 +56,8 @@ body:has(.resume-page) {
 .resume-hero-actions,
 .resume-contact-row span,
 .resume-skill-grid > section > span,
+.resume-infrastructure-grid > article > div,
+.resume-infrastructure-status,
 .resume-project-meta,
 .resume-project-category,
 .resume-project-role,
@@ -334,6 +336,14 @@ body:has(.resume-page) {
   line-height: 1.85;
 }
 
+.resume-section-intro {
+  max-width: 55rem;
+  margin: 1.5rem 0 0;
+  color: #4e5056;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
 .resume-contact-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -370,6 +380,70 @@ body:has(.resume-page) {
   margin-top: 0.5rem;
   font-size: 0.88rem;
   font-weight: 500;
+}
+
+.resume-infrastructure {
+  background: #ffffff;
+}
+
+.resume-infrastructure-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 4rem;
+  border-top: 2px solid #111214;
+  border-bottom: 1px solid #111214;
+}
+
+.resume-infrastructure-grid article {
+  min-height: 19rem;
+  border-right: 1px solid #111214;
+  padding: 1.5rem;
+}
+
+.resume-infrastructure-grid article:first-child {
+  border-left: 1px solid #111214;
+}
+
+.resume-infrastructure-grid article > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.resume-infrastructure-status {
+  border: 1px solid #111214;
+  border-radius: 999px;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.58rem;
+}
+
+.resume-infrastructure-status.status-current {
+  background: #d8f3df;
+}
+
+.resume-infrastructure-status.status-planned {
+  border-style: dashed;
+  background: #f4f1e9;
+}
+
+.resume-infrastructure-grid h3 {
+  margin: 4.5rem 0 0;
+  color: #111214;
+  font-family: var(--aw-font-sans), sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.resume-infrastructure-grid p {
+  margin: 1.25rem 0 0;
+  color: #4e5056;
+  font-size: 0.9rem;
+  line-height: 1.75;
 }
 
 .resume-skills {
@@ -427,14 +501,6 @@ body:has(.resume-page) {
 
 .resume-projects {
   background: #ffffff;
-}
-
-.resume-projects-heading > p {
-  max-width: 32rem;
-  margin: 0;
-  color: #5b5e64;
-  font-size: 0.95rem;
-  line-height: 1.7;
 }
 
 .resume-projects-heading > div h2 {
@@ -621,6 +687,62 @@ body:has(.resume-page) {
   text-transform: uppercase;
 }
 
+.resume-additional-project {
+  margin-top: 5rem;
+}
+
+.resume-additional-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  border-bottom: 2px solid #111214;
+  padding-bottom: 1.25rem;
+}
+
+.resume-additional-heading > p:last-child {
+  margin: 0;
+  color: #65686f;
+  font-size: 0.88rem;
+}
+
+.resume-additional-card {
+  --resume-tone: #f2bd35;
+  display: grid;
+  grid-template-columns: 0.32fr 1.2fr 0.8fr auto;
+  gap: 2.5rem;
+  align-items: center;
+  border-bottom: 1px solid #111214;
+  padding: 2rem 0;
+}
+
+.resume-additional-card h3 {
+  margin: 0.5rem 0 0;
+  color: #111214;
+  font-family: var(--aw-font-sans), sans-serif;
+  font-size: 2rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.resume-additional-card h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.resume-additional-card > div:nth-child(2) > p:last-child {
+  margin: 0.75rem 0 0;
+  color: #4e5056;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.resume-additional-card .resume-project-stack,
+.resume-additional-card .resume-project-links {
+  margin-top: 0;
+}
+
 .resume-credentials {
   background: #f4f1e9;
 }
@@ -787,6 +909,28 @@ body:has(.resume-page) {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .resume-infrastructure-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .resume-infrastructure-grid article {
+    min-height: 16rem;
+    border-bottom: 1px solid #111214;
+  }
+
+  .resume-infrastructure-grid article:nth-child(2) {
+    border-right: 1px solid #111214;
+  }
+
+  .resume-additional-card {
+    grid-template-columns: 0.3fr 1.2fr;
+  }
+
+  .resume-additional-card .resume-project-stack,
+  .resume-additional-card .resume-project-links {
+    grid-column: 2;
+  }
+
   .resume-skill-grid > section {
     min-height: 14rem;
     border-bottom: 1px solid #4b4e55;
@@ -880,6 +1024,29 @@ body:has(.resume-page) {
     border-bottom: 0;
   }
 
+  .resume-infrastructure-grid {
+    grid-template-columns: 1fr;
+    margin-top: 2.5rem;
+  }
+
+  .resume-infrastructure-grid article,
+  .resume-infrastructure-grid article:first-child,
+  .resume-infrastructure-grid article:nth-child(2) {
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid #111214;
+    border-left: 0;
+    padding: 1.5rem 0;
+  }
+
+  .resume-infrastructure-grid article:last-child {
+    border-bottom: 0;
+  }
+
+  .resume-infrastructure-grid h3 {
+    margin-top: 2.5rem;
+  }
+
   .resume-skill-grid {
     grid-template-columns: 1fr;
     margin-top: 2.5rem;
@@ -900,10 +1067,6 @@ body:has(.resume-page) {
 
   .resume-skill-grid h3 {
     margin-top: 1.75rem;
-  }
-
-  .resume-projects-heading > p {
-    margin-top: 1.5rem;
   }
 
   .resume-project-list {
@@ -935,6 +1098,28 @@ body:has(.resume-page) {
   .resume-project-visual {
     grid-column: auto;
     width: calc(100% - 0.6rem);
+  }
+
+  .resume-additional-project {
+    margin-top: 4rem;
+  }
+
+  .resume-additional-heading {
+    display: block;
+  }
+
+  .resume-additional-heading > p:last-child {
+    margin-top: 0.75rem;
+  }
+
+  .resume-additional-card {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .resume-additional-card .resume-project-stack,
+  .resume-additional-card .resume-project-links {
+    grid-column: auto;
   }
 
   .resume-credential-grid {
@@ -1039,22 +1224,26 @@ body:has(.resume-page) {
     order: 2;
   }
 
-  .resume-skills {
+  .resume-infrastructure {
     order: 3;
   }
 
-  .resume-credentials {
+  .resume-skills {
     order: 4;
   }
 
-  .resume-projects {
+  .resume-credentials {
     order: 5;
+  }
+
+  .resume-projects {
+    order: 6;
     break-before: page;
   }
 
   .resume-contact {
     display: block;
-    order: 6;
+    order: 7;
     border-top: 1px solid #111214;
     border-bottom: 1px solid #111214;
     background: #ffffff;
@@ -1128,7 +1317,7 @@ body:has(.resume-page) {
   }
 
   .resume-section-inner {
-    padding: 5mm 0;
+    padding: 4mm 0;
   }
 
   .resume-section-heading,
@@ -1182,6 +1371,51 @@ body:has(.resume-page) {
     font-size: 7pt;
   }
 
+  .resume-infrastructure-grid {
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 4mm;
+  }
+
+  .resume-infrastructure-grid article,
+  .resume-infrastructure-grid article:first-child,
+  .resume-infrastructure-grid article:nth-child(2) {
+    min-height: 0;
+    border-right: 1px solid #111214;
+    border-bottom: 0;
+    border-left: 0;
+    padding: 3mm;
+  }
+
+  .resume-infrastructure-grid article:first-child {
+    border-left: 1px solid #111214;
+  }
+
+  .resume-infrastructure-grid article > div {
+    font-size: 6pt;
+  }
+
+  .resume-infrastructure-status {
+    padding: 0.8mm 1.2mm;
+    font-size: 5pt;
+  }
+
+  .resume-infrastructure-grid h3 {
+    margin-top: 3mm;
+    font-size: 9pt;
+  }
+
+  .resume-infrastructure-grid p {
+    margin-top: 2mm;
+    font-size: 7pt;
+    line-height: 1.35;
+  }
+
+  .resume-section-intro {
+    margin-top: 2mm;
+    font-size: 8pt;
+    line-height: 1.45;
+  }
+
   .resume-skills {
     background: #ffffff;
     color: #111214;
@@ -1227,7 +1461,7 @@ body:has(.resume-page) {
   }
 
   .resume-credential-grid {
-    margin-top: 4mm;
+    margin-top: 2mm;
   }
 
   .resume-credential-grid > section {
@@ -1236,13 +1470,13 @@ body:has(.resume-page) {
   }
 
   .resume-credential-grid h3 {
-    margin-top: 5mm;
+    margin-top: 2mm;
     font-size: 12pt;
   }
 
   .resume-credential-grid dl,
   .resume-credential-grid ol {
-    margin-top: 3mm;
+    margin-top: 2mm;
   }
 
   .resume-credential-grid dt,
@@ -1257,11 +1491,7 @@ body:has(.resume-page) {
   }
 
   .resume-credential-grid li {
-    min-height: 7mm;
-  }
-
-  .resume-projects-heading > p {
-    display: none;
+    min-height: 5mm;
   }
 
   .resume-projects-heading {
@@ -1355,6 +1585,50 @@ body:has(.resume-page) {
 
   .resume-project-stack li:not(:last-child)::after {
     margin-left: 2mm;
+  }
+
+  .resume-additional-project {
+    margin-top: 5mm;
+  }
+
+  .resume-additional-heading {
+    display: block;
+    padding-bottom: 2mm;
+  }
+
+  .resume-additional-heading > p:last-child {
+    display: none;
+  }
+
+  .resume-additional-card {
+    display: grid;
+    grid-template-columns: 0.32fr 1.2fr 0.8fr;
+    gap: 3mm;
+    border: 1px solid #111214;
+    padding: 3mm;
+  }
+
+  .resume-additional-card .resume-project-meta {
+    display: block;
+  }
+
+  .resume-additional-card .resume-project-meta p {
+    margin-top: 2mm;
+  }
+
+  .resume-additional-card h3 {
+    font-size: 12pt;
+  }
+
+  .resume-additional-card > div:nth-child(2) > p:last-child {
+    margin-top: 1.5mm;
+    font-size: 7pt;
+    line-height: 1.35;
+  }
+
+  .resume-additional-card .resume-project-stack {
+    grid-column: auto;
+    margin-top: 0;
   }
 
   .resume-contact .resume-section-inner {

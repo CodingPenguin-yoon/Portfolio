@@ -11,6 +11,7 @@ export interface Props {
 }
 
 const { project, relatedProjects = [] } = Astro.props;
+const narrative = project.detail.narrative;
 const metadata = {
   title: `${project.name} | Cho YunHo`,
   description: project.description,
@@ -83,7 +84,7 @@ const metadata = {
             </div>
           </dl>
 
-          <a class="case-scroll" href="#why">
+          <a class="case-scroll" href={narrative ? '#context' : '#why'}>
             Case study
             <Icon name="tabler:arrow-down" />
           </a>
@@ -91,36 +92,120 @@ const metadata = {
       </div>
     </section>
 
-    <section id="why" class="case-section case-why" aria-labelledby="why-title">
-      <div class="case-section-inner case-two-column">
-        <p class="case-label">01 / Purpose</p>
-        <div>
-          <h2 id="why-title">{project.detail.problemTitle}</h2>
-          <p>{project.detail.problem}</p>
-        </div>
-      </div>
-    </section>
+    {
+      narrative ? (
+        <>
+          <section id="context" class="case-section case-why" aria-labelledby="context-title">
+            <div class="case-section-inner case-two-column">
+              <p class="case-label">01 / Context</p>
+              <div class="case-context-copy">
+                <h2 id="context-title">{narrative.contextTitle}</h2>
+                {narrative.context.map((paragraph) => (
+                  <p>{paragraph}</p>
+                ))}
+              </div>
+            </div>
+          </section>
 
-    <section class="case-section case-flow" aria-labelledby="flow-title">
-      <div class="case-section-inner">
-        <div class="case-section-heading">
-          <p class="case-label">02 / Process</p>
-          <h2 id="flow-title">How it works.</h2>
-        </div>
+          <section class="case-section case-role" aria-labelledby="role-title">
+            <div class="case-section-inner">
+              <div class="case-section-heading">
+                <p class="case-label">02 / My role</p>
+                <div>
+                  <h2 id="role-title">{narrative.roleTitle}</h2>
+                  <p class="case-section-intro">{narrative.role}</p>
+                </div>
+              </div>
 
-        <ol class="case-flow-list">
-          {
-            project.detail.steps.map((step, index) => (
-              <li>
-                <span>0{index + 1}</span>
-                <h3>{step.title}</h3>
-                <p>{step.description}</p>
-              </li>
-            ))
-          }
-        </ol>
-      </div>
-    </section>
+              <div class="case-role-grid">
+                {narrative.roleItems.map((item) => (
+                  <article>
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section class="case-section case-architecture" aria-labelledby="architecture-title">
+            <div class="case-section-inner">
+              <div class="case-section-heading">
+                <p class="case-label">03 / Architecture</p>
+                <div>
+                  <h2 id="architecture-title">{narrative.architectureTitle}</h2>
+                  <p class="case-section-intro">{narrative.architecture}</p>
+                </div>
+              </div>
+
+              <ol class="case-architecture-list">
+                {narrative.architectureSteps.map((step, index) => (
+                  <li>
+                    <span>0{index + 1}</span>
+                    <h3>{step.title}</h3>
+                    <p>{step.description}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+
+          <section class="case-section case-decisions" aria-labelledby="decisions-title">
+            <div class="case-section-inner">
+              <div class="case-section-heading">
+                <p class="case-label">04 / Key decisions</p>
+                <h2 id="decisions-title">{narrative.decisionsTitle}</h2>
+              </div>
+
+              <div class="case-decision-grid">
+                {narrative.decisions.map((decision) => (
+                  <article>
+                    <span
+                      class:list={['case-status', `case-status-${decision.status.toLowerCase().replace(' ', '-')}`]}
+                    >
+                      {decision.status}
+                    </span>
+                    <h3>{decision.title}</h3>
+                    <p>{decision.description}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        </>
+      ) : (
+        <>
+          <section id="why" class="case-section case-why" aria-labelledby="why-title">
+            <div class="case-section-inner case-two-column">
+              <p class="case-label">01 / Purpose</p>
+              <div>
+                <h2 id="why-title">{project.detail.problemTitle}</h2>
+                <p>{project.detail.problem}</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="case-section case-flow" aria-labelledby="flow-title">
+            <div class="case-section-inner">
+              <div class="case-section-heading">
+                <p class="case-label">02 / Process</p>
+                <h2 id="flow-title">How it works.</h2>
+              </div>
+
+              <ol class="case-flow-list">
+                {project.detail.steps.map((step, index) => (
+                  <li>
+                    <span>0{index + 1}</span>
+                    <h3>{step.title}</h3>
+                    <p>{step.description}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        </>
+      )
+    }
 
     {
       project.visual ? (
@@ -128,7 +213,7 @@ const metadata = {
           <div class="case-section-inner">
             <div class="case-section-heading case-product-heading">
               <div>
-                <p class="case-label">03 / Product</p>
+                <p class="case-label">{narrative ? '05' : '03'} / Product</p>
                 <h2 id="product-title">Product view.</h2>
               </div>
               <a href={project.repository} target="_blank" rel="noreferrer">
@@ -149,19 +234,48 @@ const metadata = {
       ) : null
     }
 
-    <section class="case-section case-result" aria-labelledby="result-title">
-      <div class="case-section-inner case-two-column">
-        <p class="case-label">{project.visual ? '04' : '03'} / Result</p>
-        <div>
-          <h2 id="result-title">{project.detail.resultTitle}</h2>
-          <p>{project.detail.result}</p>
-          <a href={project.repository} target="_blank" rel="noreferrer">
-            View on GitHub
-            <Icon name="tabler:arrow-up-right" />
-          </a>
-        </div>
-      </div>
-    </section>
+    {
+      narrative ? (
+        <section class="case-section case-result case-outcome" aria-labelledby="outcome-title">
+          <div class="case-section-inner">
+            <div class="case-outcome-heading">
+              <p class="case-label">{narrative.outcomeLabel ?? '06 / Current & next'}</p>
+              <h2 id="outcome-title">{narrative.outcomeTitle ?? '운영 범위와 다음 단계.'}</h2>
+            </div>
+            <div class="case-outcome-grid">
+              <article>
+                <span>{narrative.currentBadge ?? 'Current'}</span>
+                <h3>{narrative.currentTitle}</h3>
+                <p>{narrative.current}</p>
+              </article>
+              <article>
+                <span>{narrative.nextBadge ?? 'Next'}</span>
+                <h3>{narrative.nextTitle}</h3>
+                <p>{narrative.next}</p>
+              </article>
+            </div>
+            <a href={project.repository} target="_blank" rel="noreferrer">
+              View on GitHub
+              <Icon name="tabler:arrow-up-right" />
+            </a>
+          </div>
+        </section>
+      ) : (
+        <section class="case-section case-result" aria-labelledby="result-title">
+          <div class="case-section-inner case-two-column">
+            <p class="case-label">{project.visual ? '04' : '03'} / Result</p>
+            <div>
+              <h2 id="result-title">{project.detail.resultTitle}</h2>
+              <p>{project.detail.result}</p>
+              <a href={project.repository} target="_blank" rel="noreferrer">
+                View on GitHub
+                <Icon name="tabler:arrow-up-right" />
+              </a>
+            </div>
+          </div>
+        </section>
+      )
+    }
 
     <nav class="case-related" aria-label="다른 프로젝트">
       <div class="case-section-inner">

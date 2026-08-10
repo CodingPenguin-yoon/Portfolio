@@ -16,6 +16,10 @@ export const getStaticPaths = async () =>
 
 const { project, relatedProjects } = Astro.props;
 
+if (project.slug === 'argus') {
+  return Astro.redirect('/projects/argus', 301);
+}
+
 const metadata = {
   title: project.fullTitle,
   description: project.seoDescription,

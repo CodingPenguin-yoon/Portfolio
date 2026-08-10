@@ -3,7 +3,14 @@ import { Icon } from 'astro-icon/components';
 import PageLayout from '~/layouts/PageLayout.astro';
 import { homeProjects } from '~/data/home';
 import { portfolioProfile } from '~/data/portfolio';
-import { resumeCertifications, resumeEducation, resumeProfile, resumeProjects, resumeSkillGroups } from '~/data/resume';
+import {
+  resumeCertifications,
+  resumeEducation,
+  resumeInfrastructure,
+  resumeProfile,
+  resumeProjects,
+  resumeSkillGroups,
+} from '~/data/resume';
 import '~/assets/styles/resume.css';
 
 const metadata = {
@@ -27,6 +34,8 @@ const projects = resumeProjects.map((resume) => {
 
   return { ...project, resume };
 });
+const selectedProjects = projects.filter(({ id }) => id !== 'argus');
+const additionalProject = projects.find(({ id }) => id === 'argus');
 ---
 
 <PageLayout metadata={metadata}>
@@ -39,6 +48,7 @@ const projects = resumeProjects.map((resume) => {
 
       <nav class="resume-nav" aria-label="이력서 바로가기">
         <a href="#profile">Profile</a>
+        <a href="#infrastructure">Infrastructure</a>
         <a href="#skills">Skills</a>
         <a href="#projects">Projects</a>
         <a href="#credentials">Credentials</a>
@@ -109,7 +119,7 @@ const projects = resumeProjects.map((resume) => {
       <div class="resume-section-inner resume-profile-grid">
         <p class="resume-section-label">01 / Profile</p>
         <div>
-          <h2 id="profile-title">한 번은 해도,<br />두 번은 자동화합니다.</h2>
+          <h2 id="profile-title">홈랩에서 발견한 운영 문제를 자동화합니다.</h2>
           <p>{resumeProfile.summary}</p>
 
           <div class="resume-contact-row">
@@ -130,11 +140,40 @@ const projects = resumeProjects.map((resume) => {
       </div>
     </section>
 
+    <section id="infrastructure" class="resume-section resume-infrastructure" aria-labelledby="infrastructure-title">
+      <div class="resume-section-inner">
+        <div class="resume-section-heading">
+          <p class="resume-section-label">02 / Infrastructure experience</p>
+          <div>
+            <h2 id="infrastructure-title">{resumeInfrastructure.title}</h2>
+            <p class="resume-section-intro">{resumeInfrastructure.summary}</p>
+          </div>
+        </div>
+
+        <div class="resume-infrastructure-grid">
+          {
+            resumeInfrastructure.items.map((item, index) => (
+              <article>
+                <div>
+                  <span>0{index + 1}</span>
+                  <span class:list={['resume-infrastructure-status', `status-${item.status.toLowerCase()}`]}>
+                    {item.status}
+                  </span>
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
     <section id="skills" class="resume-section resume-skills" aria-labelledby="skills-title">
       <div class="resume-section-inner">
         <div class="resume-section-heading">
-          <p class="resume-section-label">02 / Skills</p>
-          <h2 id="skills-title">What I use.</h2>
+          <p class="resume-section-label">03 / Core skills</p>
+          <h2 id="skills-title">기술 역량.</h2>
         </div>
 
         <div class="resume-skill-grid">
@@ -159,15 +198,14 @@ const projects = resumeProjects.map((resume) => {
       <div class="resume-section-inner">
         <div class="resume-section-heading resume-projects-heading">
           <div>
-            <p class="resume-section-label">03 / Selected projects</p>
-            <h2 id="projects-title">Built to be used.</h2>
+            <p class="resume-section-label">04 / Selected projects</p>
+            <h2 id="projects-title">운영 문제에서 시작한 프로젝트.</h2>
           </div>
-          <p>반복을 줄이고 운영을 분명하게 만든 네 가지 프로젝트.</p>
         </div>
 
         <div class="resume-project-list">
           {
-            projects.map((project) => (
+            selectedProjects.map((project) => (
               <article class:list={['resume-project', `resume-tone-${project.tone}`]}>
                 <div class="resume-project-meta">
                   <span>{project.index}</span>
@@ -222,13 +260,54 @@ const projects = resumeProjects.map((resume) => {
             ))
           }
         </div>
+
+        {
+          additionalProject ? (
+            <div class="resume-additional-project">
+              <div class="resume-additional-heading">
+                <p class="resume-section-label">Additional project</p>
+                <p>인프라 프로젝트와 별도로 진행하는 사이드 프로젝트입니다.</p>
+              </div>
+
+              <article class:list={['resume-additional-card', `resume-tone-${additionalProject.tone}`]}>
+                <div class="resume-project-meta">
+                  <span>{additionalProject.index}</span>
+                  <p>{additionalProject.resume.type}</p>
+                  <p>{additionalProject.resume.period}</p>
+                </div>
+                <div>
+                  <p class="resume-project-category">{additionalProject.category}</p>
+                  <h3>
+                    <a href={additionalProject.caseStudyHref}>{additionalProject.name}</a>
+                  </h3>
+                  <p>{additionalProject.resume.summary}</p>
+                </div>
+                <ul class="resume-project-stack" aria-label={`${additionalProject.name} 기술 스택`}>
+                  {additionalProject.resume.stack.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+                <div class="resume-project-links">
+                  <a href={additionalProject.caseStudyHref}>
+                    Case study
+                    <Icon name="tabler:arrow-right" />
+                  </a>
+                  <a href={additionalProject.repository} target="_blank" rel="noreferrer">
+                    GitHub
+                    <Icon name="tabler:arrow-up-right" />
+                  </a>
+                </div>
+              </article>
+            </div>
+          ) : null
+        }
       </div>
     </section>
 
     <section id="credentials" class="resume-section resume-credentials" aria-labelledby="credentials-title">
       <div class="resume-section-inner">
         <div class="resume-section-heading">
-          <p class="resume-section-label">04 / Credentials</p>
+          <p class="resume-section-label">05 / Credentials</p>
           <h2 id="credentials-title">Education & certifications.</h2>
         </div>
 

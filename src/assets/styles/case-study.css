@@ -335,6 +335,146 @@
   line-height: 1.85;
 }
 
+.case-context-copy p + p {
+  margin-top: 1rem;
+}
+
+.case-section-intro {
+  max-width: 48rem;
+  margin: 1.5rem 0 0;
+  color: #4e5056;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.case-role {
+  background: #ffffff;
+}
+
+.case-role-grid,
+.case-decision-grid,
+.case-outcome-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 4rem;
+  border-top: 2px solid #111214;
+  border-bottom: 1px solid #111214;
+}
+
+.case-role-grid article,
+.case-decision-grid article,
+.case-outcome-grid article {
+  min-height: 14rem;
+  border-right: 1px solid #111214;
+  padding: 1.5rem;
+}
+
+.case-role-grid article:first-child,
+.case-decision-grid article:first-child,
+.case-outcome-grid article:first-child {
+  border-left: 1px solid #111214;
+}
+
+.case-role-grid h3,
+.case-decision-grid h3,
+.case-outcome-grid h3,
+.case-architecture-list h3 {
+  margin: 3.5rem 0 0;
+  color: inherit;
+  font-family: var(--aw-font-sans), sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.case-role-grid p,
+.case-decision-grid p,
+.case-outcome-grid p,
+.case-architecture-list p {
+  margin: 1rem 0 0;
+  color: #4e5056;
+  font-size: 0.9rem;
+  line-height: 1.75;
+}
+
+.case-architecture {
+  background: #f4f1e9;
+}
+
+.case-architecture-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 4rem 0 0;
+  padding: 0;
+  border-top: 2px solid #111214;
+  border-bottom: 1px solid #111214;
+  list-style: none;
+}
+
+.case-architecture-list li {
+  position: relative;
+  min-height: 17rem;
+  border-right: 1px solid #111214;
+  padding: 1.5rem;
+}
+
+.case-architecture-list li:first-child {
+  border-left: 1px solid #111214;
+}
+
+.case-architecture-list li:not(:last-child)::after {
+  position: absolute;
+  z-index: 1;
+  top: 2rem;
+  right: -0.7rem;
+  display: grid;
+  width: 1.4rem;
+  height: 1.4rem;
+  place-items: center;
+  border: 1px solid #111214;
+  border-radius: 50%;
+  background: #f4f1e9;
+  content: '→';
+  font-family: var(--aw-font-mono);
+  font-size: 0.7rem;
+}
+
+.case-architecture-list li > span {
+  font-family: var(--aw-font-mono);
+  font-size: 0.7rem;
+}
+
+.case-decisions {
+  background: #ffffff;
+}
+
+.case-status,
+.case-outcome-grid article > span {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  border: 1px solid #111214;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-family: var(--aw-font-mono);
+  font-size: 0.64rem;
+  text-transform: uppercase;
+}
+
+.case-status-current,
+.case-status-implemented {
+  background: #111214;
+  color: #ffffff;
+}
+
+.case-status-planned {
+  background: #f2bd35;
+}
+
+.case-status-in-development {
+  background: #dce4ff;
+}
+
 .case-flow {
   background: #ffffff;
 }
@@ -467,6 +607,46 @@
   text-transform: uppercase;
 }
 
+.case-outcome-heading {
+  display: grid;
+  grid-template-columns: 0.65fr 1.6fr;
+  gap: 5rem;
+}
+
+.case-outcome-heading h2 {
+  margin: 0;
+  color: inherit;
+  font-family: var(--aw-font-sans), sans-serif;
+  font-size: 3.25rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.12;
+}
+
+.case-outcome-grid {
+  grid-template-columns: repeat(2, 1fr);
+  border-color: currentColor;
+}
+
+.case-outcome-grid article {
+  min-height: 17rem;
+  border-color: currentColor;
+}
+
+.case-outcome-grid article > span {
+  border-color: currentColor;
+}
+
+.case-outcome-grid h3 {
+  margin-top: 3.5rem;
+}
+
+.case-outcome-grid p {
+  max-width: 36rem;
+  color: inherit;
+  opacity: 0.84;
+}
+
 .case-related {
   background: #f4f1e9;
 }
@@ -548,9 +728,31 @@
   }
 
   .case-two-column,
-  .case-section-heading {
+  .case-section-heading,
+  .case-outcome-heading {
     grid-template-columns: 1fr;
     gap: 2.5rem;
+  }
+
+  .case-architecture-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .case-architecture-list li {
+    min-height: 14rem;
+    border-bottom: 1px solid #111214;
+  }
+
+  .case-architecture-list li:nth-child(even) {
+    border-right: 0;
+  }
+
+  .case-architecture-list li:last-child {
+    border-bottom: 0;
+  }
+
+  .case-architecture-list li::after {
+    display: none !important;
   }
 
   .case-flow-list {
@@ -635,7 +837,8 @@
   }
 
   .case-why h2,
-  .case-result h2 {
+  .case-result h2,
+  .case-outcome-heading h2 {
     font-size: 2.35rem;
   }
 
@@ -644,6 +847,52 @@
   }
 
   .case-flow-list {
+    margin-top: 2.5rem;
+  }
+
+  .case-role-grid,
+  .case-decision-grid,
+  .case-outcome-grid {
+    grid-template-columns: 1fr;
+    margin-top: 2.5rem;
+  }
+
+  .case-role-grid article,
+  .case-decision-grid article,
+  .case-outcome-grid article {
+    min-height: 0;
+    border-right: 1px solid #111214;
+    border-bottom: 1px solid #111214;
+    border-left: 1px solid #111214;
+    padding: 1.25rem;
+  }
+
+  .case-role-grid article:last-child,
+  .case-decision-grid article:last-child,
+  .case-outcome-grid article:last-child {
+    border-bottom: 0;
+  }
+
+  .case-role-grid h3,
+  .case-decision-grid h3,
+  .case-outcome-grid h3 {
+    margin-top: 2.5rem;
+  }
+
+  .case-architecture-list {
+    grid-template-columns: 1fr;
+    margin-top: 2.5rem;
+  }
+
+  .case-architecture-list li {
+    min-height: 0;
+    border-right: 1px solid #111214;
+    border-bottom: 1px solid #111214;
+    border-left: 1px solid #111214;
+    padding: 1.25rem;
+  }
+
+  .case-architecture-list h3 {
     margin-top: 2.5rem;
   }
 

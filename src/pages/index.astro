@@ -1,7 +1,8 @@
 ---
 import { Icon } from 'astro-icon/components';
+import HomeLabArchitecture from '~/components/portfolio/HomeLabArchitecture.astro';
 import PageLayout from '~/layouts/PageLayout.astro';
-import { homeAbout, homeCapabilities, homeHero, homeNavigation, homeProjects } from '~/data/home';
+import { homeCapabilities, homeHero, homeNavigation, homeProjects } from '~/data/home';
 import { portfolioProfile } from '~/data/portfolio';
 
 const metadata = {
@@ -12,6 +13,8 @@ const metadata = {
 
 const githubHref = portfolioProfile.socials.github || 'https://github.com/CodingPenguin-yoon';
 const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : undefined;
+const featuredProjects = homeProjects.filter((project) => project.id !== 'argus');
+const sideProject = homeProjects.find((project) => project.id === 'argus');
 ---
 
 <PageLayout metadata={metadata}>
@@ -70,7 +73,7 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
 
         <nav class="project-index" aria-label="프로젝트 바로가기">
           {
-            homeProjects.map((project) => (
+            featuredProjects.map((project) => (
               <a class={`index-${project.tone}`} href={`#${project.id}`}>
                 <span>{project.index}</span>
                 <strong>{project.name}</strong>
@@ -81,16 +84,17 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
       </div>
     </section>
 
+    <HomeLabArchitecture />
+
     <section id="projects" class="projects-intro" aria-labelledby="projects-title">
       <div class="section-inner intro-layout">
         <p class="section-label">Selected projects / 2025-2026</p>
         <h2 id="projects-title">Projects.</h2>
-        <p>반복하기 싫어서 만든 네 가지 프로젝트.</p>
       </div>
     </section>
 
     {
-      homeProjects.map((project, projectIndex) => (
+      featuredProjects.map((project, projectIndex) => (
         <section
           id={project.id}
           class:list={['project-band', `tone-${project.tone}`, { reverse: projectIndex % 2 === 1 }]}
@@ -132,14 +136,14 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
             <div class="project-visual">
               <a class="visual-link" href={project.caseStudyHref} aria-label={`${project.name} 케이스 스터디 보기`}>
                 {project.flow ? (
-                  <div class="flow-board" aria-label="Heimdall 자동화 흐름">
+                  <div class="flow-board" aria-label={`${project.name} 처리 흐름`}>
                     <div class="flow-toolbar">
                       <span class="flow-lights" aria-hidden="true">
                         <i />
                         <i />
                         <i />
                       </span>
-                      <span>LOCAL WORKSPACE</span>
+                      <span>{project.flowLabel ?? 'PROJECT FLOW'}</span>
                     </div>
                     <ol>
                       {project.flow.map((step, index) => (
@@ -151,7 +155,7 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
                     </ol>
                     <div class="flow-result">
                       <Icon name="tabler:circle-check-filled" />
-                      <span>Build, runtime and database ready</span>
+                      <span>{project.flowResult ?? 'Flow complete'}</span>
                     </div>
                   </div>
                 ) : project.visual ? (
@@ -179,23 +183,48 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
       ))
     }
 
-    <section id="about" class="about-section" aria-labelledby="about-title">
-      <div class="section-inner about-layout">
-        <p class="section-label">{homeAbout.eyebrow}</p>
-        <h2 id="about-title">{homeAbout.statement}</h2>
+    {
+      sideProject ? (
+        <section id="side-project" class="more-work-section" aria-labelledby="more-work-title">
+          <div class="section-inner more-work-inner">
+            <p class="section-label">More work / Side project</p>
 
-        <div class="about-points">
-          {
-            homeAbout.supporting.map((item, index) => (
-              <p>
-                <span>0{index + 1}</span>
-                {item}
-              </p>
-            ))
-          }
-        </div>
-      </div>
-    </section>
+            <article class="more-work-card">
+              <div class="more-work-meta">
+                <span>{sideProject.index}</span>
+                <span>Market data</span>
+              </div>
+
+              <div class="more-work-copy">
+                <h2 id="more-work-title">
+                  <a class="project-title-link" href={sideProject.caseStudyHref}>
+                    {sideProject.name}
+                  </a>
+                </h2>
+                <p>{sideProject.description}</p>
+              </div>
+
+              <ul class="more-work-tags" aria-label={`${sideProject.name} 기술 스택`}>
+                {sideProject.tags.map((tag) => (
+                  <li>{tag}</li>
+                ))}
+              </ul>
+
+              <div class="more-work-links">
+                <a href={sideProject.caseStudyHref}>
+                  Case study
+                  <Icon name="tabler:arrow-right" />
+                </a>
+                <a href={sideProject.repository} target="_blank" rel="noreferrer">
+                  GitHub
+                  <Icon name="tabler:arrow-up-right" />
+                </a>
+              </div>
+            </article>
+          </div>
+        </section>
+      ) : null
+    }
 
     <section id="capabilities" class="capabilities-section" aria-labelledby="capabilities-title">
       <div class="section-inner">
@@ -487,7 +516,7 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
 
   .project-index {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     border: 1px solid #4a4d55;
     background: #0c0d10;
   }
@@ -555,7 +584,7 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
 
   .intro-layout {
     display: grid;
-    grid-template-columns: 0.7fr 1fr 1fr;
+    grid-template-columns: 0.7fr 2fr;
     gap: 2rem;
     align-items: end;
     padding: 4.5rem 0 3rem;
@@ -575,13 +604,6 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
     font-weight: 600;
     letter-spacing: 0;
     line-height: 1.05;
-  }
-
-  .projects-intro p:last-child {
-    max-width: 32rem;
-    margin: 0;
-    color: #4e5056;
-    line-height: 1.7;
   }
 
   .project-band {
@@ -872,55 +894,6 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
     text-transform: uppercase;
   }
 
-  .about-section {
-    background: #0c0d10;
-    color: #ffffff;
-  }
-
-  .about-layout {
-    padding: 6.5rem 0;
-  }
-
-  .about-layout h2 {
-    max-width: 65rem;
-    margin: 2rem 0 4.5rem;
-    color: #ffffff;
-    font-family: var(--aw-font-sans), sans-serif;
-    font-size: 4rem;
-    font-weight: 600;
-    letter-spacing: 0;
-    line-height: 1.12;
-  }
-
-  .about-points {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    border-top: 1px solid #4a4d55;
-  }
-
-  .about-points p {
-    display: flex;
-    gap: 1.5rem;
-    margin: 0;
-    border-right: 1px solid #4a4d55;
-    padding: 1.5rem 1.5rem 0 0;
-    font-size: 1rem;
-  }
-
-  .about-points p:not(:first-child) {
-    padding-left: 1.5rem;
-  }
-
-  .about-points p:last-child {
-    border-right: 0;
-  }
-
-  .about-points span {
-    color: #8d919b;
-    font-family: var(--aw-font-mono);
-    font-size: 0.7rem;
-  }
-
   .capabilities-section {
     background: #f4f1e9;
   }
@@ -968,6 +941,105 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
     margin: 0;
     color: #66686f;
     text-align: right;
+  }
+
+  .more-work-section {
+    border-bottom: 1px solid #111214;
+    background: #f4f1e9;
+    color: #111214;
+  }
+
+  .more-work-inner {
+    display: grid;
+    grid-template-columns: 0.7fr 1.8fr;
+    gap: 5rem;
+    align-items: start;
+    padding: 3.5rem 0;
+  }
+
+  .more-work-card {
+    display: grid;
+    grid-template-columns: 9rem minmax(16rem, 1fr) minmax(15rem, 0.9fr) auto;
+    gap: 2rem;
+    align-items: center;
+    border-top: 2px solid #111214;
+    border-bottom: 1px solid #111214;
+    padding: 1.5rem 0;
+  }
+
+  .more-work-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--aw-font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+  }
+
+  .more-work-meta span:first-child {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border: 1px solid #111214;
+    background: #f2bd35;
+  }
+
+  .more-work-copy h2 {
+    margin: 0;
+    color: inherit;
+    font-family: var(--aw-font-sans), sans-serif;
+    font-size: 1.65rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1;
+  }
+
+  .more-work-copy p {
+    margin: 0.5rem 0 0;
+    color: #54565c;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .more-work-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    margin: 0;
+    padding: 0;
+    color: #54565c;
+    font-family: var(--aw-font-mono);
+    font-size: 0.66rem;
+    list-style: none;
+  }
+
+  .more-work-tags li:not(:last-child)::after {
+    margin-left: 0.75rem;
+    content: '/';
+  }
+
+  .more-work-links {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .more-work-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: inherit;
+    font-family: var(--aw-font-mono);
+    font-size: 0.68rem;
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .more-work-links :global(svg) {
+    width: 0.9rem;
+    height: 0.9rem;
   }
 
   .contact-section {
@@ -1090,6 +1162,7 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
     .intro-layout,
     .project-inner,
     .capabilities-section .section-inner,
+    .more-work-inner,
     .contact-layout {
       grid-template-columns: 1fr;
     }
@@ -1097,6 +1170,7 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
     .intro-layout,
     .project-inner,
     .capabilities-section .section-inner,
+    .more-work-inner,
     .contact-layout {
       gap: 2.5rem;
     }
@@ -1104,6 +1178,15 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
     .project-inner {
       min-height: 0;
       padding: 4.5rem 0;
+    }
+
+    .more-work-card {
+      grid-template-columns: 8rem 1fr;
+    }
+
+    .more-work-tags,
+    .more-work-links {
+      grid-column: 2;
     }
 
     .project-band.reverse .project-copy,
@@ -1115,20 +1198,8 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
       font-size: 3.5rem;
     }
 
-    .about-layout h2,
     .contact-layout h2 {
       font-size: 3rem;
-    }
-
-    .about-points {
-      grid-template-columns: 1fr;
-    }
-
-    .about-points p,
-    .about-points p:not(:first-child) {
-      border-right: 0;
-      border-bottom: 1px solid #4a4d55;
-      padding: 1.25rem 0;
     }
 
     .capability-list article {
@@ -1169,7 +1240,7 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
     }
 
     .project-index {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
     }
 
     .project-index a {
@@ -1178,11 +1249,11 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
     }
 
     .project-index a:nth-child(2) {
-      border-right: 0;
+      border-right: 1px solid #4a4d55;
     }
 
     .project-index a:nth-child(-n + 2) {
-      border-bottom: 1px solid #4a4d55;
+      border-bottom: 0;
     }
 
     .project-index a::before {
@@ -1216,6 +1287,26 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
       font-size: 1.35rem;
     }
 
+    .more-work-inner {
+      gap: 1.5rem;
+      padding: 3rem 0;
+    }
+
+    .more-work-card {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      padding: 1.5rem 0;
+    }
+
+    .more-work-tags,
+    .more-work-links {
+      grid-column: auto;
+    }
+
+    .more-work-links {
+      padding-top: 0.25rem;
+    }
+
     .flow-board,
     .product-frame {
       box-shadow: 0.5rem 0.5rem 0 #111214;
@@ -1238,11 +1329,6 @@ const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : 
       border-bottom: 0;
     }
 
-    .about-layout {
-      padding: 5rem 0;
-    }
-
-    .about-layout h2,
     .contact-layout h2 {
       font-size: 2.5rem;
     }

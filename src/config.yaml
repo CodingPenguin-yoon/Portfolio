@@ -1,7 +1,7 @@
 site:
   name: 조윤호
   # TODO: Replace with the production portfolio domain for canonical / OG URLs.
-  site: 'https://example.com'
+  site: 'https://yoonman.page'
   base: '/'
   trailingSlash: false
 

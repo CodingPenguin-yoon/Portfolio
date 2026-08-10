@@ -535,7 +535,7 @@ const projectSource: Omit<PortfolioProject, 'directHref'>[] = [
       result: '실패 지점과 재실행 기준이 남는 프로비저닝 파이프라인을 만들었습니다.',
     },
     resultLine: '요청 -> 클론 -> 프로비저닝 -> 추적',
-    repoHref: 'https://github.com/CodingPenguin-yoon/Heimdall',
+    repoHref: 'https://github.com/CodingPenguin-yoon/heimdall_final',
     visual: {
       src: getAsset('/projects/heimdall.png'),
       alt: 'Heimdall VM 프로비저닝 흐름 스크린샷',

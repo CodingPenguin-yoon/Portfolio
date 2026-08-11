@@ -66,9 +66,9 @@ export interface HomeProject {
 }
 
 export const homeNavigation = [
+  { label: 'About', href: '#about' },
+  { label: 'Infrastructure', href: '#infrastructure' },
   { label: 'Projects', href: '#projects' },
-  { label: 'About', href: '#origin' },
-  { label: 'Capabilities', href: '#capabilities' },
   { label: 'Contact', href: '#contact' },
 ] as const;
 
@@ -540,21 +540,3 @@ export const homeProjects: HomeProject[] = [
     },
   },
 ];
-
-export const homeCapabilities = [
-  {
-    index: '01',
-    title: '빌드와 배포를 자동화합니다.',
-    evidence: 'Heimdall / K-Le-PaaS',
-  },
-  {
-    index: '02',
-    title: '서버를 만들고 안전하게 운영합니다.',
-    evidence: 'Gjallar',
-  },
-  {
-    index: '03',
-    title: '운영 상태와 데이터를 한눈에 정리합니다.',
-    evidence: 'K-Le-PaaS / Gjallar / Argus',
-  },
-] as const;

@@ -1,0 +1,91 @@
+<section id="about" class="about-page" aria-labelledby="about-title">
+  <div class="about-inner">
+    <p class="about-label">About me</p>
+    <div class="about-copy">
+      <h2 id="about-title">인프라를 직접 운영하며,<br />반복되는 일을 자동화합니다.</h2>
+      <p>
+        시스템 프로그래밍과 Linux에서 시작해 Proxmox 3노드 홈랩을 구축하고 운영하고 있습니다. 배포와 VM 관리에서
+        반복되는 작업을 줄이기 위해 Heimdall과 Gjallar를 만들었습니다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-page {
+    min-height: 78svh;
+    scroll-margin-top: 0;
+    border-bottom: 1px solid #111214;
+    background: #f4f1e9;
+    color: #111214;
+  }
+
+  .about-inner {
+    display: grid;
+    min-height: 78svh;
+    width: min(100% - 2rem, 92rem);
+    grid-template-columns: 0.7fr 2fr;
+    gap: 4rem;
+    align-items: center;
+    margin: 0 auto;
+    padding: 4.5rem 0;
+  }
+
+  .about-label {
+    align-self: start;
+    margin: 0;
+    font-family: var(--aw-font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .about-copy h2 {
+    max-width: 70rem;
+    margin: 0;
+    color: inherit;
+    font-family: var(--aw-font-sans), sans-serif;
+    font-size: clamp(2.8rem, 4.6vw, 4.8rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    word-break: keep-all;
+  }
+
+  .about-copy p {
+    max-width: 52rem;
+    margin: 1.75rem 0 0;
+    color: #4e5056;
+    font-size: 1.05rem;
+    line-height: 1.85;
+    word-break: keep-all;
+  }
+
+  @media (max-width: 900px) {
+    .about-inner {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      align-content: center;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .about-page,
+    .about-inner {
+      min-height: 0;
+    }
+
+    .about-inner {
+      padding: 5rem 0;
+    }
+
+    .about-copy h2 {
+      font-size: 2.55rem;
+    }
+
+    .about-copy p {
+      margin-top: 2rem;
+      font-size: 0.95rem;
+    }
+  }
+</style>

@@ -331,8 +331,12 @@ ul {
   overflow-wrap: anywhere;
 }
 
+[data-portfolio-page='5'] .page-thesis {
+  margin-bottom: 8mm;
+}
+
 [data-portfolio-page='5'] .flow-diagram {
-  margin: 0 0 5mm;
+  margin: 0 0 3mm;
 }
 
 [data-portfolio-page='5'] .flow-diagram li {
@@ -340,36 +344,22 @@ ul {
   padding: 3mm;
 }
 
-[data-portfolio-page='5'] .architecture-zone {
-  padding: 3.5mm;
-}
-
-[data-portfolio-page='5'] .architecture-zone ul {
-  padding-left: 5mm;
-  margin-bottom: 4mm;
-}
-
-[data-portfolio-page='5'] .architecture-zone li {
-  margin-bottom: 1mm;
-  font-size: 9.5pt;
-  line-height: 1.48;
-}
-
 [data-portfolio-page='5'] .evidence-figure {
+  width: 100%;
   margin: 0;
 }
 
 [data-portfolio-page='5'] .evidence-media {
-  min-height: 30mm;
+  min-height: 0;
 }
 
 [data-portfolio-page='5'] .evidence-media img {
-  max-height: 30mm;
+  max-height: none;
 }
 
 [data-portfolio-page='5'] .evidence-figure figcaption {
-  grid-template-columns: 1fr;
-  gap: 1mm;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1mm 3mm;
   padding: 2.5mm;
 }
 
@@ -378,11 +368,63 @@ ul {
 }
 
 [data-portfolio-page='5'] .evidence-source {
-  grid-column: 1;
+  grid-column: 2;
+}
+
+.klepaas-scopes {
+  display: grid;
+  gap: 2mm;
+}
+
+.klepaas-scope {
+  padding-top: 2mm;
+  border-top: 1mm solid var(--document-ink);
+}
+
+.klepaas-scope-title {
+  margin-bottom: 2mm;
+  font-size: 11pt;
+  line-height: 1.4;
+}
+
+.klepaas-team-layout {
+  display: grid;
+  grid-template-columns: minmax(42mm, 0.65fr) minmax(96mm, 1.35fr);
+  align-items: start;
+  gap: 5mm;
+}
+
+.klepaas-outcome-list {
+  padding-left: 5mm;
+  margin-bottom: 0;
+}
+
+.klepaas-outcome-list li,
+.klepaas-contribution-list li {
+  font-size: 9.5pt;
+  line-height: 1.48;
+}
+
+.klepaas-outcome-list li:not(:last-child) {
+  margin-bottom: 1.5mm;
+}
+
+.klepaas-contribution-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2mm 5mm;
+  padding: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.klepaas-contribution-list li {
+  padding-top: 1.5mm;
+  border-top: 0.25mm solid var(--document-line);
 }
 
 .opening-lessons {
-  margin-top: 4mm;
+  margin-top: 2mm;
 }
 
 .opening-lessons h3 {

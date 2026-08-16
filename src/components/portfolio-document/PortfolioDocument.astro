@@ -147,18 +147,24 @@ const klepaas = portfolioDocument.projects.klepaas;
         }
       </ol>
     </figure>
-    <div class="architecture-zones">
-      <section class="architecture-zone" data-team-scope="team">
-        <p class="diagram-label">2인 팀 성과</p>
-        <ul>
-          {klepaas.teamOutcome.map((outcome) => <li>{outcome}</li>)}
-        </ul>
-        <EvidenceFigure {...klepaas.evidenceFigure} />
+    <div class="klepaas-scopes">
+      <section class="klepaas-scope" data-team-scope="team">
+        <h3 class="klepaas-scope-title">2인 팀 성과</h3>
+        <div class="klepaas-team-layout">
+          <ul class="klepaas-outcome-list">
+            {klepaas.teamOutcome.map((outcome) => <li>{outcome}</li>)}
+          </ul>
+          <EvidenceFigure {...klepaas.evidenceFigure} />
+        </div>
       </section>
-      <section class="architecture-zone" data-team-scope="personal">
-        <p class="diagram-label">검증된 개인 기여</p>
-        <ul>
-          {klepaas.personalContributions.map((contribution) => <li>{contribution.summary}</li>)}
+      <section class="klepaas-scope" data-team-scope="personal">
+        <h3 class="klepaas-scope-title">검증된 개인 기여</h3>
+        <ul class="klepaas-contribution-list">
+          {
+            klepaas.personalContributions.map((contribution) => (
+              <li data-contribution-id={contribution.id}>{contribution.summary}</li>
+            ))
+          }
         </ul>
       </section>
     </div>

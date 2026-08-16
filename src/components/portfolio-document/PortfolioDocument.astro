@@ -32,6 +32,8 @@ const scopeLimitLabels: Record<ScopeLimit, string> = {
   'release-image-rollback': 'Stored-image release rollback',
   'database-backup-restore': 'Database backup · restore',
   'database-purge': 'Database purge · rotation',
+  'database-credential-rotation': 'Database credential rotation',
+  'data-rollback': 'User data rollback',
   'vm-full-lifecycle': 'Full VM lifecycle',
 };
 ---
@@ -332,12 +334,25 @@ const scopeLimitLabels: Record<ScopeLimit, string> = {
         }
       </div>
     </section>
-    <ul class="architecture-connections" aria-label="Heimdall 데이터베이스 구현 범위">
+    <ul class="promotion-claims" aria-label="Heimdall 구현 근거 요약">
+      {
+        heimdall.promotion.implementationClaims.map((claim) => (
+          <li data-implementation-claim={claim.id}>
+            <span class="promotion-claim-copy">
+              <strong>{claim.label}</strong>
+              <span>{claim.summary}</span>
+            </span>
+            <span class="evidence-status">Implemented</span>
+          </li>
+        ))
+      }
       {
         heimdall.promotion.databaseCapabilities.map((capability) => (
           <li data-database-capability={capability.id}>
-            <strong>{capability.label}</strong>
-            <span>{capability.summary}</span>
+            <span class="promotion-claim-copy">
+              <strong>{capability.label}</strong>
+              <span>{capability.summary}</span>
+            </span>
             <span class="evidence-status">Implemented</span>
           </li>
         ))
@@ -371,10 +386,14 @@ const scopeLimitLabels: Record<ScopeLimit, string> = {
               <td>{mode.handling}</td>
               <td>{mode.preserved}</td>
               <td>
-                <span>{mode.limitation}</span>
-                {mode.scopeLimits.map((scopeLimit: ScopeLimit) => (
-                  <span data-scope-limit={scopeLimit}>{scopeLimitLabels[scopeLimit]}</span>
-                ))}
+                <p class="failure-limit-summary">{mode.limitation}</p>
+                {mode.scopeLimits.length > 0 && (
+                  <ul class="scope-limit-list" data-scope-limit-list aria-label={`${mode.failure} 현재 구현 한계`}>
+                    {mode.scopeLimits.map((scopeLimit: ScopeLimit) => (
+                      <li data-scope-limit={scopeLimit}>{scopeLimitLabels[scopeLimit]}</li>
+                    ))}
+                  </ul>
+                )}
               </td>
             </tr>
           ))

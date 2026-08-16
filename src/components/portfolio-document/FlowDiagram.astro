@@ -21,6 +21,13 @@ const { steps, label, caption } = Astro.props;
             <span>{String(index + 1).padStart(2, '0')}</span>
             <strong>{step.label}</strong>
             {step.summary && <small>{step.summary}</small>}
+            {step.operations && (
+              <ul class="flow-step-operations" aria-label={`${step.label} 세부 작업`}>
+                {step.operations.map((operation) => (
+                  <li data-flow-operation={operation.id}>{operation.label}</li>
+                ))}
+              </ul>
+            )}
           </>
         </li>
       ))

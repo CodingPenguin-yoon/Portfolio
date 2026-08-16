@@ -93,7 +93,7 @@ ul {
 .page-eyebrow,
 .page-footer,
 .diagram-label,
-.flow-diagram li > span,
+.flow-diagram > ol > li > span,
 .status-badge,
 .evidence-status,
 .connection-status {
@@ -200,7 +200,7 @@ ul {
   list-style: none;
 }
 
-.flow-diagram li {
+.flow-diagram > ol > li {
   position: relative;
   display: grid;
   min-height: 24mm;
@@ -211,7 +211,7 @@ ul {
   background: #fff;
 }
 
-.flow-diagram li:not(:last-child)::after {
+.flow-diagram > ol > li:not(:last-child)::after {
   position: absolute;
   z-index: 1;
   top: 50%;
@@ -221,19 +221,34 @@ ul {
   content: '';
 }
 
-.flow-diagram li > span {
+.flow-diagram > ol > li > span {
   color: var(--document-muted);
 }
 
-.flow-diagram li > strong {
+.flow-diagram > ol > li > strong {
   font-size: 10pt;
   line-height: 1.45;
 }
 
-.flow-diagram li > small {
+.flow-diagram > ol > li > small {
   color: var(--document-muted);
   font-size: 9.5pt;
   line-height: 1.45;
+}
+
+.flow-step-operations {
+  display: grid;
+  gap: 1mm;
+  padding: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.flow-step-operations li {
+  padding-left: 1.5mm;
+  border-left: 0.5mm solid var(--document-accent);
+  font-size: 9.5pt;
+  line-height: 1.3;
 }
 
 .flow-diagram figcaption,
@@ -310,14 +325,40 @@ ul {
   font-size: 9.5pt;
 }
 
-.architecture-connections [data-connection-status='planned'] {
-  border-bottom-style: dashed;
-}
-
 .connection-route {
   display: flex;
   align-items: center;
   gap: 2mm;
+}
+
+.connection-edge {
+  position: relative;
+  flex: 1 1 8mm;
+  min-width: 4mm;
+  border-top: 0.25mm solid currentColor;
+  color: var(--document-muted);
+}
+
+.connection-edge::after {
+  position: absolute;
+  top: -0.85mm;
+  right: 0;
+  width: 1.5mm;
+  height: 1.5mm;
+  border-top: 0.25mm solid currentColor;
+  border-right: 0.25mm solid currentColor;
+  content: '';
+  transform: rotate(45deg);
+}
+
+[data-connection-status='active'] .connection-edge,
+[data-connection-status='operational'] .connection-edge {
+  color: var(--document-accent);
+}
+
+[data-connection-status='planned'] .connection-edge {
+  border-top-style: dashed;
+  color: var(--document-planned);
 }
 
 .evidence-figure {
@@ -369,7 +410,7 @@ ul {
   margin: 0 0 3mm;
 }
 
-[data-portfolio-page='5'] .flow-diagram li {
+[data-portfolio-page='5'] .flow-diagram > ol > li {
   min-height: 20mm;
   padding: 3mm;
 }
@@ -495,6 +536,39 @@ ul {
 }
 
 [data-portfolio-page='8'] .page-thesis {
+  margin-bottom: 4mm;
+}
+
+[data-portfolio-page='9'] > h2 {
+  margin: 8mm 0 3mm;
+}
+
+[data-portfolio-page='9'] .page-thesis {
+  margin-bottom: 4mm;
+}
+
+[data-portfolio-page='9'] .flow-diagram {
+  margin-bottom: 0;
+}
+
+[data-portfolio-page='9'] .flow-diagram ol {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2mm;
+}
+
+[data-portfolio-page='9'] .responsibility-transition {
+  margin-top: 2mm;
+}
+
+[data-portfolio-page='9'] .responsibility-transition > h3 {
+  margin-bottom: 2mm;
+}
+
+[data-portfolio-page='10'] > h2 {
+  margin: 8mm 0 3mm;
+}
+
+[data-portfolio-page='10'] .page-thesis {
   margin-bottom: 4mm;
 }
 
@@ -631,6 +705,31 @@ ul {
   font-size: 9.5pt;
 }
 
+.promotion-claims {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2mm 5mm;
+  padding: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.promotion-claims li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 2mm;
+  padding-top: 2mm;
+  border-top: 0.25mm solid var(--document-line);
+  font-size: 9.5pt;
+}
+
+.promotion-claim-copy {
+  display: grid;
+  gap: 1mm;
+  line-height: 1.4;
+}
+
 .responsibility-table {
   width: 100%;
   border-collapse: collapse;
@@ -661,6 +760,30 @@ ul {
 
 .responsibility-table th:first-child {
   width: 31mm;
+}
+
+.failure-limit-summary {
+  margin-bottom: 0;
+  font-size: 9.5pt;
+  line-height: 1.4;
+}
+
+.scope-limit-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1mm;
+  padding: 0;
+  margin: 1.5mm 0 0;
+  list-style: none;
+}
+
+.scope-limit-list li {
+  padding: 0.5mm 1.5mm;
+  border: 0.25mm solid var(--document-planned);
+  border-radius: 999px;
+  color: var(--document-planned);
+  font-size: 9.5pt;
+  line-height: 1.35;
 }
 
 .responsibility-transition {

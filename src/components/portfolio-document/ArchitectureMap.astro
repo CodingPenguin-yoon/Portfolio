@@ -64,9 +64,9 @@ const resolvedConnections = connections.map((connection) => {
           data-from-zone={connection.fromZoneId}
           data-to-zone={connection.toZoneId}
         >
-          <span class="connection-route">
+          <span class="connection-route" aria-label={`${connection.fromLabel}에서 ${connection.toLabel}로 연결`}>
             <strong>{connection.fromLabel}</strong>
-            <span aria-hidden="true">→</span>
+            <span class="connection-edge" data-connection-edge aria-hidden="true" />
             <strong>{connection.toLabel}</strong>
           </span>
           <span>{connection.label}</span>

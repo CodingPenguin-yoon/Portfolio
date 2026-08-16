@@ -1,6 +1,12 @@
 export type DocumentStatus = 'implemented' | 'previous' | 'planned';
 
-export type ScopeLimit = 'release-image-rollback' | 'database-backup-restore' | 'database-purge' | 'vm-full-lifecycle';
+export type ScopeLimit =
+  | 'release-image-rollback'
+  | 'database-backup-restore'
+  | 'database-purge'
+  | 'database-credential-rotation'
+  | 'data-rollback'
+  | 'vm-full-lifecycle';
 
 export type EvidenceStatus = 'verified' | 'user-confirmed' | 'planned';
 
@@ -26,6 +32,10 @@ export interface FlowStepData {
   id: string;
   label: string;
   summary?: string;
+  operations?: readonly {
+    id: string;
+    label: string;
+  }[];
 }
 
 export interface PortfolioEvidence {
@@ -141,6 +151,11 @@ export interface HeimdallProjectData {
     steps: readonly (FlowStepData & { id: HeimdallPromotionStepId })[];
     outcomes: readonly {
       id: HeimdallPromotionOutcomeId;
+      label: string;
+      summary: string;
+    }[];
+    implementationClaims: readonly {
+      id: 'generation-isolation' | 'retirement-after-activation-success';
       label: string;
       summary: string;
     }[];
@@ -469,6 +484,12 @@ export const portfolioDocument = {
           {
             id: 'nginx-validate-route-probe',
             label: 'Nginx Validate + Route Probe',
+            operations: [
+              { id: 'nginx-t', label: 'nginx -t' },
+              { id: 'atomic-config-replace', label: 'Atomic config replace' },
+              { id: 'reload', label: 'Nginx reload' },
+              { id: 'route-probe', label: 'Route probe' },
+            ],
           },
           {
             id: 'current-metadata-previous-retirement',
@@ -485,6 +506,18 @@ export const portfolioDocument = {
             id: 'traffic-activation-success',
             label: 'Traffic Activation Success',
             summary: 'Nginx 검증과 실제 route probe가 끝나 current metadata를 전환할 수 있는 상태입니다.',
+          },
+        ],
+        implementationClaims: [
+          {
+            id: 'generation-isolation',
+            label: 'Generation Isolation',
+            summary: '세대별 network와 고유 service alias로 Current와 Candidate의 실행 경계를 분리합니다.',
+          },
+          {
+            id: 'retirement-after-activation-success',
+            label: 'Previous Retirement',
+            summary: 'Nginx 활성화와 실제 route probe 성공이 확정된 뒤에만 이전 generation을 회수합니다.',
           },
         ],
         databaseCapabilities: [
@@ -531,7 +564,7 @@ export const portfolioDocument = {
           handling: 'runtime generation과 PostgreSQL 데이터 실패 범위를 분리',
           preserved: '별도 Storage VM의 사용자 데이터',
           limitation: 'DB purge·backup·restore와 data rollback 비범위',
-          scopeLimits: ['database-backup-restore', 'database-purge'],
+          scopeLimits: ['database-backup-restore', 'database-purge', 'database-credential-rotation', 'data-rollback'],
         },
       ],
       reconciliationPolicy:
@@ -616,7 +649,7 @@ export const portfolioDocument = {
           status: 'planned',
         },
         {
-          fromZoneId: 'runtime-application',
+          fromZoneId: 'project-gateway',
           toZoneId: 'storage-postgresql',
           label: '프로젝트 DB 연결',
           status: 'planned',
@@ -912,7 +945,13 @@ export const portfolioDocument = {
           source: 'heimdall_final/backend/src/heimdall/runtime/docker.py:450-469',
         },
       ],
-      limitations: ['release-image-rollback', 'database-backup-restore', 'database-purge'],
+      limitations: [
+        'release-image-rollback',
+        'database-backup-restore',
+        'database-purge',
+        'database-credential-rotation',
+        'data-rollback',
+      ],
     },
     {
       number: 11,

@@ -243,34 +243,59 @@ test('Gjallar evidence is eager, accessible, and scoped to the implementation pa
   await expect(page.locator('[data-portfolio-page="7"] .evidence-figure')).toHaveCount(0);
 });
 
-test('Heimdall implementation and external plan are visibly separated', async ({ page }) => {
+test('Heimdall promotion exposes Nginx activation operations', async ({ page }) => {
   await page.goto('/portfolio');
 
   const promotion = page.locator('[data-portfolio-page="9"]');
   await expect(promotion).toHaveAttribute('data-page-status', 'implemented');
   const promotionSteps = promotion.locator('[data-flow-step]');
   await expect(promotionSteps).toHaveCount(7);
+  expect(await promotionSteps.evaluateAll((steps) => steps.map((step) => step.getAttribute('data-flow-step')))).toEqual(
+    [
+      'exact-commit',
+      'build',
+      'generation-network',
+      'candidate-start',
+      'service-health',
+      'nginx-validate-route-probe',
+      'current-metadata-previous-retirement',
+    ]
+  );
+
+  const activationOperations = promotion.locator('[data-flow-step="nginx-validate-route-probe"] [data-flow-operation]');
+  await expect(activationOperations).toHaveCount(4);
   expect(
-    await promotionSteps.evaluateAll((steps) =>
-      steps.map((step) => ({
-        id: step.getAttribute('data-flow-step'),
-        label: step.querySelector('strong')?.textContent?.trim(),
-      }))
+    await activationOperations.evaluateAll((operations) =>
+      operations.map((operation) => operation.getAttribute('data-flow-operation'))
     )
-  ).toEqual([
-    { id: 'exact-commit', label: 'Exact Commit' },
-    { id: 'build', label: 'Build' },
-    { id: 'generation-network', label: 'Generation Network' },
-    { id: 'candidate-start', label: 'Candidate Start' },
-    { id: 'service-health', label: 'Service Health' },
-    { id: 'nginx-validate-route-probe', label: 'Nginx Validate + Route Probe' },
-    { id: 'current-metadata-previous-retirement', label: 'Current Metadata + Previous Retirement' },
-  ]);
+  ).toEqual(['nginx-t', 'atomic-config-replace', 'reload', 'route-probe']);
+});
+
+test('Heimdall promotion keeps implementation claims visible', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const promotion = page.locator('[data-portfolio-page="9"]');
   expect(
     await promotion
       .locator('[data-promotion-outcome]')
       .evaluateAll((outcomes) => outcomes.map((outcome) => outcome.getAttribute('data-promotion-outcome')))
   ).toEqual(['execution-success', 'traffic-activation-success']);
+  expect(
+    await promotion
+      .locator('[data-implementation-claim]')
+      .evaluateAll((claims) => claims.map((claim) => claim.getAttribute('data-implementation-claim')))
+  ).toEqual(['generation-isolation', 'retirement-after-activation-success']);
+  expect(
+    await promotion
+      .locator('[data-database-capability]')
+      .evaluateAll((capabilities) =>
+        capabilities.map((capability) => capability.getAttribute('data-database-capability'))
+      )
+  ).toEqual(['project-db-role-provisioning', 'deployment-database-injection']);
+});
+
+test('Heimdall failure policy exposes structural limits', async ({ page }) => {
+  await page.goto('/portfolio');
 
   const failure = page.locator('[data-portfolio-page="10"]');
   await expect(failure).toHaveAttribute('data-page-status', 'implemented');
@@ -282,8 +307,26 @@ test('Heimdall implementation and external plan are visibly separated', async ({
   await expect(failure.locator('[data-scope-limit="release-image-rollback"]')).toHaveCount(1);
   await expect(failure.locator('[data-scope-limit="database-backup-restore"]')).toHaveCount(1);
   await expect(failure.locator('[data-scope-limit="database-purge"]')).toHaveCount(1);
+  await expect(failure.locator('[data-scope-limit="database-credential-rotation"]')).toHaveCount(1);
+  await expect(failure.locator('[data-scope-limit="data-rollback"]')).toHaveCount(1);
   await expect(failure.locator('[data-reconciliation-policy="preserve-unknown"]')).toHaveCount(1);
   await expect(failure.locator('[data-storage-boundary="user-confirmed-operational"]')).toHaveCount(1);
+
+  const dataLimits = failure.locator('[data-failure-mode="app-deployment-data"] [data-scope-limit-list]');
+  await expect(dataLimits).toHaveCount(1);
+  await expect(dataLimits).toHaveJSProperty('tagName', 'UL');
+  expect(
+    await dataLimits
+      .locator(':scope > [data-scope-limit]')
+      .evaluateAll((limits) => limits.map((limit) => limit.getAttribute('data-scope-limit')))
+  ).toEqual(['database-backup-restore', 'database-purge', 'database-credential-rotation', 'data-rollback']);
+  expect(
+    await dataLimits.locator(':scope > [data-scope-limit]').evaluateAll((limits) => limits.map((item) => item.tagName))
+  ).toEqual(Array(4).fill('LI'));
+});
+
+test('external exposure branches at the project gateway', async ({ page }) => {
+  await page.goto('/portfolio');
 
   const external = page.locator('[data-portfolio-page="11"]');
   await expect(external).toHaveAttribute('data-page-status', 'planned');
@@ -318,15 +361,26 @@ test('Heimdall implementation and external plan are visibly separated', async ({
     { status: 'planned', from: 'wireguard', to: 'external-network-ingress' },
     { status: 'planned', from: 'external-network-ingress', to: 'project-gateway' },
     { status: 'planned', from: 'project-gateway', to: 'runtime-application' },
-    { status: 'planned', from: 'runtime-application', to: 'storage-postgresql' },
+    { status: 'planned', from: 'project-gateway', to: 'storage-postgresql' },
   ]);
+  await expect(external.locator('[data-routing-owner="internal"]')).toHaveCount(1);
+  await expect(page.locator('[data-portfolio-page="6"] [data-connection-status="planned"]')).toHaveCount(0);
+});
+
+test('external exposure renders planned edges rather than dashed separators', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const plannedConnections = page.locator('[data-portfolio-page="11"] [data-connection-status="planned"]');
+  const plannedEdges = plannedConnections.locator('[data-connection-edge]');
+  await expect(plannedEdges).toHaveCount(7);
+  expect(
+    await plannedEdges.evaluateAll((edges) => edges.map((edge) => window.getComputedStyle(edge).borderTopStyle))
+  ).toEqual(Array(7).fill('dashed'));
   expect(
     await plannedConnections.evaluateAll((connections) =>
       connections.map((connection) => window.getComputedStyle(connection).borderBottomStyle)
     )
-  ).toEqual(Array(7).fill('dashed'));
-  await expect(external.locator('[data-routing-owner="internal"]')).toHaveCount(1);
-  await expect(page.locator('[data-portfolio-page="6"] [data-connection-status="planned"]')).toHaveCount(0);
+  ).toEqual(Array(7).fill('solid'));
 });
 
 test('system and project content stays inside the nested A4 page bounds', async ({ page }) => {
@@ -386,6 +440,17 @@ test('system and project content stays inside the nested A4 page bounds', async 
         bodyScrollHeight: body.scrollHeight,
         bodyClientWidth: body.clientWidth,
         bodyScrollWidth: body.scrollWidth,
+        childMetrics: Array.from(body.children).map((child) => {
+          const bounds = child.getBoundingClientRect();
+          const style = window.getComputedStyle(child);
+          return {
+            tag: child.tagName,
+            className: child.className,
+            height: Math.round(bounds.height),
+            marginTop: style.marginTop,
+            marginBottom: style.marginBottom,
+          };
+        }),
         childrenWithinPage: bodyChildren.every(
           (bounds) =>
             bounds.left >= pageBounds.left &&
@@ -398,9 +463,10 @@ test('system and project content stays inside the nested A4 page bounds', async 
       };
     });
 
-    expect(measurement.bodyScrollHeight, `page ${pageNumber} body overflow`).toBeLessThanOrEqual(
-      measurement.bodyClientHeight + 1
-    );
+    expect(
+      measurement.bodyScrollHeight,
+      `page ${pageNumber} body overflow: ${JSON.stringify(measurement.childMetrics)}`
+    ).toBeLessThanOrEqual(measurement.bodyClientHeight + 1);
     expect(measurement.bodyScrollWidth, `page ${pageNumber} horizontal overflow`).toBeLessThanOrEqual(
       measurement.bodyClientWidth + 1
     );

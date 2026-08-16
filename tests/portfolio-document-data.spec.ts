@@ -36,12 +36,25 @@ test('team contribution and limitations are explicit', () => {
   expect(new Set(klepaas.personalContributions.map((contribution) => contribution.id)).size).toBe(4);
 
   const heimdallFailure = portfolioDocument.pages.find((page) => page.slug === 'heimdall-failure');
-  expect(heimdallFailure?.limitations).toEqual(['release-image-rollback', 'database-backup-restore', 'database-purge']);
+  expect(heimdallFailure?.limitations).toEqual([
+    'release-image-rollback',
+    'database-backup-restore',
+    'database-purge',
+    'database-credential-rotation',
+    'data-rollback',
+  ]);
 
   const gjallar = portfolioDocument.pages.find((page) => page.slug === 'gjallar');
   expect(gjallar?.limitations).toEqual(['vm-full-lifecycle']);
 
   expect(new Set(portfolioDocument.pages.flatMap((page) => page.limitations))).toEqual(
-    new Set(['release-image-rollback', 'database-backup-restore', 'database-purge', 'vm-full-lifecycle'])
+    new Set([
+      'release-image-rollback',
+      'database-backup-restore',
+      'database-purge',
+      'database-credential-rotation',
+      'data-rollback',
+      'vm-full-lifecycle',
+    ])
   );
 });

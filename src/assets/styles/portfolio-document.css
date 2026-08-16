@@ -175,7 +175,8 @@ ul {
 
 [data-status='implemented'] .status-badge,
 [data-evidence-status='verified'] .evidence-status,
-[data-connection-status='active'] .connection-status {
+[data-connection-status='active'] .connection-status,
+[data-connection-status='operational'] .connection-status {
   color: var(--document-accent);
 }
 
@@ -265,6 +266,31 @@ ul {
   margin-bottom: 0;
   color: #465163;
   font-size: 9.5pt;
+}
+
+.architecture-zone-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5mm 3mm;
+  padding: 3mm 0 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.architecture-zone-details li {
+  color: var(--document-ink);
+  font-size: 9.5pt;
+  font-weight: 500;
+}
+
+.architecture-operational-note {
+  width: fit-content;
+  padding: 1mm 2mm;
+  margin-top: 3mm;
+  border: 0.25mm solid var(--document-accent);
+  border-radius: 999px;
+  color: var(--document-accent) !important;
+  font-weight: 500;
 }
 
 .architecture-connections {
@@ -444,6 +470,211 @@ ul {
   padding: 2mm 3mm;
   border-top: 0.75mm solid var(--document-ink);
   font-size: 9.5pt;
+}
+
+[data-portfolio-page='6'] .page-thesis,
+[data-portfolio-page='7'] .page-thesis,
+[data-portfolio-page='8'] .page-thesis {
+  margin-bottom: 7mm;
+}
+
+[data-portfolio-page='6'] > h2 {
+  margin: 8mm 0 4mm;
+}
+
+[data-portfolio-page='6'] .page-thesis {
+  margin-bottom: 5mm;
+}
+
+[data-portfolio-page='6'] .architecture-map {
+  margin-bottom: 5mm;
+}
+
+[data-portfolio-page='6'] .architecture-map > .diagram-label {
+  margin-bottom: 2mm;
+}
+
+[data-portfolio-page='6'] .architecture-zones {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+[data-portfolio-page='6'] [data-architecture-zone='proxmox'] {
+  grid-column: 1 / -1;
+  min-height: 27mm;
+  border-top-color: var(--document-accent);
+}
+
+[data-portfolio-page='6'] .architecture-zone {
+  min-height: 40mm;
+  padding: 4mm;
+}
+
+[data-portfolio-page='6'] .architecture-connections {
+  gap: 0;
+  padding-top: 2mm;
+}
+
+[data-portfolio-page='6'] .architecture-connections li {
+  grid-template-columns: minmax(50mm, 1.2fr) minmax(46mm, 1fr) auto;
+  gap: 3mm;
+  padding: 2mm 0;
+}
+
+[data-portfolio-page='6'] .architecture-map figcaption {
+  padding-top: 2mm;
+}
+
+.system-map-decision {
+  display: grid;
+  grid-template-columns: 38mm minmax(0, 1fr);
+  gap: 4mm;
+  padding-top: 3mm;
+  margin-bottom: 0;
+  border-top: 0.75mm solid var(--document-ink);
+  font-size: 9.5pt;
+}
+
+.responsibility-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 9.5pt;
+}
+
+.responsibility-table caption {
+  padding-bottom: 2mm;
+  color: var(--document-muted);
+  text-align: left;
+}
+
+.responsibility-table th,
+.responsibility-table td {
+  padding: 3mm;
+  border-bottom: 0.25mm solid var(--document-line);
+  line-height: 1.45;
+  text-align: left;
+  vertical-align: top;
+}
+
+.responsibility-table thead th {
+  border-top: 0.75mm solid var(--document-ink);
+  background: var(--document-soft);
+  font-size: 10pt;
+}
+
+.responsibility-table th:first-child {
+  width: 31mm;
+}
+
+.responsibility-transition {
+  margin-top: 8mm;
+}
+
+.responsibility-transition > h3 {
+  margin-bottom: 3mm;
+  font-size: 11pt;
+}
+
+.responsibility-transition > div {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8mm;
+}
+
+.responsibility-transition article {
+  position: relative;
+  padding: 4mm 0 0;
+  border-top: 1mm solid var(--document-ink);
+}
+
+.responsibility-transition article:first-child::after {
+  position: absolute;
+  top: 8mm;
+  right: -5.5mm;
+  color: var(--document-muted);
+  content: '→';
+}
+
+.responsibility-transition article p:last-child {
+  margin-bottom: 0;
+  font-size: 9.5pt;
+}
+
+.gjallar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  align-items: start;
+  gap: 7mm;
+}
+
+.gjallar-layers {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.gjallar-layers li {
+  padding: 3mm 0;
+  border-top: 0.75mm solid var(--document-ink);
+}
+
+.gjallar-layers .diagram-label {
+  margin-bottom: 1mm;
+}
+
+.gjallar-layers h3 {
+  margin-bottom: 1.5mm;
+  font-size: 10.5pt;
+  line-height: 1.4;
+}
+
+.gjallar-layers li > p:last-child {
+  margin-bottom: 0;
+  color: #465163;
+  font-size: 9.5pt;
+  line-height: 1.45;
+}
+
+.gjallar-evidence .evidence-figure {
+  margin-bottom: 5mm;
+}
+
+.gjallar-evidence .evidence-media {
+  min-height: 0;
+}
+
+.gjallar-evidence .evidence-media img {
+  max-height: none;
+}
+
+.gjallar-evidence .evidence-figure figcaption {
+  gap: 1.5mm 3mm;
+  padding: 3mm;
+}
+
+.gjallar-evidence .evidence-figure figcaption strong,
+.gjallar-evidence .evidence-source {
+  font-size: 9.5pt;
+  line-height: 1.45;
+}
+
+.scope-limit {
+  padding: 4mm;
+  border-left: 1mm solid var(--document-planned);
+  background: #fbf7ef;
+}
+
+.scope-limit .diagram-label {
+  margin-bottom: 1.5mm;
+  color: var(--document-planned);
+}
+
+.scope-limit p:last-child {
+  margin-bottom: 0;
+  font-size: 9.5pt;
+  line-height: 1.5;
 }
 
 @media screen {

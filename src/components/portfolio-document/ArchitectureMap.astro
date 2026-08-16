@@ -1,22 +1,13 @@
 ---
-export type ArchitectureConnectionStatus = 'active' | 'planned' | 'external';
-
-export interface ArchitectureZone {
-  id: string;
-  label: string;
-  responsibility: string;
-}
-
-export interface ArchitectureConnection {
-  fromZoneId: ArchitectureZone['id'];
-  toZoneId: ArchitectureZone['id'];
-  label: string;
-  status: ArchitectureConnectionStatus;
-}
+import type {
+  ArchitectureConnectionData,
+  ArchitectureConnectionStatus,
+  ArchitectureZoneData,
+} from '~/data/portfolio-document';
 
 export interface Props {
-  zones: readonly ArchitectureZone[];
-  connections: readonly ArchitectureConnection[];
+  zones: readonly ArchitectureZoneData[];
+  connections: readonly ArchitectureConnectionData[];
   label: string;
   caption?: string;
 }
@@ -25,6 +16,7 @@ const { zones, connections, label, caption } = Astro.props;
 
 const connectionStatusLabels: Record<ArchitectureConnectionStatus, string> = {
   active: '현재 연결',
+  operational: '운영 연결',
   planned: '계획 연결',
   external: '외부 경계',
 };
@@ -49,9 +41,17 @@ const resolvedConnections = connections.map((connection) => {
   <div class="architecture-zones">
     {
       zones.map((zone) => (
-        <section class="architecture-zone" data-architecture-zone={zone.id}>
+        <section class="architecture-zone" data-architecture-zone={zone.id} data-system-node={zone.systemNode}>
           <h3>{zone.label}</h3>
           <p>{zone.responsibility}</p>
+          {zone.details && (
+            <ul class="architecture-zone-details" aria-label={`${zone.label} 구성`}>
+              {zone.details.map((detail) => (
+                <li>{detail}</li>
+              ))}
+            </ul>
+          )}
+          {zone.operationalNote && <p class="architecture-operational-note">{zone.operationalNote}</p>}
         </section>
       ))
     }

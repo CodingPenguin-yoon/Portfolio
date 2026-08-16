@@ -104,3 +104,132 @@ test('K-Le-PaaS evidence is readable and remains inside the A4 page', async ({ p
   expect(measurement.captionWithinPage).toBe(true);
   expect(measurement.bodyScrollHeight).toBeLessThanOrEqual(measurement.bodyClientHeight + 1);
 });
+
+test('system map separates lifecycles and Gjallar execution layers', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const system = page.locator('[data-portfolio-page="6"]');
+  await expect(system.locator('[data-architecture-map]')).toHaveCount(1);
+  await expect(system.locator('[data-system-node="runtime"]')).toHaveCount(1);
+  await expect(system.locator('[data-system-node="storage"]')).toHaveCount(1);
+  await expect(system.locator('[data-system-node="runtime"]')).toContainText('Heimdall Worker');
+  await expect(system.locator('[data-system-node="storage"]')).toContainText('PostgreSQL');
+
+  const gjallar = page.locator('[data-portfolio-page="8"]');
+  await expect(gjallar.locator('[data-gjallar-layer]')).toHaveCount(5);
+  await expect(gjallar.locator('[data-scope-limit="vm-full-lifecycle"]')).toHaveCount(1);
+});
+
+test('current system connections resolve declared zones without showing the planned external path', async ({
+  page,
+}) => {
+  await page.goto('/portfolio');
+
+  const map = page.locator('[data-portfolio-page="6"] [data-architecture-map]');
+  const zoneLabels = await map
+    .locator('[data-architecture-zone]')
+    .evaluateAll((zones) =>
+      Object.fromEntries(
+        zones.map((zone) => [
+          zone.getAttribute('data-architecture-zone'),
+          zone.querySelector('h3')?.textContent?.trim(),
+        ])
+      )
+    );
+  const currentConnections = map.locator('[data-connection-status="active"], [data-connection-status="operational"]');
+
+  await expect(currentConnections).toHaveCount(3);
+  const resolvedConnections = await currentConnections.evaluateAll((connections) =>
+    connections.map((connection) => ({
+      from: connection.getAttribute('data-from-zone'),
+      to: connection.getAttribute('data-to-zone'),
+      labels: Array.from(connection.querySelectorAll('.connection-route strong')).map((label) =>
+        label.textContent?.trim()
+      ),
+    }))
+  );
+
+  for (const connection of resolvedConnections) {
+    expect(connection.from).not.toBeNull();
+    expect(connection.to).not.toBeNull();
+    expect(connection.labels).toEqual([
+      zoneLabels[connection.from as keyof typeof zoneLabels],
+      zoneLabels[connection.to as keyof typeof zoneLabels],
+    ]);
+  }
+
+  await expect(map.locator('[data-connection-status="planned"]')).toHaveCount(0);
+  await expect(map.locator('[data-connection-status="external"]')).toHaveCount(0);
+  await expect(map).not.toContainText('OCI Edge');
+  await expect(map).not.toContainText('WireGuard');
+});
+
+test('responsibility split compares five decision dimensions and one before-after change', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const responsibility = page.locator('[data-portfolio-page="7"]');
+  const rows = responsibility.locator('[data-responsibility-row]');
+  await expect(rows).toHaveCount(5);
+  expect(await rows.evaluateAll((items) => items.map((item) => item.getAttribute('data-responsibility-row')))).toEqual([
+    'responsibility',
+    'change-reason',
+    'execution-target',
+    'failure-impact',
+    'current-scope',
+  ]);
+  await expect(responsibility.locator('[data-responsibility-state="before"]')).toHaveCount(1);
+  await expect(responsibility.locator('[data-responsibility-state="after"]')).toHaveCount(1);
+  await expect(responsibility.locator('[data-responsibility-state="after"]')).toContainText('VM Create');
+  await expect(responsibility.locator('[data-responsibility-state="after"]')).toContainText('Deployment Generation');
+});
+
+test('Gjallar evidence is eager, accessible, and scoped to the implementation page', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const gjallar = page.locator('[data-portfolio-page="8"]');
+  const evidence = gjallar.locator('.evidence-figure');
+  const image = evidence.locator('img');
+  const caption = evidence.locator('figcaption strong');
+
+  await expect(evidence).toHaveCount(1);
+  await expect(image).toHaveAttribute('src', '/projects/gjallar.png');
+  await expect(image).toHaveAttribute('loading', 'eager');
+  expect((await image.getAttribute('alt'))?.trim().length).toBeGreaterThan(20);
+  await expect(caption).toBeVisible();
+  expect((await caption.textContent())?.trim().length).toBeGreaterThan(20);
+  await expect(page.locator('[data-portfolio-page="6"] .evidence-figure')).toHaveCount(0);
+  await expect(page.locator('[data-portfolio-page="7"] .evidence-figure')).toHaveCount(0);
+});
+
+test('current system, responsibility, and Gjallar content stay inside their A4 pages', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  for (const pageNumber of [6, 7, 8]) {
+    const measurement = await page.locator(`[data-portfolio-page="${pageNumber}"]`).evaluate((portfolioPage) => {
+      const body = portfolioPage.querySelector<HTMLElement>('.page-body');
+      const footer = portfolioPage.querySelector<HTMLElement>('.page-footer');
+      if (!body || !footer) throw new Error(`Page ${portfolioPage.getAttribute('data-portfolio-page')} is incomplete`);
+
+      const pageBounds = portfolioPage.getBoundingClientRect();
+      const footerBounds = footer.getBoundingClientRect();
+      const bodyChildren = Array.from(body.children).map((child) => child.getBoundingClientRect());
+
+      return {
+        bodyClientHeight: body.clientHeight,
+        bodyScrollHeight: body.scrollHeight,
+        childrenWithinPage: bodyChildren.every(
+          (bounds) =>
+            bounds.left >= pageBounds.left &&
+            bounds.right <= pageBounds.right &&
+            bounds.top >= pageBounds.top &&
+            bounds.bottom <= footerBounds.top
+        ),
+      };
+    });
+
+    expect(measurement.bodyScrollHeight, `page ${pageNumber} body overflow`).toBeLessThanOrEqual(
+      measurement.bodyClientHeight + 1
+    );
+    expect(measurement.childrenWithinPage, `page ${pageNumber} child bounds`).toBe(true);
+  }
+});

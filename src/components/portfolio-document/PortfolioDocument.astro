@@ -1,12 +1,26 @@
 ---
-import { portfolioDocument } from '~/data/portfolio-document';
+import { portfolioDocument, type ScopeLimit } from '~/data/portfolio-document';
 
+import ArchitectureMap from './ArchitectureMap.astro';
 import EvidenceFigure from './EvidenceFigure.astro';
 import PortfolioPage from './PortfolioPage.astro';
 
-const [coverPage, profilePage, originPage, evolutionPage, klepaasPage, ...remainingPages] = portfolioDocument.pages;
+const [
+  coverPage,
+  profilePage,
+  originPage,
+  evolutionPage,
+  klepaasPage,
+  systemPage,
+  responsibilityPage,
+  gjallarPage,
+  ...remainingPages
+] = portfolioDocument.pages;
 const { person, openingStory } = portfolioDocument;
 const klepaas = portfolioDocument.projects.klepaas;
+const currentSystem = portfolioDocument.projects.currentSystem;
+const responsibilitySplit = portfolioDocument.projects.responsibilitySplit;
+const gjallar = portfolioDocument.projects.gjallar;
 ---
 
 <main class="portfolio-document" aria-labelledby="portfolio-document-title">
@@ -180,6 +194,103 @@ const klepaas = portfolioDocument.projects.klepaas;
         }
       </ol>
     </section>
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={systemPage.number}
+    eyebrow={systemPage.eyebrow}
+    title={systemPage.title}
+    thesis={systemPage.thesis}
+    status={systemPage.status}
+    statusNote={systemPage.statusNote}
+  >
+    <ArchitectureMap
+      zones={currentSystem.zones}
+      connections={currentSystem.connections}
+      label="현재 시스템의 책임과 운영 연결"
+      caption={currentSystem.caption}
+    />
+    <p class="system-map-decision">
+      <strong>Lifecycle boundary</strong>
+      애플리케이션 실행 환경과 사용자 데이터의 수명주기를 분리했습니다.
+    </p>
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={responsibilityPage.number}
+    eyebrow={responsibilityPage.eyebrow}
+    title={responsibilityPage.title}
+    thesis={responsibilityPage.thesis}
+    status={responsibilityPage.status}
+  >
+    <table class="responsibility-table">
+      <caption>Gjallar와 Heimdall의 현재 책임 경계</caption>
+      <thead>
+        <tr>
+          <th scope="col">구분</th>
+          <th scope="col">Gjallar</th>
+          <th scope="col">Heimdall</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          responsibilitySplit.rows.map((row) => (
+            <tr data-responsibility-row={row.id}>
+              <th scope="row">{row.label}</th>
+              <td>{row.gjallar}</td>
+              <td>{row.heimdall}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <section class="responsibility-transition" aria-labelledby="responsibility-transition-title">
+      <h3 id="responsibility-transition-title">Before / After</h3>
+      <div>
+        <article data-responsibility-state="before">
+          <p class="diagram-label">{responsibilitySplit.before.label}</p>
+          <p>{responsibilitySplit.before.summary}</p>
+        </article>
+        <article data-responsibility-state="after">
+          <p class="diagram-label">{responsibilitySplit.after.label}</p>
+          <p>{responsibilitySplit.after.summary}</p>
+        </article>
+      </div>
+    </section>
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={gjallarPage.number}
+    eyebrow={gjallarPage.eyebrow}
+    title={gjallarPage.title}
+    thesis={gjallarPage.thesis}
+    status={gjallarPage.status}
+    statusNote={gjallarPage.statusNote}
+  >
+    <div class="gjallar-layout">
+      <ol class="gjallar-layers" aria-label="Gjallar VM 생성 제어 계층">
+        {
+          gjallar.layers.map((layer) => (
+            <li data-gjallar-layer={layer.id}>
+              <p class="diagram-label">{layer.label}</p>
+              <h3>{layer.title}</h3>
+              <p>{layer.summary}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <div class="gjallar-evidence">
+        <EvidenceFigure {...gjallar.evidenceFigure} />
+        {
+          gjallarPage.limitations.map((limitation: ScopeLimit) => (
+            <aside class="scope-limit" data-scope-limit={limitation} aria-label="Gjallar 현재 구현 한계">
+              <p class="diagram-label">Scope Limit</p>
+              <p>{gjallar.scopeLimit}</p>
+            </aside>
+          ))
+        }
+      </div>
+    </div>
   </PortfolioPage>
 
   {

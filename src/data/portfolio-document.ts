@@ -4,6 +4,24 @@ export type ScopeLimit = 'release-image-rollback' | 'database-backup-restore' | 
 
 export type EvidenceStatus = 'verified' | 'user-confirmed' | 'planned';
 
+export type ArchitectureConnectionStatus = 'active' | 'operational' | 'planned' | 'external';
+
+export interface ArchitectureZoneData {
+  id: string;
+  label: string;
+  responsibility: string;
+  systemNode?: 'platform' | 'control' | 'runtime' | 'storage';
+  details?: readonly string[];
+  operationalNote?: string;
+}
+
+export interface ArchitectureConnectionData {
+  fromZoneId: ArchitectureZoneData['id'];
+  toZoneId: ArchitectureZoneData['id'];
+  label: string;
+  status: ArchitectureConnectionStatus;
+}
+
 export interface PortfolioEvidence {
   label: string;
   status: EvidenceStatus;
@@ -49,6 +67,54 @@ export interface KlepaasProjectData {
     status: EvidenceStatus;
     source: string;
   };
+}
+
+export type CurrentSystemZoneId = 'proxmox' | 'gjallar-control' | 'runtime' | 'storage';
+
+export interface CurrentSystemData {
+  zones: readonly (ArchitectureZoneData & { id: CurrentSystemZoneId })[];
+  connections: readonly (ArchitectureConnectionData & {
+    fromZoneId: CurrentSystemZoneId;
+    toZoneId: CurrentSystemZoneId;
+  })[];
+  caption: string;
+}
+
+export type ResponsibilityRowId =
+  | 'responsibility'
+  | 'change-reason'
+  | 'execution-target'
+  | 'failure-impact'
+  | 'current-scope';
+
+export interface ResponsibilitySplitData {
+  rows: readonly {
+    id: ResponsibilityRowId;
+    label: string;
+    gjallar: string;
+    heimdall: string;
+  }[];
+  before: { label: string; summary: string };
+  after: { label: string; summary: string };
+}
+
+export type GjallarLayerId = 'actual-state' | 'policy' | 'preflight' | 'execution' | 'outcome';
+
+export interface GjallarProjectData {
+  layers: readonly {
+    id: GjallarLayerId;
+    label: string;
+    title: string;
+    summary: string;
+  }[];
+  evidenceFigure: {
+    src: string;
+    alt: string;
+    caption: string;
+    status: EvidenceStatus;
+    source: string;
+  };
+  scopeLimit: string;
 }
 
 export const portfolioDocument = {
@@ -177,6 +243,146 @@ export const portfolioDocument = {
         source: 'public/projects/klepaas-dashboard.png',
       },
     } satisfies KlepaasProjectData,
+    currentSystem: {
+      zones: [
+        {
+          id: 'proxmox',
+          label: 'Proxmox',
+          responsibility: '실제 VM inventory와 실행 기반을 소유합니다.',
+          systemNode: 'platform',
+          details: ['Actual-state Source of Truth'],
+        },
+        {
+          id: 'gjallar-control',
+          label: 'Gjallar Control',
+          responsibility: 'VM 생성 정책을 검증하고 native API 실행을 제어합니다.',
+          systemNode: 'control',
+          details: ['VM Profile', 'Preflight', 'Native Create'],
+        },
+        {
+          id: 'runtime',
+          label: 'Runtime VM',
+          responsibility: '애플리케이션 배포 세대와 내부 라우팅을 실행합니다.',
+          systemNode: 'runtime',
+          details: ['Heimdall Worker', 'Project Gateway', 'App Generations'],
+        },
+        {
+          id: 'storage',
+          label: 'Storage VM',
+          responsibility: '배포 세대와 분리된 사용자 데이터 수명주기를 소유합니다.',
+          systemNode: 'storage',
+          details: ['PostgreSQL', 'Project DB & Role'],
+          operationalNote: 'Operational · 사용자 확인 운영 구조',
+        },
+      ],
+      connections: [
+        {
+          fromZoneId: 'gjallar-control',
+          toZoneId: 'proxmox',
+          label: 'inventory 조회 · native API create',
+          status: 'active',
+        },
+        {
+          fromZoneId: 'proxmox',
+          toZoneId: 'runtime',
+          label: 'VM 실행 기반',
+          status: 'active',
+        },
+        {
+          fromZoneId: 'runtime',
+          toZoneId: 'storage',
+          label: '애플리케이션 DB 연결 · 별도 VM 운영',
+          status: 'operational',
+        },
+      ],
+      caption:
+        '실선은 현재 코드로 확인한 경로입니다. Storage VM 연결은 별도 PostgreSQL VM을 사용한다는 사용자 확인 운영 구조입니다.',
+    } satisfies CurrentSystemData,
+    responsibilitySplit: {
+      rows: [
+        {
+          id: 'responsibility',
+          label: '책임',
+          gjallar: 'VM 생성 요청의 정책·검증·실행',
+          heimdall: '애플리케이션 세대의 빌드·검증·승격',
+        },
+        {
+          id: 'change-reason',
+          label: '변경 이유',
+          gjallar: '인프라 용량·구성 변경',
+          heimdall: '애플리케이션 릴리스',
+        },
+        {
+          id: 'execution-target',
+          label: '실행 대상',
+          gjallar: 'Proxmox VM',
+          heimdall: 'Docker Deployment Generation',
+        },
+        {
+          id: 'failure-impact',
+          label: '실패 영향',
+          gjallar: '실행 기반 생성 실패',
+          heimdall: '후보 배포 미승격',
+        },
+        {
+          id: 'current-scope',
+          label: '현재 범위',
+          gjallar: 'Native Create · 제한된 gated Start',
+          heimdall: 'Deployment Generation 생성·검증·Current 승격',
+        },
+      ],
+      before: {
+        label: 'Before · 초기 Heimdall',
+        summary: 'Terraform VM 생성, Ansible 설정, 애플리케이션 배포가 한 자동화에 집중됐습니다.',
+      },
+      after: {
+        label: 'After · 책임 분리',
+        summary: 'Gjallar의 VM Create와 Heimdall의 Deployment Generation으로 소유권을 나눴습니다.',
+      },
+    } satisfies ResponsibilitySplitData,
+    gjallar: {
+      layers: [
+        {
+          id: 'actual-state',
+          label: 'Source of Truth',
+          title: 'Proxmox actual inventory',
+          summary: 'DB가 아닌 Proxmox 조회 결과를 현재 VM 상태의 기준으로 사용합니다.',
+        },
+        {
+          id: 'policy',
+          label: 'Policy',
+          title: 'DB-backed VM Profile',
+          summary: 'CPU·메모리·디스크 범위와 access 권장값을 용도별 정책으로 재사용합니다.',
+        },
+        {
+          id: 'preflight',
+          label: 'Preflight',
+          title: '실행 전 조건 검증',
+          summary: '고정 IP, bridge, storage, template과 guest-agent 준비 상태를 먼저 확인합니다.',
+        },
+        {
+          id: 'execution',
+          label: 'Gated Execution',
+          title: '명시적 승인 뒤 native API 실행',
+          summary: 'Draft → Preflight → Plan → Approval → Preview → Acknowledgement → Native Proxmox API',
+        },
+        {
+          id: 'outcome',
+          label: 'Outcome',
+          title: '기본은 stopped create',
+          summary: '선택 시에만 부팅하고 guest-agent IP와 cloud-init 완료 근거를 확인합니다.',
+        },
+      ],
+      evidenceFigure: {
+        src: '/projects/gjallar.png',
+        alt: 'Gjallar 운영 콘솔에서 Proxmox 노드, VM 수, 스토리지와 작업 상태를 조회하는 Overview 화면',
+        caption: '실제 운영 콘솔 화면은 Proxmox node·VM·storage inventory와 job 상태 조회 범위를 보여줍니다.',
+        status: 'verified',
+        source: 'public/projects/gjallar.png',
+      },
+      scopeLimit:
+        '현재 구현은 Native Create와 stopped VM의 제한된 gated Start입니다. 전체 VM lifecycle과 destructive control은 범위가 아닙니다.',
+    } satisfies GjallarProjectData,
   },
   pages: [
     {

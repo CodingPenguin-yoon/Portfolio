@@ -198,6 +198,52 @@ export interface ExternalExposureData {
   routingBoundary: string;
 }
 
+export type ArgusStageId = 'provider-adapter' | 'normalized-snapshot' | 'judgement' | 'dashboard';
+
+export interface ArgusProjectData {
+  stages: readonly {
+    id: ArgusStageId;
+    label: string;
+  }[];
+  evidenceFigure: {
+    src: string;
+    alt: string;
+    caption: string;
+    status: EvidenceStatus;
+    source: string;
+  };
+}
+
+export type SummaryProjectId = 'heimdall' | 'gjallar' | 'klepaas' | 'argus';
+
+export type SummaryBoundaryId =
+  | 'verified-generation-promotion'
+  | 'approved-native-create'
+  | 'verified-personal-contribution'
+  | 'provider-boundaries';
+
+export interface ClosingSummaryData {
+  projectSummaries: readonly {
+    id: SummaryProjectId;
+    boundary: SummaryBoundaryId;
+    name: string;
+    scope: string;
+    summary: string;
+  }[];
+  techCategories: readonly {
+    id: string;
+    label: string;
+    items: readonly string[];
+  }[];
+  education: {
+    school: string;
+    major: string;
+    status: string;
+    date: string;
+  };
+  certifications: readonly string[];
+}
+
 export const portfolioDocument = {
   person: {
     name: '조윤호',
@@ -660,7 +706,78 @@ export const portfolioDocument = {
       routingBoundary:
         'OCI Edge는 배포마다 바뀌지 않습니다. deployment별 동적 routing은 Internal Ingress와 Project Gateway가 소유합니다.',
     } satisfies ExternalExposureData,
+    argus: {
+      stages: [
+        { id: 'provider-adapter', label: 'Provider Adapter' },
+        { id: 'normalized-snapshot', label: 'Normalized Snapshot' },
+        { id: 'judgement', label: 'Judgement' },
+        { id: 'dashboard', label: 'Dashboard' },
+      ],
+      evidenceFigure: {
+        src: '/projects/argus.png',
+        alt: 'Argus 대시보드에서 정규화된 시장 snapshot과 공급자별 수집 상태를 확인하는 구현 화면',
+        caption: '실제 대시보드는 공급자별 입력을 정규화한 snapshot과 판단 결과가 한 흐름으로 연결됨을 보여줍니다.',
+        status: 'verified',
+        source: 'public/projects/argus.png',
+      },
+    } satisfies ArgusProjectData,
   },
+  closingSummary: {
+    projectSummaries: [
+      {
+        id: 'heimdall',
+        boundary: 'verified-generation-promotion',
+        name: 'Heimdall',
+        scope: 'Implemented · Generation Deployment',
+        summary: '고정 commit의 candidate를 격리하고 health와 실제 route를 검증한 뒤에만 current로 승격합니다.',
+      },
+      {
+        id: 'gjallar',
+        boundary: 'approved-native-create',
+        name: 'Gjallar',
+        scope: 'Implemented · Native Create VM',
+        summary: 'Proxmox inventory를 기준으로 preflight와 명시적 승인을 거쳐 native API로 VM을 생성합니다.',
+      },
+      {
+        id: 'klepaas',
+        boundary: 'verified-personal-contribution',
+        name: 'K-Le-PaaS',
+        scope: '2인 팀 · Verified Personal Scope',
+        summary: '팀 안에서 맡은 자연어 해석과 CommandPlan 구현으로 Kubernetes 작업과 실행 피드백을 연결했습니다.',
+      },
+      {
+        id: 'argus',
+        boundary: 'provider-boundaries',
+        name: 'Argus',
+        scope: 'Implemented · Supporting Project',
+        summary: '공급자 adapter와 normalized snapshot 경계를 분리해 수집 입력을 하나의 판단 흐름으로 연결했습니다.',
+      },
+    ],
+    techCategories: [
+      {
+        id: 'platform-infrastructure',
+        label: 'Platform / Infrastructure',
+        items: ['Proxmox', 'Kubernetes', 'NCP', 'Docker', 'Linux'],
+      },
+      {
+        id: 'backend-data',
+        label: 'Backend / Data',
+        items: ['FastAPI', 'PostgreSQL', 'Redis', 'SQLAlchemy', 'REST API'],
+      },
+      {
+        id: 'interface-delivery',
+        label: 'Interface / Delivery',
+        items: ['React', 'Next.js', 'TypeScript', 'GitHub Actions', 'WireGuard'],
+      },
+    ],
+    education: {
+      school: '광운대학교',
+      major: '전자통신공학과',
+      status: '졸업',
+      date: '2026.02',
+    },
+    certifications: ['정보처리기사', '리눅스마스터 2급'],
+  } satisfies ClosingSummaryData,
   pages: [
     {
       number: 1,
@@ -993,7 +1110,7 @@ export const portfolioDocument = {
         'Next.js 대시보드로 수집 결과를 확인합니다.',
       ],
       decisions: ['공급자별 수집 경계와 공통 비교 형식을 분리했습니다.'],
-      flows: [['파생 데이터', '뉴스·매크로', '현물 반응', '비교 가능한 판단 흐름']],
+      flows: [['Provider Adapter', 'Normalized Snapshot', 'Judgement', 'Dashboard']],
       evidence: [
         {
           label: '공급자별 adapter와 수집 구조',
@@ -1012,8 +1129,8 @@ export const portfolioDocument = {
       number: 13,
       slug: 'resume-contact',
       eyebrow: 'RESUME & CONTACT',
-      title: '문제를 발견하고, 자동화하고, 실패 경계를 다시 설계합니다.',
-      thesis: '플랫폼 엔지니어로서 반복 가능한 운영 구조를 만들겠습니다.',
+      title: '조윤호 · Platform Engineer',
+      thesis: '운영 문제를 발견하고 자동화한 뒤, 책임과 실패 경계를 다시 설계할 수 있습니다.',
       facts: ['대표 프로젝트의 역할과 상태, 핵심 기술, 교육·자격, 연락처를 한 페이지에 요약합니다.'],
       decisions: ['별도의 감사 인사 페이지를 추가하지 않고 판단과 연락처로 문서를 마칩니다.'],
       flows: [],

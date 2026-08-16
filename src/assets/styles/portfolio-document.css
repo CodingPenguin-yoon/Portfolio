@@ -11,7 +11,7 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   --document-ink: #111827;
-  --document-muted: #5f6978;
+  --document-muted: #4b5563;
   --document-line: #d6dbe2;
   --document-soft: #f4f6f8;
   --document-accent: #255f68;
@@ -912,6 +912,218 @@ ul {
   margin-bottom: 0;
   font-size: 9.5pt;
   line-height: 1.5;
+}
+
+[data-portfolio-page='12'] > h2,
+[data-portfolio-page='13'] > h2 {
+  margin: 8mm 0 3mm;
+}
+
+[data-portfolio-page='12'] .page-thesis,
+[data-portfolio-page='13'] .page-thesis {
+  margin-bottom: 5mm;
+}
+
+.argus-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 0;
+  margin: 0 0 5mm;
+  border-top: 0.75mm solid var(--document-ink);
+  border-bottom: 0.25mm solid var(--document-line);
+  list-style: none;
+}
+
+.argus-flow li {
+  position: relative;
+  min-width: 0;
+  padding: 4mm 7mm 4mm 0;
+}
+
+.argus-flow li:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  right: 3mm;
+  color: var(--document-muted);
+  content: '→';
+  transform: translateY(-50%);
+}
+
+.argus-flow strong {
+  font-size: 10pt;
+  line-height: 1.35;
+}
+
+[data-portfolio-page='12'] .evidence-figure {
+  width: 100%;
+  margin: 0;
+}
+
+[data-portfolio-page='12'] .evidence-media {
+  min-height: 0;
+}
+
+[data-portfolio-page='12'] .evidence-media img {
+  max-height: none;
+}
+
+[data-portfolio-page='12'] .evidence-figure figcaption {
+  gap: 1.5mm 3mm;
+  padding: 3mm;
+}
+
+[data-portfolio-page='12'] .evidence-figure figcaption strong,
+[data-portfolio-page='12'] .evidence-source {
+  font-size: 9.5pt;
+  line-height: 1.4;
+}
+
+.resume-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: start;
+  gap: 8mm;
+}
+
+.resume-section {
+  min-width: 0;
+  padding-top: 3mm;
+  border-top: 1mm solid var(--document-ink);
+}
+
+.resume-section > h3 {
+  margin-bottom: 3mm;
+  font-size: 11pt;
+  line-height: 1.35;
+}
+
+.resume-project-list,
+.resume-tech-list,
+.resume-certifications ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.resume-project-list > li {
+  padding: 3mm 0;
+  border-bottom: 0.25mm solid var(--document-line);
+}
+
+.resume-project-heading {
+  display: grid;
+  grid-template-columns: 8mm minmax(0, 1fr);
+  align-items: baseline;
+  gap: 2mm;
+  margin-bottom: 1mm;
+}
+
+.resume-project-heading > span {
+  color: var(--document-muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5pt;
+}
+
+.resume-project-heading strong {
+  font-size: 11pt;
+}
+
+.resume-project-scope {
+  margin-bottom: 1.5mm;
+  color: var(--document-accent);
+  font-size: 9.5pt;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.resume-project-list > li > p:last-child {
+  margin-bottom: 0;
+  color: #465163;
+  font-size: 9.5pt;
+  line-height: 1.45;
+}
+
+.resume-sidebar {
+  display: grid;
+  gap: 6mm;
+}
+
+.resume-tech-list li {
+  padding: 2.5mm 0;
+  border-bottom: 0.25mm solid var(--document-line);
+}
+
+.resume-tech-list strong,
+.resume-tech-list span {
+  display: block;
+  font-size: 9.5pt;
+  line-height: 1.45;
+}
+
+.resume-tech-list strong {
+  margin-bottom: 1mm;
+}
+
+.resume-tech-list span {
+  color: #465163;
+}
+
+.resume-education,
+.resume-certifications {
+  padding-bottom: 3mm;
+  margin-bottom: 3mm;
+  border-bottom: 0.25mm solid var(--document-line);
+}
+
+.resume-education .diagram-label,
+.resume-certifications .diagram-label {
+  margin-bottom: 1mm;
+}
+
+.resume-education strong,
+.resume-education span {
+  display: block;
+  font-size: 9.5pt;
+  line-height: 1.45;
+}
+
+.resume-education span {
+  margin-top: 0.75mm;
+  color: #465163;
+}
+
+.resume-certifications li {
+  font-size: 9.5pt;
+  line-height: 1.5;
+}
+
+.resume-contacts {
+  display: grid;
+  margin: 0;
+  font-style: normal;
+}
+
+.resume-contacts a {
+  display: grid;
+  grid-template-columns: 16mm minmax(0, 1fr);
+  gap: 2mm;
+  padding: 1.75mm 0;
+  border-bottom: 0.25mm solid var(--document-line);
+  color: var(--document-ink);
+  font-size: 9.5pt;
+  line-height: 1.35;
+  text-decoration-color: var(--document-accent);
+  text-decoration-thickness: 0.25mm;
+  text-underline-offset: 0.75mm;
+}
+
+.resume-contacts a span {
+  color: var(--document-muted);
+}
+
+.resume-contacts a strong {
+  color: var(--document-accent);
+  overflow-wrap: anywhere;
 }
 
 @media screen {

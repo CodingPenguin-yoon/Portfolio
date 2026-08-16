@@ -18,7 +18,8 @@ const [
   heimdallPromotionPage,
   heimdallFailurePage,
   externalExposurePage,
-  ...remainingPages
+  argusPage,
+  resumeContactPage,
 ] = portfolioDocument.pages;
 const { person, openingStory } = portfolioDocument;
 const klepaas = portfolioDocument.projects.klepaas;
@@ -27,6 +28,8 @@ const responsibilitySplit = portfolioDocument.projects.responsibilitySplit;
 const gjallar = portfolioDocument.projects.gjallar;
 const heimdall = portfolioDocument.projects.heimdall;
 const externalExposure = portfolioDocument.projects.externalExposure;
+const argus = portfolioDocument.projects.argus;
+const closingSummary = portfolioDocument.closingSummary;
 
 const scopeLimitLabels: Record<ScopeLimit, string> = {
   'release-image-rollback': 'Stored-image release rollback',
@@ -434,16 +437,97 @@ const scopeLimitLabels: Record<ScopeLimit, string> = {
     </p>
   </PortfolioPage>
 
-  {
-    remainingPages.map((page) => (
-      <PortfolioPage
-        number={page.number}
-        eyebrow={page.eyebrow}
-        title={page.title}
-        thesis={page.thesis}
-        status={page.status}
-        statusNote={page.statusNote}
-      />
-    ))
-  }
+  <PortfolioPage
+    number={argusPage.number}
+    eyebrow={argusPage.eyebrow}
+    title={argusPage.title}
+    thesis={argusPage.thesis}
+    status={argusPage.status}
+    statusNote={argusPage.statusNote}
+  >
+    <ol class="argus-flow" aria-label="Argus 공급자 입력 정규화 흐름">
+      {
+        argus.stages.map((stage) => (
+          <li data-argus-stage={stage.id}>
+            <strong>{stage.label}</strong>
+          </li>
+        ))
+      }
+    </ol>
+    <EvidenceFigure {...argus.evidenceFigure} />
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={resumeContactPage.number}
+    eyebrow={resumeContactPage.eyebrow}
+    title={resumeContactPage.title}
+    thesis={resumeContactPage.thesis}
+  >
+    <div class="resume-layout">
+      <section class="resume-section resume-projects" aria-labelledby="resume-projects-title">
+        <h3 id="resume-projects-title">Selected Project Scope</h3>
+        <ol class="resume-project-list">
+          {
+            closingSummary.projectSummaries.map((project, index) => (
+              <li data-summary-project={project.id} data-summary-boundary={project.boundary}>
+                <div class="resume-project-heading">
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <strong>{project.name}</strong>
+                </div>
+                <p class="resume-project-scope">{project.scope}</p>
+                <p>{project.summary}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </section>
+
+      <div class="resume-sidebar">
+        <section class="resume-section" aria-labelledby="resume-technologies-title">
+          <h3 id="resume-technologies-title">Core Technologies</h3>
+          <ul class="resume-tech-list">
+            {
+              closingSummary.techCategories.map((category) => (
+                <li data-tech-category={category.id}>
+                  <strong>{category.label}</strong>
+                  <span>{category.items.join(' · ')}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <section class="resume-section resume-profile" aria-labelledby="resume-profile-title">
+          <h3 id="resume-profile-title">Education · Certification · Contact</h3>
+          <div class="resume-education" data-resume-fact="education">
+            <p class="diagram-label">Education</p>
+            <strong>{closingSummary.education.school}</strong>
+            <span>
+              {closingSummary.education.major} · {closingSummary.education.status} · {closingSummary.education.date}
+            </span>
+          </div>
+          <div class="resume-certifications">
+            <p class="diagram-label">Certification</p>
+            <ul>
+              {
+                closingSummary.certifications.map((certification) => (
+                  <li data-resume-fact="certification">{certification}</li>
+                ))
+              }
+            </ul>
+          </div>
+          <address class="resume-contacts">
+            {
+              person.contacts.map((contact) => (
+                <a href={contact.href} data-contact={contact.label.toLowerCase()}>
+                  <span>{contact.label}</span>
+                  <strong>{contact.value}</strong>
+                </a>
+              ))
+            }
+          </address>
+        </section>
+      </div>
+    </div>
+  </PortfolioPage>
 </main>

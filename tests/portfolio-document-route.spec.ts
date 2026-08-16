@@ -383,10 +383,138 @@ test('external exposure renders planned edges rather than dashed separators', as
   ).toEqual(Array(7).fill('solid'));
 });
 
+test('Argus stays supporting evidence with one normalized provider flow', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const argus = page.locator('[data-portfolio-page="12"]');
+  const stages = argus.locator('[data-argus-stage]');
+  const evidence = argus.locator('.evidence-figure');
+  const image = evidence.locator('img');
+  const caption = evidence.locator('figcaption strong');
+
+  expect(await stages.evaluateAll((items) => items.map((item) => item.getAttribute('data-argus-stage')))).toEqual([
+    'provider-adapter',
+    'normalized-snapshot',
+    'judgement',
+    'dashboard',
+  ]);
+  await expect(evidence).toHaveCount(1);
+  await expect(image).toHaveAttribute('src', '/projects/argus.png');
+  await expect(image).toHaveAttribute('loading', 'eager');
+  expect((await image.getAttribute('alt'))?.trim().length).toBeGreaterThan(20);
+  await expect(caption).toBeVisible();
+  expect((await caption.textContent())?.trim().length).toBeGreaterThan(20);
+});
+
+test('Argus evidence remains recruiter-readable rather than thumbnail-sized', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const measurement = await page.locator('[data-portfolio-page="12"] .evidence-figure').evaluate((evidence) => {
+    const image = evidence.querySelector<HTMLImageElement>('img');
+    if (!image) throw new Error('Argus evidence image is missing');
+
+    const evidenceBounds = evidence.getBoundingClientRect();
+    const imageBounds = image.getBoundingClientRect();
+    return {
+      evidenceWidth: evidenceBounds.width,
+      imageWidth: imageBounds.width,
+      imageHeight: imageBounds.height,
+      naturalWidth: image.naturalWidth,
+    };
+  });
+
+  expect(measurement.evidenceWidth).toBeGreaterThanOrEqual(620);
+  expect(measurement.imageWidth).toBeGreaterThanOrEqual(620);
+  expect(measurement.imageHeight).toBeGreaterThanOrEqual(340);
+  expect(measurement.naturalWidth).toBeGreaterThanOrEqual(1400);
+});
+
+test('document closes with four scoped project summaries and actionable contact links', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const last = page.locator('[data-portfolio-page="13"]');
+  const summaries = last.locator('[data-summary-project]');
+
+  await expect(summaries).toHaveCount(4);
+  expect(
+    await summaries.evaluateAll((items) =>
+      items.map((item) => ({
+        project: item.getAttribute('data-summary-project'),
+        boundary: item.getAttribute('data-summary-boundary'),
+      }))
+    )
+  ).toEqual([
+    { project: 'heimdall', boundary: 'verified-generation-promotion' },
+    { project: 'gjallar', boundary: 'approved-native-create' },
+    { project: 'klepaas', boundary: 'verified-personal-contribution' },
+    { project: 'argus', boundary: 'provider-boundaries' },
+  ]);
+  await expect(last.locator('[data-tech-category]')).toHaveCount(3);
+  await expect(last.locator('[data-resume-fact="education"]')).toHaveCount(1);
+  await expect(last.locator('[data-resume-fact="certification"]')).toHaveCount(2);
+  await expect(last.locator('a[href="mailto:code.penguin.yoon@gmail.com"]')).toHaveCount(1);
+  await expect(last.locator('a[data-contact="github"][href="https://github.com/CodingPenguin-yoon"]')).toHaveCount(1);
+  await expect(last.locator('a[data-contact="web"][href="https://yoonman.page"]')).toHaveCount(1);
+});
+
+test('document typography and body contrast preserve the editorial floor', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const metrics = await page.locator('.portfolio-document').evaluate((documentRoot) => {
+    const pages = Array.from(documentRoot.querySelectorAll<HTMLElement>('[data-portfolio-page]'));
+    const minimumGray = [75, 85, 99];
+    const linearize = (channel: number) => {
+      const value = channel / 255;
+      return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = ([red, green, blue]: number[]) =>
+      0.2126 * linearize(red) + 0.7152 * linearize(green) + 0.0722 * linearize(blue);
+    const parseRgb = (color: string) =>
+      color
+        .match(/[\d.]+/g)
+        ?.slice(0, 3)
+        .map(Number) ?? [255, 255, 255];
+    const bodyText = Array.from(
+      documentRoot.querySelectorAll<HTMLElement>('p, li, td, th, figcaption, a, small, span, strong')
+    ).filter((element) => {
+      const style = window.getComputedStyle(element);
+      const bounds = element.getBoundingClientRect();
+      return bounds.width > 1 && bounds.height > 1 && style.visibility !== 'hidden';
+    });
+    const bodyGrayLuminances = bodyText
+      .map((element) => parseRgb(window.getComputedStyle(element).color))
+      .filter((channels) => Math.max(...channels) - Math.min(...channels) <= 30)
+      .map(luminance);
+
+    return {
+      titleSizes: pages.map(
+        (portfolioPage) =>
+          Number.parseFloat(window.getComputedStyle(portfolioPage.querySelector('h2')!).fontSize) * 0.75
+      ),
+      thesisSizes: pages.map(
+        (portfolioPage) =>
+          Number.parseFloat(
+            window.getComputedStyle(portfolioPage.querySelector<HTMLElement>('.page-thesis')!).fontSize
+          ) * 0.75
+      ),
+      minimumBodySize: Math.min(
+        ...bodyText.map((element) => Number.parseFloat(window.getComputedStyle(element).fontSize) * 0.75)
+      ),
+      maximumBodyGrayLuminance: Math.max(...bodyGrayLuminances),
+      minimumGrayLuminance: luminance(minimumGray),
+    };
+  });
+
+  expect(metrics.titleSizes.every((size) => size >= 24.9 && size <= 31.1)).toBe(true);
+  expect(metrics.thesisSizes.every((size) => size >= 11.9 && size <= 15.1)).toBe(true);
+  expect(metrics.minimumBodySize).toBeGreaterThanOrEqual(9.4);
+  expect(metrics.maximumBodyGrayLuminance).toBeLessThanOrEqual(metrics.minimumGrayLuminance + 0.001);
+});
+
 test('system and project content stays inside the nested A4 page bounds', async ({ page }) => {
   await page.goto('/portfolio');
 
-  for (const pageNumber of [6, 7, 8, 9, 10, 11]) {
+  for (const pageNumber of [6, 7, 8, 9, 10, 11, 12, 13]) {
     const measurement = await page.locator(`[data-portfolio-page="${pageNumber}"]`).evaluate((portfolioPage) => {
       const body = portfolioPage.querySelector<HTMLElement>('.page-body');
       const footer = portfolioPage.querySelector<HTMLElement>('.page-footer');

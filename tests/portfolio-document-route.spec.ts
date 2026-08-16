@@ -12,6 +12,7 @@ async function getMutedCopyContrastViolations(page: Page) {
       '.scope-limit-list li',
       '.resume-project-scope',
       '.resume-contacts a strong',
+      '[data-portfolio-page="1"] .architecture-connections a',
     ].join(',');
     const linearize = (channel: number) => {
       const value = channel / 255;
@@ -71,6 +72,42 @@ test('every page has one visible h2 and a page label', async ({ page }) => {
   }
 });
 
+test('cover contact links use the print-safe teal palette with visible underlines', async ({ page }) => {
+  await page.emulateMedia({ media: 'print' });
+  await page.goto('/portfolio');
+
+  const links = page.locator('[data-portfolio-page="1"] .architecture-connections a');
+  await expect(links).toHaveCount(3);
+
+  const styles = await links.evaluateAll((items) =>
+    items.map((item) => {
+      const style = window.getComputedStyle(item);
+      const channels =
+        style.color
+          .match(/[\d.]+/g)
+          ?.slice(0, 3)
+          .map(Number) ?? [];
+      const linearize = (channel: number) => {
+        const value = channel / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      };
+      const luminance =
+        0.2126 * linearize(channels[0]) + 0.7152 * linearize(channels[1]) + 0.0722 * linearize(channels[2]);
+      return {
+        color: style.color,
+        contrastAgainstWhite: 1.05 / (luminance + 0.05),
+        decorationLine: style.textDecorationLine,
+        decorationColor: style.textDecorationColor,
+      };
+    })
+  );
+
+  expect(styles.every(({ color }) => color === 'rgb(37, 95, 104)')).toBe(true);
+  expect(styles.every(({ contrastAgainstWhite }) => contrastAgainstWhite >= 4.5)).toBe(true);
+  expect(styles.every(({ decorationLine }) => decorationLine.includes('underline'))).toBe(true);
+  expect(styles.every(({ decorationColor }) => decorationColor === 'rgb(37, 95, 104)')).toBe(true);
+});
+
 test('document typography keeps Korean status in sans and page numbers in mono', async ({ page }) => {
   await page.goto('/portfolio');
 
@@ -126,6 +163,41 @@ test('K-Le-PaaS scopes expose accessible ownership and personal contribution ide
     'ingress-domain-sync',
     'prometheus-nks-monitoring',
   ]);
+});
+
+test('K-Le-PaaS verified period and personally owned decision stay semantic and inside page 5', async ({ page }) => {
+  await page.emulateMedia({ media: 'print' });
+  await page.goto('/portfolio');
+
+  const context = page.locator('[data-portfolio-page="5"] [data-klepaas-context]');
+  await expect(context).toHaveCount(1);
+  await expect(context.locator('dt')).toHaveText(['기간', '직접 소유한 설계 판단']);
+  await expect(context.locator('[data-klepaas-period]')).toHaveText('2025.09 - 2025.12');
+  await expect(context.locator('[data-klepaas-personal-decision]')).toContainText('CommandPlan');
+
+  const measurements = await context.locator('dd').evaluateAll((items) =>
+    items.map((item) => {
+      const portfolioPage = item.closest<HTMLElement>('[data-portfolio-page="5"]');
+      const footer = portfolioPage?.querySelector<HTMLElement>('.page-footer');
+      if (!portfolioPage || !footer) throw new Error('Page 5 context geometry is incomplete');
+
+      const bounds = item.getBoundingClientRect();
+      const pageBounds = portfolioPage.getBoundingClientRect();
+      const footerBounds = footer.getBoundingClientRect();
+      return {
+        fontSizePt: Number.parseFloat(window.getComputedStyle(item).fontSize) * 0.75,
+        insidePage:
+          bounds.left >= pageBounds.left &&
+          bounds.right <= pageBounds.right &&
+          bounds.top >= pageBounds.top &&
+          bounds.bottom <= footerBounds.top,
+      };
+    })
+  );
+
+  expect(measurements).toHaveLength(2);
+  expect(measurements.every(({ fontSizePt }) => fontSizePt >= 9.4)).toBe(true);
+  expect(measurements.every(({ insidePage }) => insidePage)).toBe(true);
 });
 
 test('K-Le-PaaS evidence is readable and remains inside the A4 page', async ({ page }) => {
@@ -807,6 +879,11 @@ test('every print page fits one A4 sheet without overflow', async ({ page }) => 
             tag: child.tagName,
             className: child.className,
             height: Math.round(bounds.height),
+            topInsidePage: bounds.top >= pageBounds.top,
+            leftInsidePage: bounds.left >= pageBounds.left,
+            rightInsidePage: bounds.right <= pageBounds.right,
+            bottomInsideBody: bounds.bottom <= footerBounds.top,
+            bottomBeyondBodyPx: Number(Math.max(0, bounds.bottom - footerBounds.top).toFixed(2)),
             marginTop: style.marginTop,
             marginBottom: style.marginBottom,
           };
@@ -842,7 +919,10 @@ test('every print page fits one A4 sheet without overflow', async ({ page }) => 
     expect(measurement.bodyScrollWidth, `page ${pageNumber} horizontal overflow`).toBeLessThanOrEqual(
       measurement.bodyClientWidth + 1
     );
-    expect(measurement.childrenWithinPage, `page ${pageNumber} child bounds`).toBe(true);
+    expect(
+      measurement.childrenWithinPage,
+      `page ${pageNumber} child bounds: ${JSON.stringify(measurement.childMetrics)}`
+    ).toBe(true);
     expect(measurement.missingRequiredRegions, `page ${pageNumber} missing structural regions`).toEqual([]);
     expect(measurement.requiredRegionsOutsidePage, `page ${pageNumber} structural region bounds`).toEqual([]);
     expect(measurement.descendantsOutsidePage, `page ${pageNumber} all descendant page bounds`).toEqual([]);

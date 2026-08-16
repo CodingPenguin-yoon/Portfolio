@@ -23,17 +23,33 @@ npm run build
 
 - Web preview: `/portfolio`
 - PDF: `output/pdf/yunho-cho-portfolio.pdf`
+- Prerequisites:
+  - A Node.js version accepted by `package.json` (Node 18.17.1 or newer) and `npm ci`.
+  - Playwright 1.55's pinned Chromium: `npx playwright install chromium`.
+  - Poppler command-line tools: `pdfinfo`, `pdffonts`, `pdfimages`, `pdftotext`, and `pdftoppm` (`brew install poppler` on macOS).
+
 - Verify:
 
   ```bash
   npm run check:astro
   npm run check:eslint
-  npx prettier --check README.md scripts/export-portfolio-pdf.mjs src/assets/styles/portfolio-document.css src/components/portfolio-document/PortfolioDocument.astro tests/portfolio-document-route.spec.ts tests/portfolio-document-pdf.spec.ts
+  npm run check:portfolio-format
   npm run build
   npm run test:portfolio
   ```
 
 - Export: start `npm run preview -- --host 127.0.0.1 --port 4322`, then run `npm run portfolio:pdf`.
+- Inspect the canonical artifact:
+
+  ```bash
+  pdfinfo -f 1 -l 13 -box output/pdf/yunho-cho-portfolio.pdf
+  pdffonts output/pdf/yunho-cho-portfolio.pdf
+  pdfimages -list output/pdf/yunho-cho-portfolio.pdf
+  pdftotext -layout output/pdf/yunho-cho-portfolio.pdf -
+  pdftoppm -r 144 -png output/pdf/yunho-cho-portfolio.pdf tmp/pdfs/pages/page
+  ```
+
+  `npm run test:portfolio` automates the 13-page A4, tagged-PDF, embedded-font, image-page, and text-order assertions. The 144 DPI PNGs remain the visual layout check for every page.
 
 ## Docker
 

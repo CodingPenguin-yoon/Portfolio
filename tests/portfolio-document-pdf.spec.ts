@@ -1,10 +1,12 @@
 import { execFile } from 'node:child_process';
-import { access, mkdir, rm, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { access, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { expect, test } from '@playwright/test';
+
+import { exportPortfolioPdf } from '../scripts/export-portfolio-pdf.mjs';
 
 const execFileAsync = promisify(execFile);
 const repositoryRoot = fileURLToPath(new URL('..', import.meta.url));
@@ -54,6 +56,11 @@ async function createServedFixture(name: string, workerIndex: number, content: s
   };
 }
 
+async function listSiblingPdfTemps(outputPath: string) {
+  const prefix = `.${basename(outputPath)}.`;
+  return (await readdir(dirname(outputPath))).filter((name) => name.startsWith(prefix) && name.endsWith('.tmp')).sort();
+}
+
 test('exporter writes exactly 13 A4 pages to the requested output', async ({ page: _page }, testInfo) => {
   test.setTimeout(120_000);
   const outputPath = join(pdfTempDirectory, `portfolio-export-${testInfo.workerIndex}.pdf`);
@@ -68,6 +75,7 @@ test('exporter writes exactly 13 A4 pages to the requested output', async ({ pag
       cwd: repositoryRoot,
     });
     expect(stdout).toMatch(/^Pages:\s+13$/m);
+    expect(stdout).toMatch(/^Tagged:\s+yes$/m);
     const pageSizes = Array.from(
       stdout.matchAll(/^Page\s+(\d+) size:\s+([\d.]+) x ([\d.]+) pts \(A4\)$/gm),
       ([, pageNumber, width, height]) => ({ pageNumber: Number(pageNumber), width, height })
@@ -89,6 +97,69 @@ test('exporter writes exactly 13 A4 pages to the requested output', async ({ pag
         top: '841.89',
       }))
     );
+
+    const { stdout: fontOutput } = await execFileAsync('pdffonts', [outputPath], { cwd: repositoryRoot });
+    const fontFlags = fontOutput
+      .split('\n')
+      .map((line) => line.match(/\s+(yes|no)\s+(yes|no)\s+(yes|no)\s+\d+\s+\d+\s*$/))
+      .filter((match): match is RegExpMatchArray => match !== null)
+      .map((match) => match.slice(1, 4));
+    expect(fontFlags.length).toBeGreaterThan(0);
+    expect(fontFlags.every((flags) => flags.join(' ') === 'yes yes yes')).toBe(true);
+
+    const { stdout: imageOutput } = await execFileAsync('pdfimages', ['-list', outputPath], { cwd: repositoryRoot });
+    const imagePages = imageOutput
+      .split('\n')
+      .filter((line) => /^\s+\d+\s+\d+\s+image\s/.test(line))
+      .map((line) => Number.parseInt(line.trim().split(/\s+/)[0], 10));
+    expect(imagePages).toEqual([5, 8, 12]);
+
+    const { stdout: extractedText } = await execFileAsync('pdftotext', ['-layout', outputPath, '-'], {
+      cwd: repositoryRoot,
+    });
+    const extractedPages = extractedText.split('\f').filter((text) => text.trim().length > 0);
+    expect(extractedPages).toHaveLength(13);
+    expect(extractedPages.map((text, index) => text.includes(`${String(index + 1).padStart(2, '0')} / 13`))).toEqual(
+      Array(13).fill(true)
+    );
+    const coverReadingOrder = ['PORTFOLIO', '조윤호', 'PLATFORM ENGINEER', 'Email', 'GitHub', 'Web'];
+    const coverOffsets = coverReadingOrder.map((fragment) => extractedPages[0].indexOf(fragment));
+    expect(coverOffsets.every((offset) => offset >= 0)).toBe(true);
+    expect(coverOffsets).toEqual([...coverOffsets].sort((left, right) => left - right));
+  } finally {
+    await rm(outputPath, { force: true });
+  }
+});
+
+test('exporter preserves an existing destination and removes its temp when atomic replacement fails', async ({
+  page: _page,
+}, testInfo) => {
+  test.setTimeout(120_000);
+  const outputPath = join(pdfTempDirectory, `portfolio-atomic-${testInfo.workerIndex}.pdf`);
+  const originalBytes = Buffer.from('pre-existing portfolio PDF bytes');
+  let failure: Error | undefined;
+
+  await mkdir(pdfTempDirectory, { recursive: true });
+  await writeFile(outputPath, originalBytes);
+  const tempsBefore = await listSiblingPdfTemps(outputPath);
+
+  try {
+    try {
+      await exportPortfolioPdf(
+        { outputPath },
+        {
+          renameFile: async () => {
+            throw new Error('simulated final replacement failure');
+          },
+        }
+      );
+    } catch (error) {
+      failure = error as Error;
+    }
+
+    expect(failure?.message).toContain('simulated final replacement failure');
+    expect(await readFile(outputPath)).toEqual(originalBytes);
+    expect(await listSiblingPdfTemps(outputPath)).toEqual(tempsBefore);
   } finally {
     await rm(outputPath, { force: true });
   }

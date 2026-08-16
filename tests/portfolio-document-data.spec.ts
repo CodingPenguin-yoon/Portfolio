@@ -27,6 +27,9 @@ test('portfolio editorial contract', () => {
 test('team contribution and limitations are explicit', () => {
   const klepaas = portfolioDocument.projects.klepaas;
   expect(klepaas.teamSize).toBe(2);
+  expect(klepaas.period).toBe('2025.09 - 2025.12');
+  expect(klepaas.personalDecision.evidence.status).toBe('verified');
+  expect(klepaas.personalDecision.evidence.source).toContain('backend-hybrid/app/services/commands.py:105-219');
   expect(klepaas.personalContributions.map((contribution) => contribution.id)).toEqual([
     'gemini-intent-entity-parsing',
     'kubernetes-command-plans',

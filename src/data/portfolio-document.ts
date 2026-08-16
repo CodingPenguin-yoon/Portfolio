@@ -73,6 +73,11 @@ export interface PersonalContribution {
 
 export interface KlepaasProjectData {
   teamSize: 2;
+  period: string;
+  personalDecision: {
+    summary: string;
+    evidence: PortfolioEvidence;
+  };
   teamOutcome: readonly string[];
   personalContributions: readonly PersonalContribution[];
   lessons: readonly [string, string, string];
@@ -322,6 +327,16 @@ export const portfolioDocument = {
   projects: {
     klepaas: {
       teamSize: 2,
+      period: '2025.09 - 2025.12',
+      personalDecision: {
+        summary:
+          '자연어 요청을 바로 실행하지 않고 의도와 대상을 CommandPlan으로 정규화한 뒤 Kubernetes 상태 조회·재시작 작업에 연결했습니다.',
+        evidence: {
+          label: '자연어 요청과 Kubernetes 작업 사이의 CommandPlan 경계',
+          status: 'verified',
+          source: 'backend-klepaas-test/backend-hybrid/app/services/commands.py:105-219',
+        },
+      },
       teamOutcome: [
         '자연어 요청을 의도와 대상으로 해석해 실행 가능한 CommandPlan으로 변환했습니다.',
         '명령 계획을 Kubernetes·NCP 작업에 연결하고 상태와 결과를 기록했습니다.',

@@ -1,5 +1,6 @@
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { chromium } from '@playwright/test';
@@ -62,7 +63,38 @@ function parseArguments(argumentsToParse) {
   return options;
 }
 
-export async function exportPortfolioPdf({ outputPath = defaultOutputPath, sourceUrl = defaultSourceUrl } = {}) {
+async function replaceFileAtomically(destinationPath, contents, renameFile) {
+  const destinationDirectory = dirname(destinationPath);
+  const temporaryPath = join(destinationDirectory, `.${basename(destinationPath)}.${process.pid}.${randomUUID()}.tmp`);
+
+  await mkdir(destinationDirectory, { recursive: true });
+
+  try {
+    await writeFile(temporaryPath, contents, { flag: 'wx' });
+    const persistedContents = await readFile(temporaryPath);
+    if (!persistedContents.equals(contents)) {
+      throw new Error(`Portfolio PDF temp validation failed at ${temporaryPath}`);
+    }
+    await renameFile(temporaryPath, destinationPath);
+  } catch (error) {
+    try {
+      await rm(temporaryPath, { force: true });
+    } catch (cleanupError) {
+      throw new AggregateError(
+        [error, cleanupError],
+        `Portfolio PDF export and temp cleanup both failed at ${temporaryPath}`
+      );
+    }
+    throw error;
+  }
+
+  await rm(temporaryPath, { force: true });
+}
+
+export async function exportPortfolioPdf(
+  { outputPath = defaultOutputPath, sourceUrl = defaultSourceUrl } = {},
+  { renameFile = rename } = {}
+) {
   const resolvedOutputPath = resolve(outputPath);
   const browser = await chromium.launch();
 
@@ -118,10 +150,10 @@ export async function exportPortfolioPdf({ outputPath = defaultOutputPath, sourc
       printBackground: true,
       preferCSSPageSize: true,
       displayHeaderFooter: false,
+      tagged: true,
     });
     const normalizedPdf = normalizeA4MediaBoxes(chromiumPdf, portfolioPageCount);
-    await mkdir(dirname(resolvedOutputPath), { recursive: true });
-    await writeFile(resolvedOutputPath, normalizedPdf);
+    await replaceFileAtomically(resolvedOutputPath, normalizedPdf, renameFile);
   } finally {
     await browser.close();
   }

@@ -171,6 +171,16 @@ const scopeLimitLabels: Record<ScopeLimit, string> = {
     status={klepaasPage.status}
     statusNote={klepaasPage.statusNote}
   >
+    <dl class="klepaas-context" data-klepaas-context aria-label="K-Le-PaaS 프로젝트 맥락">
+      <div>
+        <dt>기간</dt>
+        <dd data-klepaas-period>{klepaas.period}</dd>
+      </div>
+      <div>
+        <dt>직접 소유한 설계 판단</dt>
+        <dd data-klepaas-personal-decision>{klepaas.personalDecision.summary}</dd>
+      </div>
+    </dl>
     <figure class="flow-diagram">
       <ol aria-label="K-Le-PaaS 자동화 흐름">
         {

@@ -115,9 +115,7 @@ test('portfolio editorial contract', () => {
   );
   expect(new Set(portfolioDocument.pages.map((page) => page.slug)).size).toBe(13);
   expect(portfolioDocument.pages.filter((page) => page.status === 'planned')).toHaveLength(1);
-  expect(portfolioDocument.pages.find((page) => page.status === 'planned')?.slug).toBe(
-    'external-exposure'
-  );
+  expect(portfolioDocument.pages.find((page) => page.status === 'planned')?.slug).toBe('external-exposure');
 });
 ```
 
@@ -135,11 +133,7 @@ export const portfolioDocument = { pages: [] } as const;
 
 ```ts
 export type DocumentStatus = 'implemented' | 'previous' | 'planned';
-export type ScopeLimit =
-  | 'release-image-rollback'
-  | 'database-backup-restore'
-  | 'database-purge'
-  | 'vm-full-lifecycle';
+export type ScopeLimit = 'release-image-rollback' | 'database-backup-restore' | 'database-purge' | 'vm-full-lifecycle';
 
 export interface PortfolioPageData {
   number: number;
@@ -160,19 +154,107 @@ export const portfolioDocument = {
       '반복되는 인프라 운영과 배포 문제를 자동화하고, 책임 경계와 실패 복구 구조를 설계하는 신입 플랫폼 엔지니어',
   },
   pages: [
-    { number: 1, slug: 'cover', eyebrow: 'PORTFOLIO', title: '운영의 반복을 구조로 바꿉니다.', thesis: '반복 작업을 자동화하는 것에서 시작해 시스템의 책임 경계와 실패 복구 구조까지 설계했습니다.' },
-    { number: 2, slug: 'profile', eyebrow: 'PROFILE', title: '플랫폼 운영이라는 하나의 문제를 다뤘습니다.', thesis: '배포 자동화, VM 생성, 실행 상태 추적을 서로 연결된 운영 문제로 풀었습니다.' },
-    { number: 3, slug: 'origin', eyebrow: 'ORIGIN', title: '반복 설정이 자동화의 출발점이었습니다.', thesis: 'VM 생성부터 IP·네트워크·Docker·배포까지 매번 반복되는 작업과 설정 편차를 줄이고 싶었습니다.' },
-    { number: 4, slug: 'evolution', eyebrow: 'EVOLUTION', title: '큰 자동화 하나를 두 개의 책임으로 나눴습니다.', thesis: 'VM 생성과 애플리케이션 배포는 변경 주기와 실패 영향이 달랐습니다.' },
-    { number: 5, slug: 'klepaas', eyebrow: 'K-LE-PAAS', title: '자동화는 실행보다 입력과 피드백까지 포함해야 했습니다.', thesis: '자연어 요청을 Kubernetes 명령으로 바꾸고 결과를 되돌려주는 흐름에서 플랫폼 자동화의 기본 구조를 경험했습니다.', status: 'previous' },
-    { number: 6, slug: 'system-map', eyebrow: 'CURRENT SYSTEM', title: '실행 기반, 배포, 데이터의 수명주기를 분리했습니다.', thesis: 'Proxmox 위에서 Gjallar는 VM을, Heimdall은 배포 세대를, Storage VM은 사용자 데이터를 책임집니다.', status: 'implemented' },
-    { number: 7, slug: 'responsibility', eyebrow: 'DESIGN DECISION', title: '같은 홈랩 안에서도 실패 경계는 달라야 했습니다.', thesis: '인프라 생성 실패와 후보 배포 실패가 서로의 상태를 오염시키지 않도록 소유권을 나눴습니다.', status: 'implemented' },
-    { number: 8, slug: 'gjallar', eyebrow: 'GJALLAR', title: 'Proxmox의 실제 상태를 기준으로 VM 생성을 반복 가능하게 만들었습니다.', thesis: '정책을 담은 VM Profile과 실제 Template Inventory를 분리하고, 승인된 요청만 native API로 실행합니다.', status: 'implemented' },
-    { number: 9, slug: 'heimdall-promotion', eyebrow: 'HEIMDALL', title: '검증된 세대만 Current로 승격합니다.', thesis: '고정된 commit으로 후보 세대를 만든 뒤 health check와 실제 route probe를 모두 통과해야 트래픽을 전환합니다.', status: 'implemented' },
-    { number: 10, slug: 'heimdall-failure', eyebrow: 'FAILURE DESIGN', title: '실패할수록 보존 범위를 좁혔습니다.', thesis: '활성화 실패에는 직전 정상 경로를 복원하고, 상태가 불확실할 때는 자동 삭제보다 보존을 선택합니다.', status: 'implemented' },
-    { number: 11, slug: 'external-exposure', eyebrow: 'PLANNED ARCHITECTURE', title: '외부 Edge는 고정하고 동적 라우팅은 내부에서 처리합니다.', thesis: 'Control Web과 배포 도메인을 분리하고 OCI Edge에서 홈랩 내부 Ingress까지 하나의 중계 경계를 둡니다.', status: 'planned' },
-    { number: 12, slug: 'argus', eyebrow: 'ARGUS', title: '다른 문제에도 입력 경계를 분리하는 원칙을 적용했습니다.', thesis: '서로 다른 데이터 공급자를 독립적으로 수집하고 정규화해 비교 가능한 판단 흐름으로 만들었습니다.', status: 'implemented' },
-    { number: 13, slug: 'resume-contact', eyebrow: 'RESUME & CONTACT', title: '문제를 발견하고, 자동화하고, 실패 경계를 다시 설계합니다.', thesis: '플랫폼 엔지니어로서 반복 가능한 운영 구조를 만들겠습니다.' },
+    {
+      number: 1,
+      slug: 'cover',
+      eyebrow: 'PORTFOLIO',
+      title: '운영의 반복을 구조로 바꿉니다.',
+      thesis: '반복 작업을 자동화하는 것에서 시작해 시스템의 책임 경계와 실패 복구 구조까지 설계했습니다.',
+    },
+    {
+      number: 2,
+      slug: 'profile',
+      eyebrow: 'PROFILE',
+      title: '플랫폼 운영이라는 하나의 문제를 다뤘습니다.',
+      thesis: '배포 자동화, VM 생성, 실행 상태 추적을 서로 연결된 운영 문제로 풀었습니다.',
+    },
+    {
+      number: 3,
+      slug: 'origin',
+      eyebrow: 'ORIGIN',
+      title: '반복 설정이 자동화의 출발점이었습니다.',
+      thesis: 'VM 생성부터 IP·네트워크·Docker·배포까지 매번 반복되는 작업과 설정 편차를 줄이고 싶었습니다.',
+    },
+    {
+      number: 4,
+      slug: 'evolution',
+      eyebrow: 'EVOLUTION',
+      title: '큰 자동화 하나를 두 개의 책임으로 나눴습니다.',
+      thesis: 'VM 생성과 애플리케이션 배포는 변경 주기와 실패 영향이 달랐습니다.',
+    },
+    {
+      number: 5,
+      slug: 'klepaas',
+      eyebrow: 'K-LE-PAAS',
+      title: '자동화는 실행보다 입력과 피드백까지 포함해야 했습니다.',
+      thesis:
+        '자연어 요청을 Kubernetes 명령으로 바꾸고 결과를 되돌려주는 흐름에서 플랫폼 자동화의 기본 구조를 경험했습니다.',
+      status: 'previous',
+    },
+    {
+      number: 6,
+      slug: 'system-map',
+      eyebrow: 'CURRENT SYSTEM',
+      title: '실행 기반, 배포, 데이터의 수명주기를 분리했습니다.',
+      thesis: 'Proxmox 위에서 Gjallar는 VM을, Heimdall은 배포 세대를, Storage VM은 사용자 데이터를 책임집니다.',
+      status: 'implemented',
+    },
+    {
+      number: 7,
+      slug: 'responsibility',
+      eyebrow: 'DESIGN DECISION',
+      title: '같은 홈랩 안에서도 실패 경계는 달라야 했습니다.',
+      thesis: '인프라 생성 실패와 후보 배포 실패가 서로의 상태를 오염시키지 않도록 소유권을 나눴습니다.',
+      status: 'implemented',
+    },
+    {
+      number: 8,
+      slug: 'gjallar',
+      eyebrow: 'GJALLAR',
+      title: 'Proxmox의 실제 상태를 기준으로 VM 생성을 반복 가능하게 만들었습니다.',
+      thesis: '정책을 담은 VM Profile과 실제 Template Inventory를 분리하고, 승인된 요청만 native API로 실행합니다.',
+      status: 'implemented',
+    },
+    {
+      number: 9,
+      slug: 'heimdall-promotion',
+      eyebrow: 'HEIMDALL',
+      title: '검증된 세대만 Current로 승격합니다.',
+      thesis:
+        '고정된 commit으로 후보 세대를 만든 뒤 health check와 실제 route probe를 모두 통과해야 트래픽을 전환합니다.',
+      status: 'implemented',
+    },
+    {
+      number: 10,
+      slug: 'heimdall-failure',
+      eyebrow: 'FAILURE DESIGN',
+      title: '실패할수록 보존 범위를 좁혔습니다.',
+      thesis: '활성화 실패에는 직전 정상 경로를 복원하고, 상태가 불확실할 때는 자동 삭제보다 보존을 선택합니다.',
+      status: 'implemented',
+    },
+    {
+      number: 11,
+      slug: 'external-exposure',
+      eyebrow: 'PLANNED ARCHITECTURE',
+      title: '외부 Edge는 고정하고 동적 라우팅은 내부에서 처리합니다.',
+      thesis: 'Control Web과 배포 도메인을 분리하고 OCI Edge에서 홈랩 내부 Ingress까지 하나의 중계 경계를 둡니다.',
+      status: 'planned',
+    },
+    {
+      number: 12,
+      slug: 'argus',
+      eyebrow: 'ARGUS',
+      title: '다른 문제에도 입력 경계를 분리하는 원칙을 적용했습니다.',
+      thesis: '서로 다른 데이터 공급자를 독립적으로 수집하고 정규화해 비교 가능한 판단 흐름으로 만들었습니다.',
+      status: 'implemented',
+    },
+    {
+      number: 13,
+      slug: 'resume-contact',
+      eyebrow: 'RESUME & CONTACT',
+      title: '문제를 발견하고, 자동화하고, 실패 경계를 다시 설계합니다.',
+      thesis: '플랫폼 엔지니어로서 반복 가능한 운영 구조를 만들겠습니다.',
+    },
   ] satisfies PortfolioPageData[],
 } as const;
 ```
@@ -229,9 +311,7 @@ test('every page has one visible h2 and a page label', async ({ page }) => {
 
   for (let index = 0; index < 13; index += 1) {
     await expect(pages.nth(index).locator('h2')).toHaveCount(1);
-    await expect(pages.nth(index).locator('[data-page-number]')).toContainText(
-      String(index + 1).padStart(2, '0')
-    );
+    await expect(pages.nth(index).locator('[data-page-number]')).toContainText(String(index + 1).padStart(2, '0'));
   }
 });
 ```
@@ -260,14 +340,19 @@ Expected: `/portfolio` 404로 실패한다.
   <h2 id={`portfolio-page-${number}-title`}>{title}</h2>
   <p class="page-thesis">{thesis}</p>
   <div class="page-body"><slot /></div>
-  <footer><span>YUNHO CHO · PLATFORM ENGINEER</span><span data-page-number>{String(number).padStart(2, '0')} / 13</span></footer>
+  <footer>
+    <span>YUNHO CHO · PLATFORM ENGINEER</span><span data-page-number>{String(number).padStart(2, '0')} / 13</span>
+  </footer>
 </section>
 ```
 
 - [ ] **Step 4: A4 화면·인쇄 CSS 구현**
 
 ```css
-@page { size: A4 portrait; margin: 0; }
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
 
 .portfolio-page {
   box-sizing: border-box;
@@ -281,13 +366,24 @@ Expected: `/portfolio` 404로 실패한다.
 }
 
 @media screen {
-  body { margin: 0; background: #e8eaed; }
-  .portfolio-page { margin: 24px auto; box-shadow: 0 10px 32px rgb(15 23 42 / 10%); }
+  body {
+    margin: 0;
+    background: #e8eaed;
+  }
+  .portfolio-page {
+    margin: 24px auto;
+    box-shadow: 0 10px 32px rgb(15 23 42 / 10%);
+  }
 }
 
 @media print {
-  body { background: #fff; }
-  .portfolio-page { margin: 0; box-shadow: none; }
+  body {
+    background: #fff;
+  }
+  .portfolio-page {
+    margin: 0;
+    box-shadow: none;
+  }
 }
 ```
 
@@ -488,12 +584,12 @@ Exact Commit
 
 실패 유형과 보존 대상을 4열 표로 표현한다.
 
-| 실패 | 처리 | 유지 | 한계 |
-| --- | --- | --- | --- |
-| Build/Health | 후보만 정리 | Current | image 재사용 없음 |
-| Nginx activation | last-known-good 복원 | 이전 route·generation | release rollback 아님 |
-| Worker interruption | DB·marker·label reconcile | 불확실 candidate | 확정 불가 시 수동 판단 |
-| App deployment | generation과 DB 분리 | Storage VM 데이터 | backup·data rollback 비범위 |
+| 실패                | 처리                      | 유지                  | 한계                        |
+| ------------------- | ------------------------- | --------------------- | --------------------------- |
+| Build/Health        | 후보만 정리               | Current               | image 재사용 없음           |
+| Nginx activation    | last-known-good 복원      | 이전 route·generation | release rollback 아님       |
+| Worker interruption | DB·marker·label reconcile | 불확실 candidate      | 확정 불가 시 수동 판단      |
+| App deployment      | generation과 DB 분리      | Storage VM 데이터     | backup·data rollback 비범위 |
 
 Managed PostgreSQL은 `프로젝트별 DB·role provisioning과 배포 연동`으로만 표현한다.
 
@@ -648,11 +744,7 @@ await page.goto('http://127.0.0.1:4322/portfolio', { waitUntil: 'networkidle' })
 await page.emulateMedia({ media: 'print' });
 await page.evaluate(async () => {
   await document.fonts.ready;
-  await Promise.all(
-    Array.from(document.images, (image) =>
-      image.complete ? Promise.resolve() : image.decode()
-    )
-  );
+  await Promise.all(Array.from(document.images, (image) => (image.complete ? Promise.resolve() : image.decode())));
 });
 await page.pdf({
   path: output.pathname,

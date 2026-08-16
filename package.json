@@ -19,7 +19,9 @@
     "check:prettier": "prettier --check .",
     "fix": "npm run fix:eslint && npm run fix:prettier",
     "fix:eslint": "eslint --fix .",
-    "fix:prettier": "prettier -w ."
+    "fix:prettier": "prettier -w .",
+    "test:portfolio": "playwright test",
+    "portfolio:pdf": "node scripts/export-portfolio-pdf.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.12",
@@ -42,6 +44,7 @@
     "@astrojs/mdx": "^4.3.3",
     "@astrojs/partytown": "^2.1.4",
     "@astrojs/tailwind": "^5.1.5",
+    "@playwright/test": "^1.55.0",
     "@eslint/js": "^9.33.0",
     "@iconify-json/flat-color-icons": "^1.2.1",
     "@iconify-json/tabler": "^1.2.20",

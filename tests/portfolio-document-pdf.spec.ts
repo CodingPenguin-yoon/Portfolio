@@ -99,19 +99,21 @@ test('exporter fails clearly when the preview server is unavailable', async ({ p
   let failure: (Error & { stderr?: string }) | undefined;
 
   try {
-    await execFileAsync(
-      process.execPath,
-      ['scripts/export-portfolio-pdf.mjs', '--url', 'http://127.0.0.1:65534/portfolio', '--output', outputPath],
-      { cwd: repositoryRoot }
-    );
-  } catch (error) {
-    failure = error as Error & { stderr?: string };
+    try {
+      await execFileAsync(
+        process.execPath,
+        ['scripts/export-portfolio-pdf.mjs', '--url', 'http://127.0.0.1:65534/portfolio', '--output', outputPath],
+        { cwd: repositoryRoot }
+      );
+    } catch (error) {
+      failure = error as Error & { stderr?: string };
+    }
+
+    expect(failure?.stderr).toContain('Portfolio preview is unavailable at http://127.0.0.1:65534/portfolio');
+    await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
   } finally {
     await rm(outputPath, { force: true });
   }
-
-  expect(failure?.stderr).toContain('Portfolio preview is unavailable at http://127.0.0.1:65534/portfolio');
-  await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
 });
 
 test('exporter rejects a non-portfolio HTTP error page', async ({ page: _page }, testInfo) => {
@@ -119,27 +121,29 @@ test('exporter rejects a non-portfolio HTTP error page', async ({ page: _page },
   let failure: (Error & { stderr?: string }) | undefined;
 
   try {
-    await execFileAsync(
-      process.execPath,
-      [
-        'scripts/export-portfolio-pdf.mjs',
-        '--url',
-        'http://127.0.0.1:4322/not-a-portfolio-document',
-        '--output',
-        outputPath,
-      ],
-      { cwd: repositoryRoot }
+    try {
+      await execFileAsync(
+        process.execPath,
+        [
+          'scripts/export-portfolio-pdf.mjs',
+          '--url',
+          'http://127.0.0.1:4322/not-a-portfolio-document',
+          '--output',
+          outputPath,
+        ],
+        { cwd: repositoryRoot }
+      );
+    } catch (error) {
+      failure = error as Error & { stderr?: string };
+    }
+
+    expect(failure?.stderr).toContain(
+      'Portfolio preview returned HTTP 404 at http://127.0.0.1:4322/not-a-portfolio-document'
     );
-  } catch (error) {
-    failure = error as Error & { stderr?: string };
+    await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
   } finally {
     await rm(outputPath, { force: true });
   }
-
-  expect(failure?.stderr).toContain(
-    'Portfolio preview returned HTTP 404 at http://127.0.0.1:4322/not-a-portfolio-document'
-  );
-  await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
 });
 
 test('exporter rejects an HTTP 200 page with the wrong portfolio identity', async ({ page: _page }, testInfo) => {
@@ -152,20 +156,22 @@ test('exporter rejects an HTTP 200 page with the wrong portfolio identity', asyn
   let failure: (Error & { stderr?: string }) | undefined;
 
   try {
-    await execFileAsync(
-      process.execPath,
-      ['scripts/export-portfolio-pdf.mjs', '--url', sourceUrl, '--output', outputPath],
-      { cwd: repositoryRoot }
-    );
-  } catch (error) {
-    failure = error as Error & { stderr?: string };
+    try {
+      await execFileAsync(
+        process.execPath,
+        ['scripts/export-portfolio-pdf.mjs', '--url', sourceUrl, '--output', outputPath],
+        { cwd: repositoryRoot }
+      );
+    } catch (error) {
+      failure = error as Error & { stderr?: string };
+    }
+
+    expect(failure?.stderr).toContain(`Portfolio preview identity mismatch at ${sourceUrl}`);
+    await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
   } finally {
     await rm(outputPath, { force: true });
     await rm(fixturePath, { force: true });
   }
-
-  expect(failure?.stderr).toContain(`Portfolio preview identity mismatch at ${sourceUrl}`);
-  await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
 });
 
 test('exporter rejects an HTTP 200 portfolio with the wrong page count', async ({ page: _page }, testInfo) => {
@@ -178,20 +184,22 @@ test('exporter rejects an HTTP 200 portfolio with the wrong page count', async (
   let failure: (Error & { stderr?: string }) | undefined;
 
   try {
-    await execFileAsync(
-      process.execPath,
-      ['scripts/export-portfolio-pdf.mjs', '--url', sourceUrl, '--output', outputPath],
-      { cwd: repositoryRoot }
-    );
-  } catch (error) {
-    failure = error as Error & { stderr?: string };
+    try {
+      await execFileAsync(
+        process.execPath,
+        ['scripts/export-portfolio-pdf.mjs', '--url', sourceUrl, '--output', outputPath],
+        { cwd: repositoryRoot }
+      );
+    } catch (error) {
+      failure = error as Error & { stderr?: string };
+    }
+
+    expect(failure?.stderr).toContain(`Portfolio preview page count mismatch at ${sourceUrl}: expected 13, found 12`);
+    await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
   } finally {
     await rm(outputPath, { force: true });
     await rm(fixturePath, { force: true });
   }
-
-  expect(failure?.stderr).toContain(`Portfolio preview page count mismatch at ${sourceUrl}: expected 13, found 12`);
-  await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
 });
 
 test('exporter reports the source of an image decode failure', async ({ page: _page }, testInfo) => {
@@ -205,18 +213,20 @@ test('exporter reports the source of an image decode failure', async ({ page: _p
   let failure: (Error & { stderr?: string }) | undefined;
 
   try {
-    await execFileAsync(
-      process.execPath,
-      ['scripts/export-portfolio-pdf.mjs', '--url', sourceUrl, '--output', outputPath],
-      { cwd: repositoryRoot }
-    );
-  } catch (error) {
-    failure = error as Error & { stderr?: string };
+    try {
+      await execFileAsync(
+        process.execPath,
+        ['scripts/export-portfolio-pdf.mjs', '--url', sourceUrl, '--output', outputPath],
+        { cwd: repositoryRoot }
+      );
+    } catch (error) {
+      failure = error as Error & { stderr?: string };
+    }
+
+    expect(failure?.stderr).toContain(`Image failed to decode: http://127.0.0.1:4322${missingImagePath}`);
+    await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
   } finally {
     await rm(outputPath, { force: true });
     await rm(fixturePath, { force: true });
   }
-
-  expect(failure?.stderr).toContain(`Image failed to decode: http://127.0.0.1:4322${missingImagePath}`);
-  await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
 });

@@ -613,10 +613,13 @@ test('document typography and body contrast preserve the editorial floor', async
   expect(await getMutedCopyContrastViolations(page)).toEqual([]);
 });
 
-test('system and project content stays inside the nested A4 page bounds', async ({ page }) => {
+test('every print page fits one A4 sheet without overflow', async ({ page }) => {
+  await page.emulateMedia({ media: 'print' });
   await page.goto('/portfolio');
+  const portfolioPages = page.locator('section[data-portfolio-page]');
+  await expect(portfolioPages).toHaveCount(13);
 
-  for (const pageNumber of [6, 7, 8, 9, 10, 11, 12, 13]) {
+  for (const pageNumber of Array.from({ length: 13 }, (_, index) => index + 1)) {
     const measurement = await page.locator(`[data-portfolio-page="${pageNumber}"]`).evaluate((portfolioPage) => {
       const body = portfolioPage.querySelector<HTMLElement>('.page-body');
       const footer = portfolioPage.querySelector<HTMLElement>('.page-footer');
@@ -652,7 +655,7 @@ test('system and project content stays inside the nested A4 page bounds', async 
         const bounds = element.getBoundingClientRect();
         let ancestor = element.parentElement;
 
-        while (ancestor && ancestor !== body) {
+        while (ancestor) {
           const ancestorStyle = window.getComputedStyle(ancestor);
           const ancestorBounds = ancestor.getBoundingClientRect();
           const clipsX = ['auto', 'clip', 'hidden', 'scroll'].includes(ancestorStyle.overflowX);
@@ -667,6 +670,7 @@ test('system and project content stays inside the nested A4 page bounds', async 
             return false;
           }
 
+          if (ancestor === portfolioPage) break;
           ancestor = ancestor.parentElement;
         }
 
@@ -674,6 +678,12 @@ test('system and project content stays inside the nested A4 page bounds', async 
       });
 
       return {
+        pageWidth: pageBounds.width,
+        pageHeight: pageBounds.height,
+        pageClientHeight: portfolioPage.clientHeight,
+        pageScrollHeight: portfolioPage.scrollHeight,
+        pageClientWidth: portfolioPage.clientWidth,
+        pageScrollWidth: portfolioPage.scrollWidth,
         bodyClientHeight: body.clientHeight,
         bodyScrollHeight: body.scrollHeight,
         bodyClientWidth: body.clientWidth,
@@ -701,6 +711,14 @@ test('system and project content stays inside the nested A4 page bounds', async 
       };
     });
 
+    expect(measurement.pageWidth, `page ${pageNumber} A4 width`).toBeCloseTo(793.7, 0);
+    expect(measurement.pageHeight, `page ${pageNumber} A4 height`).toBeCloseTo(1122.5, 0);
+    expect(measurement.pageScrollHeight, `page ${pageNumber} vertical page overflow`).toBeLessThanOrEqual(
+      measurement.pageClientHeight + 1
+    );
+    expect(measurement.pageScrollWidth, `page ${pageNumber} horizontal page overflow`).toBeLessThanOrEqual(
+      measurement.pageClientWidth + 1
+    );
     expect(
       measurement.bodyScrollHeight,
       `page ${pageNumber} body overflow: ${JSON.stringify(measurement.childMetrics)}`

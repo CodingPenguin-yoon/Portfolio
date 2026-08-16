@@ -19,6 +19,13 @@ npm run check:eslint
 npm run build
 ```
 
+## Portfolio document
+
+- Web preview: `/portfolio`
+- PDF: `output/pdf/yunho-cho-portfolio.pdf`
+- Verify: `npm run check && npm run build && npm run test:portfolio`
+- Export: start `npm run preview -- --host 127.0.0.1 --port 4322`, then run `npm run portfolio:pdf`
+
 ## Docker
 
 ```bash

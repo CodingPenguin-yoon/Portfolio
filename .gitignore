@@ -27,3 +27,4 @@ pnpm-lock.yaml
 .astro
 .serena/
 .worktrees/
+tmp/pdfs/

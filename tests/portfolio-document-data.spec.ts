@@ -8,20 +8,40 @@ test('portfolio editorial contract', () => {
     Array.from({ length: 13 }, (_, index) => index + 1)
   );
   expect(new Set(portfolioDocument.pages.map((page) => page.slug)).size).toBe(13);
-  expect(portfolioDocument.pages.filter((page) => page.status === 'planned')).toHaveLength(1);
-  expect(portfolioDocument.pages.find((page) => page.status === 'planned')?.slug).toBe('external-exposure');
+  expect(
+    portfolioDocument.pages
+      .filter((page) => page.status !== undefined)
+      .map((page) => ({ slug: page.slug, status: page.status }))
+  ).toEqual([
+    { slug: 'klepaas', status: 'previous' },
+    { slug: 'system-map', status: 'implemented' },
+    { slug: 'responsibility', status: 'implemented' },
+    { slug: 'gjallar', status: 'implemented' },
+    { slug: 'heimdall-promotion', status: 'implemented' },
+    { slug: 'heimdall-failure', status: 'implemented' },
+    { slug: 'external-exposure', status: 'planned' },
+    { slug: 'argus', status: 'implemented' },
+  ]);
 });
 
 test('team contribution and limitations are explicit', () => {
   const klepaas = portfolioDocument.projects.klepaas;
   expect(klepaas.teamSize).toBe(2);
-  expect(klepaas.personalContributions).toHaveLength(4);
+  expect(klepaas.personalContributions.map((contribution) => contribution.id)).toEqual([
+    'gemini-intent-entity-parsing',
+    'kubernetes-command-plans',
+    'ingress-domain-sync',
+    'prometheus-nks-monitoring',
+  ]);
+  expect(new Set(klepaas.personalContributions.map((contribution) => contribution.id)).size).toBe(4);
 
   const heimdallFailure = portfolioDocument.pages.find((page) => page.slug === 'heimdall-failure');
-  expect(heimdallFailure?.limitations).toEqual(
-    expect.arrayContaining(['release-image-rollback', 'database-backup-restore'])
-  );
+  expect(heimdallFailure?.limitations).toEqual(['release-image-rollback', 'database-backup-restore', 'database-purge']);
 
   const gjallar = portfolioDocument.pages.find((page) => page.slug === 'gjallar');
-  expect(gjallar?.limitations).toContain('vm-full-lifecycle');
+  expect(gjallar?.limitations).toEqual(['vm-full-lifecycle']);
+
+  expect(new Set(portfolioDocument.pages.flatMap((page) => page.limitations))).toEqual(
+    new Set(['release-image-rollback', 'database-backup-restore', 'database-purge', 'vm-full-lifecycle'])
+  );
 });

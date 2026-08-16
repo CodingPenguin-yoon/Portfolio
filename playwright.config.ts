@@ -1,6 +1,11 @@
+import { join } from 'node:path';
+
 import { defineConfig } from '@playwright/test';
 
+const portfolioQaOutputDir = join('/private/tmp', 'portfolio-document-qa', 'playwright');
+
 export default defineConfig({
+  outputDir: portfolioQaOutputDir,
   testDir: './tests',
   use: { baseURL: 'http://127.0.0.1:4322' },
   webServer: {

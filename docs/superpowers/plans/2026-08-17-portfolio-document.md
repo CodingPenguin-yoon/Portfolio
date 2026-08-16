@@ -20,6 +20,7 @@
 - K-Le-PaaS의 팀 성과와 조윤호의 개인 기여를 시각적으로 분리한다.
 - 기존 `public/projects/heimdall.png`는 과거 rollback UI가 보여 현재 구현과 충돌하므로 사용하지 않는다. Heimdall은 구조도와 상태 흐름으로 증명한다.
 - 생성 중간물은 `/private/tmp/portfolio-document-qa`에 두고, 사용자 소유의 기존 `.artifacts/`는 건드리지 않는다.
+- PDF 렌더링 중간물은 PDF 제작 절차에 따라 `tmp/pdfs/`에 두고 최종 검수 후 삭제한다. 최종 PDF는 `output/pdf/`에 둔다.
 - 사용자 요청 전에는 commit, push, 배포를 수행하지 않는다.
 - 기존 tracked 홈페이지 파일의 Prettier 실패는 기준선 문제로 보존한다. Astro·ESLint는 전체 실행하고, Prettier는 이번 계획에서 추가·수정한 파일만 검증한다.
 
@@ -580,7 +581,8 @@ Expected: 1 test passed.
 
 - Create: `scripts/export-portfolio-pdf.mjs`
 - Modify: `tests/portfolio-document-route.spec.ts`
-- Create: `public/portfolio/yunho-cho-portfolio.pdf`
+- Create: `tests/portfolio-document-pdf.spec.ts`
+- Create: `output/pdf/yunho-cho-portfolio.pdf`
 - Modify: `README.md`
 
 - [ ] **Step 1: A4 크기와 콘텐츠 오버플로 실패 테스트 작성**
@@ -617,18 +619,41 @@ Expected: 초기에는 최소 한 페이지가 넘치거나 px 허용값이 맞�
 
 우선순위는 `중복 문장 제거 → 패널 수 축소 → 표 행간 조정 → 이미지 비율 조정 → 페이지 내부 여백 1~2mm 조정`이다. 본문 9.5pt 미만 축소는 금지한다.
 
-- [ ] **Step 4: PDF exporter 구현**
+- [ ] **Step 4: PDF exporter의 실패 테스트 작성**
+
+`tests/portfolio-document-pdf.spec.ts`에서 exporter를 임시 출력 경로로 실행한 뒤 `pdfinfo`를 사용해 13페이지 A4인지 검증한다. 임시 PDF는 `tmp/pdfs/` 아래에서 테스트 종료 후 제거한다.
+
+Run: `npm run test:portfolio -- tests/portfolio-document-pdf.spec.ts`
+
+Expected: `scripts/export-portfolio-pdf.mjs`가 없어 실패한다.
+
+- [ ] **Step 5: PDF 제작 작업 시작을 정확히 한 번 기록**
+
+첫 PDF 생성 명령 직전에 아래 명령을 정확히 한 번 성공시킨다.
+
+Run: `node /Users/yoon/.codex/plugins/cache/openai-primary-runtime/pdf/26.813.12317/skills/pdf/container_tools/mark_artifact_operation_started.mjs --operation-kind create --expected-output-count 1 --output-format pdf`
+
+- [ ] **Step 6: PDF exporter 구현**
 
 ```js
 import { chromium } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 
-const output = new URL('../public/portfolio/yunho-cho-portfolio.pdf', import.meta.url);
-await mkdir(new URL('../public/portfolio/', import.meta.url), { recursive: true });
+const output = new URL('../output/pdf/yunho-cho-portfolio.pdf', import.meta.url);
+await mkdir(new URL('../output/pdf/', import.meta.url), { recursive: true });
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
 await page.goto('http://127.0.0.1:4322/portfolio', { waitUntil: 'networkidle' });
+await page.emulateMedia({ media: 'print' });
+await page.evaluate(async () => {
+  await document.fonts.ready;
+  await Promise.all(
+    Array.from(document.images, (image) =>
+      image.complete ? Promise.resolve() : image.decode()
+    )
+  );
+});
 await page.pdf({
   path: output.pathname,
   printBackground: true,
@@ -638,9 +663,15 @@ await page.pdf({
 await browser.close();
 ```
 
-스크립트는 preview 서버가 없으면 명확한 오류를 출력하고, 빌드 결과의 `/portfolio`만 사용한다.
+스크립트는 `--output` 인자로 테스트용 출력 경로를 받을 수 있고, 기본값은 `output/pdf/yunho-cho-portfolio.pdf`다. preview 서버가 없으면 명확한 오류를 출력하고 빌드 결과의 `/portfolio`만 사용한다.
 
-- [ ] **Step 5: 전체 코드 검증 실행**
+- [ ] **Step 7: PDF exporter 테스트 통과 확인**
+
+Run: `npm run test:portfolio -- tests/portfolio-document-pdf.spec.ts`
+
+Expected: 임시 PDF가 13페이지 A4로 생성되고 테스트 종료 뒤 `tmp/pdfs/`의 시험 출력이 제거된다.
+
+- [ ] **Step 8: 전체 코드 검증 실행**
 
 Run: `npm run check:astro`
 
@@ -662,13 +693,13 @@ Run: `npm run test:portfolio`
 
 Expected: all portfolio tests pass.
 
-- [ ] **Step 6: PDF 생성과 구조 검증**
+- [ ] **Step 9: PDF 생성과 구조 검증**
 
 한 터미널에서 Run: `npm run preview -- --host 127.0.0.1 --port 4322`
 
 다른 터미널에서 Run: `npm run portfolio:pdf`
 
-Run: `pdfinfo public/portfolio/yunho-cho-portfolio.pdf`
+Run: `pdfinfo output/pdf/yunho-cho-portfolio.pdf`
 
 Expected:
 
@@ -677,26 +708,26 @@ Pages:           13
 Page size:       595.28 x 841.89 pts (A4)
 ```
 
-- [ ] **Step 7: Poppler로 모든 페이지 렌더링 후 시각 검수**
+- [ ] **Step 10: Poppler로 모든 페이지 렌더링 후 시각 검수**
 
-Run: `mkdir -p /private/tmp/portfolio-document-qa`
+Run: `mkdir -p tmp/pdfs/pages`
 
-Run: `pdftoppm -png -r 120 public/portfolio/yunho-cho-portfolio.pdf /private/tmp/portfolio-document-qa/page`
+Run: `pdftoppm -png -r 144 output/pdf/yunho-cho-portfolio.pdf tmp/pdfs/pages/page`
 
-13개 PNG를 모두 확인해 잘림, 겹침, 작은 본문, 어색한 빈 공간, 흐린 선, 잘못된 상태 라벨을 찾는다. 문제가 있으면 해당 페이지 CSS·원고를 수정하고 Step 5–7을 반복한다.
+13개 PNG를 모두 확인해 잘림, 겹침, 작은 본문, 어색한 빈 공간, 흐린 선, 잘못된 상태 라벨을 찾는다. 문제가 있으면 해당 페이지 CSS·원고를 수정하고 Step 8–10을 반복한다. 최종 승인 뒤 `tmp/pdfs/`의 렌더링 중간물을 삭제한다.
 
-- [ ] **Step 8: README에 재생성 절차 기록**
+- [ ] **Step 11: README에 재생성 절차 기록**
 
 ```md
 ## Portfolio document
 
 - Web preview: `/portfolio`
-- PDF: `public/portfolio/yunho-cho-portfolio.pdf`
+- PDF: `output/pdf/yunho-cho-portfolio.pdf`
 - Verify: `npm run check && npm run build && npm run test:portfolio`
 - Export: start `npm run preview -- --port 4322`, then run `npm run portfolio:pdf`
 ```
 
-- [ ] **Step 9: 최종 diff와 상태 확인**
+- [ ] **Step 12: 최종 diff와 상태 확인**
 
 Run: `git status --short`
 
@@ -709,7 +740,7 @@ Expected: 사용자 소유 `.artifacts/`를 제외하고 계획된 파일만 변
 ## Acceptance Checklist
 
 - [ ] `/portfolio`가 기존 홈페이지와 독립된 13페이지 문서로 열린다.
-- [ ] PDF가 정확히 13장의 A4 세로 문서다.
+- [ ] `output/pdf/yunho-cho-portfolio.pdf`가 정확히 13장의 A4 세로 문서다.
 - [ ] 초반 4페이지 안에 문제의 시작과 Gjallar·Heimdall 분리 판단이 이해된다.
 - [ ] K-Le-PaaS 팀 성과와 개인 기여가 구분된다.
 - [ ] Gjallar는 Native Create와 제한된 운영 범위만 주장한다.

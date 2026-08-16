@@ -32,26 +32,11 @@
 - Modify: `package.json`
 - Modify: `package-lock.json`
 - Create: `playwright.config.ts`
-- Create: `tests/portfolio-document-route.spec.ts`
+- Create: `tests/portfolio-harness.spec.ts`
 
-- [ ] **Step 1: 존재하지 않는 `/portfolio` 경로를 검증하는 실패 테스트 작성**
+- [ ] **Step 1: Playwright와 실행 스크립트 추가**
 
-```ts
-import { expect, test } from '@playwright/test';
-
-test('portfolio document route renders thirteen pages', async ({ page }) => {
-  await page.goto('/portfolio');
-  await expect(page.locator('section[data-portfolio-page]')).toHaveCount(13);
-});
-```
-
-- [ ] **Step 2: 테스트를 실행해 RED 확인**
-
-Run: `npm run test:portfolio -- tests/portfolio-document-route.spec.ts`
-
-Expected: `/portfolio`가 404이거나 페이지 수가 0이라 실패한다.
-
-- [ ] **Step 3: Playwright와 실행 스크립트 추가**
+이 단계는 이후 기능의 RED/GREEN을 실행하기 위한 테스트 하네스 구성이다. 제품 코드는 변경하지 않는다.
 
 `package.json`에 아래 스크립트와 개발 의존성을 추가한다.
 
@@ -83,15 +68,29 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 4: 의존성을 설치하고 테스트가 같은 이유로 실패하는지 확인**
+- [ ] **Step 2: 의존성과 Chromium 설치**
 
 Run: `npm install`
 
 Run: `npx playwright install chromium`
 
-Run: `npm run test:portfolio -- tests/portfolio-document-route.spec.ts`
+- [ ] **Step 3: 실제 Astro preview를 여는 하네스 검증 테스트 작성**
 
-Expected: 테스트 러너와 Chromium은 정상 실행되고, `/portfolio` 구현 부재 때문에만 실패한다.
+```ts
+import { expect, test } from '@playwright/test';
+
+test('portfolio harness serves the existing static site', async ({ page }) => {
+  const response = await page.goto('/');
+  expect(response?.ok()).toBe(true);
+  await expect(page.locator('body')).toBeVisible();
+});
+```
+
+- [ ] **Step 4: 하네스 테스트와 기존 빌드 통과 확인**
+
+Run: `npm run test:portfolio -- tests/portfolio-harness.spec.ts`
+
+Expected: 1 test passed. `npm run build` also succeeds through `webServer.command`.
 
 ---
 
@@ -203,7 +202,7 @@ Expected: 2 tests passed.
 - Create: `src/components/portfolio-document/EvidenceFigure.astro`
 - Create: `src/assets/styles/portfolio-document.css`
 - Create: `src/pages/portfolio/index.astro`
-- Modify: `tests/portfolio-document-route.spec.ts`
+- Create: `tests/portfolio-document-route.spec.ts`
 
 - [ ] **Step 1: 문서 의미 구조와 기본 접근성 테스트 확장**
 

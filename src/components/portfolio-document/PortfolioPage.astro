@@ -1,0 +1,31 @@
+---
+import type { DocumentStatus } from '~/data/portfolio-document';
+
+import StatusBadge from './StatusBadge.astro';
+
+export interface Props {
+  number: number;
+  eyebrow: string;
+  title: string;
+  thesis: string;
+  status?: DocumentStatus;
+  statusNote?: string;
+}
+
+const { number, eyebrow, title, thesis, status, statusNote } = Astro.props;
+const titleId = `portfolio-page-${number}-title`;
+---
+
+<section class="portfolio-page" data-portfolio-page={number} data-page-status={status} aria-labelledby={titleId}>
+  <header class="page-header">
+    <p class="page-eyebrow">{eyebrow}</p>
+    {status && <StatusBadge status={status} note={statusNote} />}
+  </header>
+  <h2 id={titleId}>{title}</h2>
+  <p class="page-thesis">{thesis}</p>
+  <div class="page-body"><slot /></div>
+  <footer class="page-footer">
+    <span>YUNHO CHO · PLATFORM ENGINEER</span>
+    <span data-page-number>{String(number).padStart(2, '0')} / 13</span>
+  </footer>
+</section>

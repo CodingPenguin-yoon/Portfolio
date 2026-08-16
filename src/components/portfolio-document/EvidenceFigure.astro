@@ -1,0 +1,28 @@
+---
+import type { EvidenceStatus } from '~/data/portfolio-document';
+
+export interface Props {
+  src: string;
+  alt: string;
+  caption: string;
+  status: EvidenceStatus;
+  source?: string;
+}
+
+const { src, alt, caption, status, source } = Astro.props;
+
+const evidenceStatusLabels: Record<EvidenceStatus, string> = {
+  verified: '저장소 검증',
+  'user-confirmed': '사용자 확인',
+  planned: '계획 근거',
+};
+---
+
+<figure class="evidence-figure" data-evidence-status={status}>
+  <div class="evidence-media"><img src={src} alt={alt} loading="lazy" /></div>
+  <figcaption>
+    <span class="evidence-status">{evidenceStatusLabels[status]}</span>
+    <strong>{caption}</strong>
+    {source && <span class="evidence-source">{source}</span>}
+  </figcaption>
+</figure>

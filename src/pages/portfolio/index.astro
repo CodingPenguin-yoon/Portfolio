@@ -1,0 +1,26 @@
+---
+import '@fontsource/ibm-plex-sans-kr/400.css';
+import '@fontsource/ibm-plex-sans-kr/500.css';
+import '@fontsource/ibm-plex-sans-kr/600.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import '~/assets/styles/portfolio-document.css';
+
+import PortfolioDocument from '~/components/portfolio-document/PortfolioDocument.astro';
+
+const title = '조윤호 | Platform Engineer Portfolio';
+const description = '운영 자동화와 실패 복구 구조를 다룬 플랫폼 엔지니어 조윤호의 포트폴리오입니다.';
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <PortfolioDocument />
+  </body>
+</html>

@@ -1,0 +1,61 @@
+---
+export type ArchitectureConnectionStatus = 'active' | 'planned' | 'external';
+
+export interface ArchitectureZone {
+  id: string;
+  label: string;
+  responsibility: string;
+}
+
+export interface ArchitectureConnection {
+  from: string;
+  to: string;
+  label: string;
+  status: ArchitectureConnectionStatus;
+}
+
+export interface Props {
+  zones: readonly ArchitectureZone[];
+  connections: readonly ArchitectureConnection[];
+  label: string;
+  caption?: string;
+}
+
+const { zones, connections, label, caption } = Astro.props;
+
+const connectionStatusLabels: Record<ArchitectureConnectionStatus, string> = {
+  active: '현재 연결',
+  planned: '계획 연결',
+  external: '외부 경계',
+};
+---
+
+<figure class="architecture-map" data-architecture-map aria-label={label}>
+  <p class="diagram-label">{label}</p>
+  <div class="architecture-zones">
+    {
+      zones.map((zone) => (
+        <section class="architecture-zone" data-architecture-zone={zone.id}>
+          <h3>{zone.label}</h3>
+          <p>{zone.responsibility}</p>
+        </section>
+      ))
+    }
+  </div>
+  <ul class="architecture-connections" aria-label="영역 간 연결 상태">
+    {
+      connections.map((connection) => (
+        <li data-connection-status={connection.status}>
+          <span class="connection-route">
+            <strong>{connection.from}</strong>
+            <span aria-hidden="true">→</span>
+            <strong>{connection.to}</strong>
+          </span>
+          <span>{connection.label}</span>
+          <span class="connection-status">{connectionStatusLabels[connection.status]}</span>
+        </li>
+      ))
+    }
+  </ul>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

@@ -1,0 +1,32 @@
+---
+export type FlowSteps =
+  | readonly [string, string, string]
+  | readonly [string, string, string, string]
+  | readonly [string, string, string, string, string]
+  | readonly [string, string, string, string, string, string]
+  | readonly [string, string, string, string, string, string, string];
+
+export interface Props {
+  steps: FlowSteps;
+  label: string;
+  caption?: string;
+}
+
+const { steps, label, caption } = Astro.props;
+---
+
+<figure class="flow-diagram" data-flow-diagram>
+  <ol aria-label={label}>
+    {
+      steps.map((step, index) => (
+        <li>
+          <>
+            <span>{String(index + 1).padStart(2, '0')}</span>
+            <strong>{step}</strong>
+          </>
+        </li>
+      ))
+    }
+  </ol>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

@@ -1,0 +1,23 @@
+---
+import { portfolioDocument } from '~/data/portfolio-document';
+
+import PortfolioPage from './PortfolioPage.astro';
+---
+
+<main class="portfolio-document" aria-labelledby="portfolio-document-title">
+  <h1 id="portfolio-document-title" class="visually-hidden">
+    {portfolioDocument.person.name} 플랫폼 엔지니어 포트폴리오
+  </h1>
+  {
+    portfolioDocument.pages.map((page) => (
+      <PortfolioPage
+        number={page.number}
+        eyebrow={page.eyebrow}
+        title={page.title}
+        thesis={page.thesis}
+        status={page.status}
+        statusNote={page.statusNote}
+      />
+    ))
+  }
+</main>

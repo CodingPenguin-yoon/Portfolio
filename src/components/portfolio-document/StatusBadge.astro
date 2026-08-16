@@ -1,0 +1,21 @@
+---
+import type { DocumentStatus } from '~/data/portfolio-document';
+
+export interface Props {
+  status: DocumentStatus;
+  note?: string;
+}
+
+const { status, note } = Astro.props;
+
+const statusLabels: Record<DocumentStatus, string> = {
+  implemented: '구현됨',
+  previous: '이전 프로젝트',
+  planned: '계획됨',
+};
+---
+
+<div class="status-summary" data-status={status}>
+  <span class="status-badge">{statusLabels[status]}</span>
+  {note && <p class="status-note">{note}</p>}
+</div>

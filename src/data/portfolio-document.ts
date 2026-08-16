@@ -41,6 +41,14 @@ export interface KlepaasProjectData {
   teamSize: 2;
   teamOutcome: readonly string[];
   personalContributions: readonly PersonalContribution[];
+  lessons: readonly [string, string, string];
+  evidenceFigure: {
+    src: string;
+    alt: string;
+    caption: string;
+    status: EvidenceStatus;
+    source: string;
+  };
 }
 
 export const portfolioDocument = {
@@ -49,6 +57,70 @@ export const portfolioDocument = {
     role: 'Platform Engineer',
     positioning:
       '반복되는 인프라 운영과 배포 문제를 자동화하고, 책임 경계와 실패 복구 구조를 설계하는 신입 플랫폼 엔지니어',
+    contacts: [
+      {
+        label: 'Email',
+        value: 'code.penguin.yoon@gmail.com',
+        href: 'mailto:code.penguin.yoon@gmail.com',
+      },
+      {
+        label: 'GitHub',
+        value: 'github.com/CodingPenguin-yoon',
+        href: 'https://github.com/CodingPenguin-yoon',
+      },
+      { label: 'Web', value: 'yoonman.page', href: 'https://yoonman.page' },
+    ],
+  },
+  openingStory: {
+    profileAxes: [
+      {
+        label: '배포 자동화',
+        project: 'Heimdall',
+        summary: '후보 실행 환경을 만들고 검증한 뒤 현재 세대로 승격합니다.',
+      },
+      {
+        label: 'VM 생성 자동화',
+        project: 'Gjallar',
+        summary: '실제 Proxmox 상태를 기준으로 승인된 VM 생성 요청을 실행합니다.',
+      },
+      {
+        label: '상태와 실패 추적',
+        project: 'K-Le-PaaS',
+        summary: '입력 해석부터 실행 결과까지 확인 가능한 흐름으로 연결합니다.',
+      },
+    ],
+    secondaryProject: {
+      name: 'Argus',
+      summary: '공급자별 입력 경계를 분리하고 비교 가능한 형태로 정규화한 보조 프로젝트입니다.',
+    },
+    originCosts: [
+      { label: '수동 입력', summary: '새 환경마다 같은 값을 다시 입력해야 했습니다.' },
+      { label: '설정 편차', summary: '작업 순서와 설정이 실행할 때마다 달라질 수 있었습니다.' },
+      { label: '복구 어려움', summary: '어느 단계에서 실패했는지 확인하고 되돌리기 어려웠습니다.' },
+    ],
+    evolutionStages: [
+      {
+        label: 'K-Le-PaaS',
+        summary: '입력, 실행 계획, 작업 결과를 연결하는 배포 자동화를 경험했습니다.',
+      },
+      {
+        label: '초기 Heimdall',
+        summary: 'Terraform VM 생성, Ansible 설정, 애플리케이션 배포를 한 시스템에 모았습니다.',
+        status: 'Previous',
+      },
+      {
+        label: '범위·의존성 증가',
+        summary: '인프라 생성과 릴리스가 서로 다른 이유로 바뀐다는 점을 확인했습니다.',
+      },
+      {
+        label: '책임 분리',
+        summary: 'Gjallar는 VM Create, Heimdall은 Application Deploy를 맡도록 나눴습니다.',
+      },
+    ],
+    responsibilitySplit: [
+      { owner: 'Gjallar', responsibility: 'VM Create' },
+      { owner: 'Heimdall', responsibility: 'Application Deploy' },
+    ],
   },
   projects: {
     klepaas: {
@@ -96,6 +168,14 @@ export const portfolioDocument = {
           },
         },
       ],
+      lessons: ['입력 정규화', '고위험 작업 확인', '실행 피드백'],
+      evidenceFigure: {
+        src: '/projects/klepaas-dashboard.png',
+        alt: 'K-Le-PaaS 대시보드의 배포 상태, 모니터링 지표, 자연어 명령 성공 이력',
+        caption: '실제 서비스 화면에서 배포 상태와 자연어 명령 실행 결과를 함께 확인했습니다.',
+        status: 'verified',
+        source: 'public/projects/klepaas-dashboard.png',
+      },
     } satisfies KlepaasProjectData,
   },
   pages: [
@@ -103,10 +183,11 @@ export const portfolioDocument = {
       number: 1,
       slug: 'cover',
       eyebrow: 'PORTFOLIO',
-      title: '운영의 반복을 구조로 바꿉니다.',
-      thesis: '반복 작업을 자동화하는 것에서 시작해 시스템의 책임 경계와 실패 복구 구조까지 설계했습니다.',
-      facts: ['Platform Engineer / DevOps / Infrastructure Automation을 목표 직무로 삼습니다.'],
-      decisions: ['프로젝트 이미지 대신 이름, 직무, 핵심 문장을 첫 화면에 둡니다.'],
+      title: '조윤호',
+      thesis:
+        '반복되는 인프라 운영과 배포 문제를 자동화하고, 책임 경계와 실패 복구 구조를 설계하는 신입 플랫폼 엔지니어',
+      facts: ['Platform Engineer'],
+      decisions: ['프로젝트 이미지 없이 이름, 직무, 포지셔닝과 연락처만 첫 화면에 둡니다.'],
       flows: [],
       evidence: [],
       limitations: [],
@@ -135,7 +216,7 @@ export const portfolioDocument = {
       thesis: 'VM 생성부터 IP·네트워크·Docker·배포까지 매번 반복되는 작업과 설정 편차를 줄이고 싶었습니다.',
       facts: ['홈랩을 반복되는 운영 문제를 확인하고 자동화를 검증하는 환경으로 사용했습니다.'],
       decisions: ['감정적인 불편보다 반복 단계와 설정 편차를 문제로 정의했습니다.'],
-      flows: [['VM 생성', 'IP·네트워크 설정', 'Docker 설치', '애플리케이션 배포']],
+      flows: [['VM 생성', 'IP·네트워크', 'Docker 설치', '애플리케이션 배포']],
       evidence: [],
       limitations: [],
     },
@@ -150,10 +231,7 @@ export const portfolioDocument = {
         '현재 Gjallar는 Proxmox native VM 생성 경로를, Heimdall은 애플리케이션 배포를 담당합니다.',
       ],
       decisions: ['변경 이유와 실패 영향이 다른 VM 관리와 애플리케이션 배포의 소유권을 분리했습니다.'],
-      flows: [
-        ['K-Le-PaaS', '초기 Heimdall'],
-        ['초기 Heimdall', 'Gjallar: VM 생성', 'Heimdall: 애플리케이션 배포'],
-      ],
+      flows: [['K-Le-PaaS', '초기 Heimdall', '범위·의존성 증가', 'Gjallar·Heimdall 책임 분리']],
       evidence: [
         {
           label: '초기 Heimdall의 stop-old-then-run-new 배포 방식',

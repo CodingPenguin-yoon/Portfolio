@@ -229,6 +229,12 @@ ul {
   line-height: 1.45;
 }
 
+.flow-diagram li > small {
+  color: var(--document-muted);
+  font-size: 9.5pt;
+  line-height: 1.45;
+}
+
 .flow-diagram figcaption,
 .architecture-map figcaption,
 .evidence-figure figcaption,
@@ -323,6 +329,79 @@ ul {
 .evidence-source {
   grid-column: 2;
   overflow-wrap: anywhere;
+}
+
+[data-portfolio-page='5'] .flow-diagram {
+  margin: 0 0 5mm;
+}
+
+[data-portfolio-page='5'] .flow-diagram li {
+  min-height: 20mm;
+  padding: 3mm;
+}
+
+[data-portfolio-page='5'] .architecture-zone {
+  padding: 3.5mm;
+}
+
+[data-portfolio-page='5'] .architecture-zone ul {
+  padding-left: 5mm;
+  margin-bottom: 4mm;
+}
+
+[data-portfolio-page='5'] .architecture-zone li {
+  margin-bottom: 1mm;
+  font-size: 9.5pt;
+  line-height: 1.48;
+}
+
+[data-portfolio-page='5'] .evidence-figure {
+  margin: 0;
+}
+
+[data-portfolio-page='5'] .evidence-media {
+  min-height: 30mm;
+}
+
+[data-portfolio-page='5'] .evidence-media img {
+  max-height: 30mm;
+}
+
+[data-portfolio-page='5'] .evidence-figure figcaption {
+  grid-template-columns: 1fr;
+  gap: 1mm;
+  padding: 2.5mm;
+}
+
+[data-portfolio-page='5'] .evidence-figure figcaption strong {
+  font-size: 9.5pt;
+}
+
+[data-portfolio-page='5'] .evidence-source {
+  grid-column: 1;
+}
+
+.opening-lessons {
+  margin-top: 4mm;
+}
+
+.opening-lessons h3 {
+  margin-bottom: 2mm;
+  font-size: 11pt;
+}
+
+.opening-lessons-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2mm;
+  padding: 0;
+  list-style: none;
+}
+
+.opening-lessons-list li {
+  padding: 2mm 3mm;
+  border-top: 0.75mm solid var(--document-ink);
+  font-size: 9.5pt;
 }
 
 @media screen {

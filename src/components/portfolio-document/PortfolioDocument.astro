@@ -1,15 +1,183 @@
 ---
 import { portfolioDocument } from '~/data/portfolio-document';
 
+import EvidenceFigure from './EvidenceFigure.astro';
 import PortfolioPage from './PortfolioPage.astro';
+
+const [coverPage, profilePage, originPage, evolutionPage, klepaasPage, ...remainingPages] = portfolioDocument.pages;
+const { person, openingStory } = portfolioDocument;
+const klepaas = portfolioDocument.projects.klepaas;
 ---
 
 <main class="portfolio-document" aria-labelledby="portfolio-document-title">
   <h1 id="portfolio-document-title" class="visually-hidden">
     {portfolioDocument.person.name} 플랫폼 엔지니어 포트폴리오
   </h1>
+
+  <PortfolioPage
+    number={coverPage.number}
+    eyebrow={coverPage.eyebrow}
+    title={coverPage.title}
+    thesis={coverPage.thesis}
+  >
+    <p class="diagram-label">{person.role}</p>
+    <ul class="architecture-connections" aria-label="연락처">
+      {
+        person.contacts.map((contact) => (
+          <li>
+            <strong>{contact.label}</strong>
+            <a href={contact.href}>{contact.value}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={profilePage.number}
+    eyebrow={profilePage.eyebrow}
+    title={profilePage.title}
+    thesis={profilePage.thesis}
+  >
+    <div class="architecture-zones" aria-label="핵심 역량과 대표 프로젝트">
+      {
+        openingStory.profileAxes.map((axis) => (
+          <section class="architecture-zone">
+            <p class="diagram-label">{axis.label}</p>
+            <h3>{axis.project}</h3>
+            <p>{axis.summary}</p>
+          </section>
+        ))
+      }
+    </div>
+    <ul class="architecture-connections" aria-label="보조 프로젝트">
+      <li>
+        <strong>보조 프로젝트</strong>
+        <strong>{openingStory.secondaryProject.name}</strong>
+        <span>{openingStory.secondaryProject.summary}</span>
+      </li>
+    </ul>
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={originPage.number}
+    eyebrow={originPage.eyebrow}
+    title={originPage.title}
+    thesis={originPage.thesis}
+  >
+    <figure class="flow-diagram">
+      <ol aria-label="자동화 이전의 반복 수동 흐름">
+        {
+          originPage.flows[0].map((step, index) => (
+            <li data-origin-step>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <strong>{step}</strong>
+            </li>
+          ))
+        }
+      </ol>
+      <figcaption>새 프로그램을 올릴 때마다 같은 순서로 환경을 준비했습니다.</figcaption>
+    </figure>
+    <ul class="architecture-connections" aria-label="반복 작업의 운영 비용">
+      {
+        openingStory.originCosts.map((cost) => (
+          <li>
+            <strong>{cost.label}</strong>
+            <span>{cost.summary}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <p>{originPage.facts[0]}</p>
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={evolutionPage.number}
+    eyebrow={evolutionPage.eyebrow}
+    title={evolutionPage.title}
+    thesis={evolutionPage.thesis}
+  >
+    <figure class="flow-diagram">
+      <ol aria-label="자동화 설계의 단일 진화 연대기">
+        {
+          openingStory.evolutionStages.map((stage, index) => (
+            <li data-evolution-stage>
+              <span>{'status' in stage ? stage.status : String(index + 1).padStart(2, '0')}</span>
+              <strong>{stage.label}</strong>
+              <small>{stage.summary}</small>
+            </li>
+          ))
+        }
+      </ol>
+    </figure>
+    <section class="architecture-map" data-responsibility-split aria-labelledby="responsibility-split-title">
+      <h3 id="responsibility-split-title">현재 책임 분리</h3>
+      <div class="architecture-zones">
+        {
+          openingStory.responsibilitySplit.map((scope) => (
+            <section class="architecture-zone">
+              <h3>{scope.owner}</h3>
+              <p>{scope.responsibility}</p>
+            </section>
+          ))
+        }
+      </div>
+      <p>VM 생성과 애플리케이션 배포는 변경 주기가 달랐습니다.</p>
+      <p>한쪽 실패가 다른 쪽의 상태와 복구 경로에 미치는 영향도 달랐습니다.</p>
+    </section>
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={klepaasPage.number}
+    eyebrow={klepaasPage.eyebrow}
+    title={klepaasPage.title}
+    thesis={klepaasPage.thesis}
+    status={klepaasPage.status}
+    statusNote={klepaasPage.statusNote}
+  >
+    <figure class="flow-diagram">
+      <ol aria-label="K-Le-PaaS 자동화 흐름">
+        {
+          klepaasPage.flows[0].map((step, index) => (
+            <li>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <strong>{step}</strong>
+            </li>
+          ))
+        }
+      </ol>
+    </figure>
+    <div class="architecture-zones">
+      <section class="architecture-zone" data-team-scope="team">
+        <p class="diagram-label">2인 팀 성과</p>
+        <ul>
+          {klepaas.teamOutcome.map((outcome) => <li>{outcome}</li>)}
+        </ul>
+        <EvidenceFigure {...klepaas.evidenceFigure} />
+      </section>
+      <section class="architecture-zone" data-team-scope="personal">
+        <p class="diagram-label">검증된 개인 기여</p>
+        <ul>
+          {klepaas.personalContributions.map((contribution) => <li>{contribution.summary}</li>)}
+        </ul>
+      </section>
+    </div>
+    <section class="opening-lessons" aria-labelledby="klepaas-lessons-title">
+      <h3 id="klepaas-lessons-title">여기서 얻은 학습</h3>
+      <ol class="opening-lessons-list">
+        {
+          klepaas.lessons.map((lesson) => (
+            <li>
+              <strong>{lesson}</strong>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+  </PortfolioPage>
+
   {
-    portfolioDocument.pages.map((page) => (
+    remainingPages.map((page) => (
       <PortfolioPage
         number={page.number}
         eyebrow={page.eyebrow}

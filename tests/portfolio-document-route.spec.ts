@@ -22,3 +22,25 @@ test('document typography keeps Korean status in sans and page numbers in mono',
   await expect(statusBadge).not.toHaveCSS('font-family', /IBM Plex Mono/);
   await expect(pageNumber).toHaveCSS('font-family', /IBM Plex Mono/);
 });
+
+test('opening story exposes the manual flow, evolution, and team scopes', async ({ page }) => {
+  await page.goto('/portfolio');
+  await expect(page.locator('[data-portfolio-page="3"] [data-origin-step]')).toHaveCount(4);
+  await expect(page.locator('[data-portfolio-page="4"] [data-evolution-stage]')).toHaveCount(4);
+  await expect(page.locator('[data-portfolio-page="4"] [data-responsibility-split]')).toHaveCount(1);
+  await expect(page.locator('[data-portfolio-page="5"] [data-team-scope="team"]')).toHaveCount(1);
+  await expect(page.locator('[data-portfolio-page="5"] [data-team-scope="personal"]')).toHaveCount(1);
+});
+
+test('K-Le-PaaS evidence is immediately available with an accessible description', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const evidence = page.locator('[data-portfolio-page="5"] .evidence-figure');
+  const image = evidence.locator('img');
+  const caption = evidence.locator('figcaption strong');
+
+  await expect(image).toHaveAttribute('loading', 'eager');
+  expect((await image.getAttribute('alt'))?.trim().length).toBeGreaterThan(20);
+  await expect(caption).toBeVisible();
+  expect((await caption.textContent())?.trim().length).toBeGreaterThan(20);
+});

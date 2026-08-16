@@ -6,6 +6,7 @@ import { chromium } from '@playwright/test';
 
 const defaultOutputPath = fileURLToPath(new URL('../output/pdf/yunho-cho-portfolio.pdf', import.meta.url));
 const defaultSourceUrl = 'http://127.0.0.1:4322/portfolio';
+const portfolioIdentity = 'yunho-cho-platform-engineer-portfolio';
 // Chromium 140 serializes CSS A4 with a small device-unit rounding error. Keep
 // the replacement byte length identical so every xref offset remains valid.
 const chromiumA4MediaBox = Buffer.from('/MediaBox [0 0 594.95996 841.91998]');
@@ -83,9 +84,16 @@ export async function exportPortfolioPdf({ outputPath = defaultOutputPath, sourc
       throw new Error(`Portfolio preview returned HTTP ${response.status()} at ${sourceUrl}`);
     }
 
+    const portfolioIdentityCount = await page.locator(`[data-portfolio-document="${portfolioIdentity}"]`).count();
+    if (portfolioIdentityCount !== 1) {
+      throw new Error(`Portfolio preview identity mismatch at ${sourceUrl}`);
+    }
+
     const portfolioPageCount = await page.locator('section[data-portfolio-page]').count();
     if (portfolioPageCount !== 13) {
-      throw new Error(`Portfolio preview must contain 13 pages; found ${portfolioPageCount} at ${sourceUrl}`);
+      throw new Error(
+        `Portfolio preview page count mismatch at ${sourceUrl}: expected 13, found ${portfolioPageCount}`
+      );
     }
 
     await page.emulateMedia({ media: 'print' });
@@ -93,9 +101,14 @@ export async function exportPortfolioPdf({ outputPath = defaultOutputPath, sourc
       await document.fonts.ready;
       await Promise.all(
         Array.from(document.images, async (image) => {
-          await image.decode();
+          const source = image.currentSrc || image.src || '<unknown source>';
+          try {
+            await image.decode();
+          } catch {
+            throw new Error(`Image failed to decode: ${source}`);
+          }
           if (!image.complete || image.naturalWidth === 0) {
-            throw new Error(`Image failed to load: ${image.currentSrc || image.src}`);
+            throw new Error(`Image failed to load: ${source}`);
           }
         })
       );

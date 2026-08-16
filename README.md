@@ -23,8 +23,17 @@ npm run build
 
 - Web preview: `/portfolio`
 - PDF: `output/pdf/yunho-cho-portfolio.pdf`
-- Verify: `npm run check && npm run build && npm run test:portfolio`
-- Export: start `npm run preview -- --host 127.0.0.1 --port 4322`, then run `npm run portfolio:pdf`
+- Verify:
+
+  ```bash
+  npm run check:astro
+  npm run check:eslint
+  npx prettier --check README.md scripts/export-portfolio-pdf.mjs src/assets/styles/portfolio-document.css src/components/portfolio-document/PortfolioDocument.astro tests/portfolio-document-route.spec.ts tests/portfolio-document-pdf.spec.ts
+  npm run build
+  npm run test:portfolio
+  ```
+
+- Export: start `npm run preview -- --host 127.0.0.1 --port 4322`, then run `npm run portfolio:pdf`.
 
 ## Docker
 

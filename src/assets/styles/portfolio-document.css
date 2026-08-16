@@ -606,6 +606,14 @@ ul {
   line-height: 1.35;
 }
 
+[data-portfolio-page='11'] [data-architecture-zone='control-dns'] h3,
+[data-portfolio-page='11'] [data-architecture-zone='deployment-dns'] h3 {
+  overflow-wrap: normal;
+  font-size: 9.5pt;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+}
+
 [data-portfolio-page='11'] .architecture-zone p,
 [data-portfolio-page='11'] .architecture-zone-details li {
   font-size: 9.5pt;

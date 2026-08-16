@@ -442,6 +442,53 @@ test('external exposure renders planned edges rather than dashed separators', as
   ).toEqual(Array(7).fill('solid'));
 });
 
+test('planned external domain zone labels stay on one line inside their cards', async ({ page }) => {
+  await page.emulateMedia({ media: 'print' });
+  await page.goto('/portfolio');
+
+  const measurements = await page
+    .locator(
+      '[data-portfolio-page="11"] [data-architecture-zone="control-dns"], [data-portfolio-page="11"] [data-architecture-zone="deployment-dns"]'
+    )
+    .evaluateAll((zones) =>
+      zones.map((zone) => {
+        const heading = zone.querySelector<HTMLElement>('h3');
+        if (!heading) throw new Error(`Domain zone ${zone.getAttribute('data-architecture-zone')} has no heading`);
+
+        const zoneBounds = zone.getBoundingClientRect();
+        const headingBounds = heading.getBoundingClientRect();
+        const lineHeight = Number.parseFloat(window.getComputedStyle(heading).lineHeight);
+        const tolerance = 1;
+
+        return {
+          zone: zone.getAttribute('data-architecture-zone'),
+          label: heading.textContent?.trim(),
+          lineCount: Math.round(headingBounds.height / lineHeight),
+          availableWidth: heading.clientWidth,
+          requiredWidth: heading.scrollWidth,
+          withinCard:
+            headingBounds.left >= zoneBounds.left - tolerance &&
+            headingBounds.right <= zoneBounds.right + tolerance &&
+            headingBounds.top >= zoneBounds.top - tolerance &&
+            headingBounds.bottom <= zoneBounds.bottom + tolerance,
+        };
+      })
+    );
+
+  expect(measurements.map(({ zone, label }) => ({ zone, label }))).toEqual([
+    { zone: 'control-dns', label: 'control.example.com' },
+    { zone: 'deployment-dns', label: '*.deploy.example.com' },
+  ]);
+  for (const measurement of measurements) {
+    expect(measurement.lineCount, `${measurement.zone} line count: ${JSON.stringify(measurement)}`).toBe(1);
+    expect(
+      measurement.requiredWidth,
+      `${measurement.zone} text width: ${JSON.stringify(measurement)}`
+    ).toBeLessThanOrEqual(measurement.availableWidth + 1);
+    expect(measurement.withinCard, `${measurement.zone} card bounds: ${JSON.stringify(measurement)}`).toBe(true);
+  }
+});
+
 test('Argus stays supporting evidence with one normalized provider flow', async ({ page }) => {
   await page.goto('/portfolio');
 
@@ -629,53 +676,118 @@ test('every print page fits one A4 sheet without overflow', async ({ page }) => 
       const bodyBounds = body.getBoundingClientRect();
       const footerBounds = footer.getBoundingClientRect();
       const bodyChildren = Array.from(body.children).map((child) => child.getBoundingClientRect());
-      const renderedDescendants = Array.from(body.querySelectorAll<HTMLElement>('*')).filter((element) => {
+      const renderedDescendants = Array.from(portfolioPage.querySelectorAll<HTMLElement>('*')).filter((element) => {
         const bounds = element.getBoundingClientRect();
         const style = window.getComputedStyle(element);
-        const focusViewport = element.closest<HTMLElement>('[data-evidence-focus]');
-        const isClippedFocusContent = focusViewport && focusViewport !== element;
-        return (
-          !isClippedFocusContent &&
-          bounds.width > 0 &&
-          bounds.height > 0 &&
-          style.display !== 'none' &&
-          style.visibility !== 'hidden'
-        );
+        return bounds.width > 0 && bounds.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
       });
       const tolerance = 1;
-      const withinBounds = (bounds: DOMRect, container: DOMRect) =>
+      type Bounds = Pick<DOMRect, 'left' | 'right' | 'top' | 'bottom'>;
+      const toBounds = (bounds: DOMRect): Bounds => ({
+        left: bounds.left,
+        right: bounds.right,
+        top: bounds.top,
+        bottom: bounds.bottom,
+      });
+      const withinBounds = (bounds: Bounds, container: Bounds) =>
         bounds.left >= container.left - tolerance &&
         bounds.right <= container.right + tolerance &&
         bounds.top >= container.top - tolerance &&
         bounds.bottom <= container.bottom + tolerance;
-      const descendantsWithinBody = renderedDescendants.every((element) =>
-        withinBounds(element.getBoundingClientRect(), bodyBounds)
-      );
-      const descendantsNotClipped = renderedDescendants.every((element) => {
-        const bounds = element.getBoundingClientRect();
+      const intersectBounds = (bounds: Bounds, container: Bounds): Bounds => ({
+        left: Math.max(bounds.left, container.left),
+        right: Math.min(bounds.right, container.right),
+        top: Math.max(bounds.top, container.top),
+        bottom: Math.min(bounds.bottom, container.bottom),
+      });
+      const describeElement = (element: HTMLElement) =>
+        element.getAttribute('data-evidence-focus') ??
+        element.getAttribute('data-page-number') ??
+        element.getAttribute('data-portfolio-page') ??
+        `${element.tagName.toLowerCase()}.${element.className}`;
+      const argusFocusViewport =
+        portfolioPage.getAttribute('data-portfolio-page') === '12'
+          ? portfolioPage.querySelector<HTMLElement>('[data-evidence-focus="overview-desk"]')
+          : null;
+      const argusFocusImage = argusFocusViewport?.querySelector<HTMLElement>(':scope > img') ?? null;
+      const descendantAnalyses = renderedDescendants.map((element) => {
+        let visibleBounds = toBounds(element.getBoundingClientRect());
         let ancestor = element.parentElement;
+        let unintentionallyClipped = false;
+        let usesArgusFocusException = false;
 
         while (ancestor) {
           const ancestorStyle = window.getComputedStyle(ancestor);
-          const ancestorBounds = ancestor.getBoundingClientRect();
+          const ancestorBounds = toBounds(ancestor.getBoundingClientRect());
           const clipsX = ['auto', 'clip', 'hidden', 'scroll'].includes(ancestorStyle.overflowX);
           const clipsY = ['auto', 'clip', 'hidden', 'scroll'].includes(ancestorStyle.overflowY);
+          const overflowsX =
+            clipsX &&
+            (visibleBounds.left < ancestorBounds.left - tolerance ||
+              visibleBounds.right > ancestorBounds.right + tolerance);
+          const overflowsY =
+            clipsY &&
+            (visibleBounds.top < ancestorBounds.top - tolerance ||
+              visibleBounds.bottom > ancestorBounds.bottom + tolerance);
 
-          if (
-            (clipsX &&
-              (bounds.left < ancestorBounds.left - tolerance || bounds.right > ancestorBounds.right + tolerance)) ||
-            (clipsY &&
-              (bounds.top < ancestorBounds.top - tolerance || bounds.bottom > ancestorBounds.bottom + tolerance))
-          ) {
-            return false;
+          if (overflowsX || overflowsY) {
+            const isExplicitArgusFocusCrop =
+              element === argusFocusImage &&
+              ancestor === argusFocusViewport &&
+              clipsX &&
+              clipsY &&
+              ancestorStyle.overflowX === 'hidden' &&
+              ancestorStyle.overflowY === 'hidden';
+
+            if (isExplicitArgusFocusCrop) {
+              visibleBounds = intersectBounds(visibleBounds, ancestorBounds);
+              usesArgusFocusException = true;
+            } else {
+              unintentionallyClipped = true;
+              break;
+            }
           }
 
           if (ancestor === portfolioPage) break;
           ancestor = ancestor.parentElement;
         }
 
-        return true;
+        return { element, visibleBounds, unintentionallyClipped, usesArgusFocusException };
       });
+      const descendantsOutsidePage = descendantAnalyses
+        .filter(({ visibleBounds }) => !withinBounds(visibleBounds, pageBounds))
+        .map(({ element }) => element)
+        .map(describeElement);
+      const descendantsOutsideBody = descendantAnalyses
+        .filter(({ element }) => body.contains(element))
+        .filter(({ visibleBounds }) => !withinBounds(visibleBounds, bodyBounds))
+        .map(({ element }) => element)
+        .map(describeElement);
+      const clippedDescendants = descendantAnalyses
+        .filter(({ unintentionallyClipped }) => unintentionallyClipped)
+        .map(({ element }) => element);
+      const intentionalCropExceptions = descendantAnalyses
+        .filter(({ usesArgusFocusException }) => usesArgusFocusException)
+        .map(
+          ({ element }) =>
+            `${argusFocusViewport?.getAttribute('data-evidence-focus')} > ${element.tagName.toLowerCase()}`
+        );
+      const requiredRegionSelectors = [
+        '.page-header',
+        '.portfolio-page > h2',
+        '.page-thesis',
+        '.page-body',
+        '.page-footer',
+        '[data-page-number]',
+      ];
+      const missingRequiredRegions = requiredRegionSelectors.filter(
+        (selector) => !portfolioPage.querySelector<HTMLElement>(selector)
+      );
+      const requiredRegionsOutsidePage = requiredRegionSelectors
+        .map((selector) => portfolioPage.querySelector<HTMLElement>(selector))
+        .filter((element): element is HTMLElement => Boolean(element))
+        .filter((element) => !withinBounds(element.getBoundingClientRect(), pageBounds))
+        .map(describeElement);
 
       return {
         pageWidth: pageBounds.width,
@@ -706,8 +818,12 @@ test('every print page fits one A4 sheet without overflow', async ({ page }) => 
             bounds.top >= pageBounds.top &&
             bounds.bottom <= footerBounds.top
         ),
-        descendantsWithinBody,
-        descendantsNotClipped,
+        descendantsOutsidePage,
+        descendantsOutsideBody,
+        clippedDescendants: clippedDescendants.map(describeElement),
+        intentionalCropExceptions,
+        missingRequiredRegions,
+        requiredRegionsOutsidePage,
       };
     });
 
@@ -727,7 +843,13 @@ test('every print page fits one A4 sheet without overflow', async ({ page }) => 
       measurement.bodyClientWidth + 1
     );
     expect(measurement.childrenWithinPage, `page ${pageNumber} child bounds`).toBe(true);
-    expect(measurement.descendantsWithinBody, `page ${pageNumber} nested descendant bounds`).toBe(true);
-    expect(measurement.descendantsNotClipped, `page ${pageNumber} nested descendant clipping`).toBe(true);
+    expect(measurement.missingRequiredRegions, `page ${pageNumber} missing structural regions`).toEqual([]);
+    expect(measurement.requiredRegionsOutsidePage, `page ${pageNumber} structural region bounds`).toEqual([]);
+    expect(measurement.descendantsOutsidePage, `page ${pageNumber} all descendant page bounds`).toEqual([]);
+    expect(measurement.descendantsOutsideBody, `page ${pageNumber} body descendant bounds`).toEqual([]);
+    expect(measurement.clippedDescendants, `page ${pageNumber} overflow-ancestor clipping`).toEqual([]);
+    expect(measurement.intentionalCropExceptions, `page ${pageNumber} explicit crop exceptions`).toEqual(
+      pageNumber === 12 ? ['overview-desk > img'] : []
+    );
   }
 });

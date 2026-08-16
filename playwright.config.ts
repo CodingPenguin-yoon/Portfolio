@@ -1,8 +1,17 @@
+import { createHash } from 'node:crypto';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { defineConfig } from '@playwright/test';
 
-const portfolioQaOutputDir = join('/private/tmp', 'portfolio-document-qa', 'playwright');
+const checkoutPath = fileURLToPath(new URL('.', import.meta.url));
+const checkoutId = createHash('sha256').update(checkoutPath).digest('hex').slice(0, 12);
+const portfolioQaRoot =
+  process.platform === 'darwin'
+    ? join('/private', 'tmp', 'portfolio-document-qa')
+    : join(tmpdir(), 'portfolio-document-qa');
+const portfolioQaOutputDir = join(portfolioQaRoot, `playwright-portfolio-document-${checkoutId}`);
 
 export default defineConfig({
   outputDir: portfolioQaOutputDir,

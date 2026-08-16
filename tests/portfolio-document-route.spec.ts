@@ -116,7 +116,15 @@ test('system map separates lifecycles and Gjallar execution layers', async ({ pa
   await expect(system.locator('[data-system-node="storage"]')).toContainText('PostgreSQL');
 
   const gjallar = page.locator('[data-portfolio-page="8"]');
-  await expect(gjallar.locator('[data-gjallar-layer]')).toHaveCount(5);
+  const layers = gjallar.locator('[data-gjallar-layer]');
+  await expect(layers).toHaveCount(5);
+  expect(await layers.evaluateAll((items) => items.map((item) => item.getAttribute('data-gjallar-layer')))).toEqual([
+    'actual-state',
+    'policy',
+    'preflight',
+    'execution',
+    'outcome',
+  ]);
   await expect(gjallar.locator('[data-scope-limit="vm-full-lifecycle"]')).toHaveCount(1);
 });
 
@@ -136,11 +144,10 @@ test('current system connections resolve declared zones without showing the plan
         ])
       )
     );
-  const currentConnections = map.locator('[data-connection-status="active"], [data-connection-status="operational"]');
-
-  await expect(currentConnections).toHaveCount(3);
+  const currentConnections = map.locator('[data-connection-status]');
   const resolvedConnections = await currentConnections.evaluateAll((connections) =>
     connections.map((connection) => ({
+      status: connection.getAttribute('data-connection-status'),
       from: connection.getAttribute('data-from-zone'),
       to: connection.getAttribute('data-to-zone'),
       labels: Array.from(connection.querySelectorAll('.connection-route strong')).map((label) =>
@@ -148,6 +155,27 @@ test('current system connections resolve declared zones without showing the plan
       ),
     }))
   );
+
+  expect(resolvedConnections).toEqual([
+    {
+      status: 'active',
+      from: 'gjallar-control',
+      to: 'proxmox',
+      labels: ['Gjallar Control', 'Proxmox'],
+    },
+    {
+      status: 'active',
+      from: 'proxmox',
+      to: 'runtime',
+      labels: ['Proxmox', 'Runtime VM'],
+    },
+    {
+      status: 'operational',
+      from: 'runtime',
+      to: 'storage',
+      labels: ['Runtime VM', 'Storage VM'],
+    },
+  ]);
 
   for (const connection of resolvedConnections) {
     expect(connection.from).not.toBeNull();
@@ -197,6 +225,20 @@ test('Gjallar evidence is eager, accessible, and scoped to the implementation pa
   expect((await image.getAttribute('alt'))?.trim().length).toBeGreaterThan(20);
   await expect(caption).toBeVisible();
   expect((await caption.textContent())?.trim().length).toBeGreaterThan(20);
+  const evidenceBounds = await gjallar.locator('.gjallar-evidence').evaluate((container) => {
+    const figure = container.querySelector<HTMLElement>('.evidence-figure');
+    const image = container.querySelector<HTMLElement>('img');
+    const scopeLimit = container.querySelector<HTMLElement>('.scope-limit');
+    if (!figure || !image || !scopeLimit) throw new Error('Gjallar evidence layout is incomplete');
+
+    return {
+      containerWidth: container.getBoundingClientRect().width,
+      figureWidth: figure.getBoundingClientRect().width,
+      imageWidth: image.getBoundingClientRect().width,
+      scopeLimitWidth: scopeLimit.getBoundingClientRect().width,
+    };
+  });
+  expect(evidenceBounds.imageWidth, JSON.stringify(evidenceBounds)).toBeGreaterThanOrEqual(500);
   await expect(page.locator('[data-portfolio-page="6"] .evidence-figure')).toHaveCount(0);
   await expect(page.locator('[data-portfolio-page="7"] .evidence-figure')).toHaveCount(0);
 });
@@ -211,12 +253,53 @@ test('current system, responsibility, and Gjallar content stay inside their A4 p
       if (!body || !footer) throw new Error(`Page ${portfolioPage.getAttribute('data-portfolio-page')} is incomplete`);
 
       const pageBounds = portfolioPage.getBoundingClientRect();
+      const bodyBounds = body.getBoundingClientRect();
       const footerBounds = footer.getBoundingClientRect();
       const bodyChildren = Array.from(body.children).map((child) => child.getBoundingClientRect());
+      const renderedDescendants = Array.from(body.querySelectorAll<HTMLElement>('*')).filter((element) => {
+        const bounds = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return bounds.width > 0 && bounds.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+      });
+      const tolerance = 1;
+      const withinBounds = (bounds: DOMRect, container: DOMRect) =>
+        bounds.left >= container.left - tolerance &&
+        bounds.right <= container.right + tolerance &&
+        bounds.top >= container.top - tolerance &&
+        bounds.bottom <= container.bottom + tolerance;
+      const descendantsWithinBody = renderedDescendants.every((element) =>
+        withinBounds(element.getBoundingClientRect(), bodyBounds)
+      );
+      const descendantsNotClipped = renderedDescendants.every((element) => {
+        const bounds = element.getBoundingClientRect();
+        let ancestor = element.parentElement;
+
+        while (ancestor && ancestor !== body) {
+          const ancestorStyle = window.getComputedStyle(ancestor);
+          const ancestorBounds = ancestor.getBoundingClientRect();
+          const clipsX = ['auto', 'clip', 'hidden', 'scroll'].includes(ancestorStyle.overflowX);
+          const clipsY = ['auto', 'clip', 'hidden', 'scroll'].includes(ancestorStyle.overflowY);
+
+          if (
+            (clipsX &&
+              (bounds.left < ancestorBounds.left - tolerance || bounds.right > ancestorBounds.right + tolerance)) ||
+            (clipsY &&
+              (bounds.top < ancestorBounds.top - tolerance || bounds.bottom > ancestorBounds.bottom + tolerance))
+          ) {
+            return false;
+          }
+
+          ancestor = ancestor.parentElement;
+        }
+
+        return true;
+      });
 
       return {
         bodyClientHeight: body.clientHeight,
         bodyScrollHeight: body.scrollHeight,
+        bodyClientWidth: body.clientWidth,
+        bodyScrollWidth: body.scrollWidth,
         childrenWithinPage: bodyChildren.every(
           (bounds) =>
             bounds.left >= pageBounds.left &&
@@ -224,12 +307,19 @@ test('current system, responsibility, and Gjallar content stay inside their A4 p
             bounds.top >= pageBounds.top &&
             bounds.bottom <= footerBounds.top
         ),
+        descendantsWithinBody,
+        descendantsNotClipped,
       };
     });
 
     expect(measurement.bodyScrollHeight, `page ${pageNumber} body overflow`).toBeLessThanOrEqual(
       measurement.bodyClientHeight + 1
     );
+    expect(measurement.bodyScrollWidth, `page ${pageNumber} horizontal overflow`).toBeLessThanOrEqual(
+      measurement.bodyClientWidth + 1
+    );
     expect(measurement.childrenWithinPage, `page ${pageNumber} child bounds`).toBe(true);
+    expect(measurement.descendantsWithinBody, `page ${pageNumber} nested descendant bounds`).toBe(true);
+    expect(measurement.descendantsNotClipped, `page ${pageNumber} nested descendant clipping`).toBe(true);
   }
 });

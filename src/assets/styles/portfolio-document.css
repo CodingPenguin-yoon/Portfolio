@@ -486,6 +486,14 @@ ul {
   margin-bottom: 5mm;
 }
 
+[data-portfolio-page='8'] > h2 {
+  margin: 8mm 0 3mm;
+}
+
+[data-portfolio-page='8'] .page-thesis {
+  margin-bottom: 4mm;
+}
+
 [data-portfolio-page='6'] .architecture-map {
   margin-bottom: 5mm;
 }
@@ -602,13 +610,14 @@ ul {
 
 .gjallar-layout {
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
-  gap: 7mm;
+  gap: 3mm;
 }
 
 .gjallar-layers {
   display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
   padding: 0;
   margin: 0;
@@ -616,8 +625,16 @@ ul {
 }
 
 .gjallar-layers li {
-  padding: 3mm 0;
+  padding: 2mm 3mm;
   border-top: 0.75mm solid var(--document-ink);
+}
+
+.gjallar-layers [data-gjallar-layer='preflight'] {
+  grid-column: span 2;
+}
+
+.gjallar-layers [data-gjallar-layer='execution'] {
+  grid-column: 1 / 4;
 }
 
 .gjallar-layers .diagram-label {
@@ -634,11 +651,19 @@ ul {
   margin-bottom: 0;
   color: #465163;
   font-size: 9.5pt;
-  line-height: 1.45;
+  line-height: 1.4;
+}
+
+.gjallar-evidence {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30mm;
+  align-items: start;
+  gap: 4mm;
 }
 
 .gjallar-evidence .evidence-figure {
-  margin-bottom: 5mm;
+  width: 100%;
+  margin: 0;
 }
 
 .gjallar-evidence .evidence-media {

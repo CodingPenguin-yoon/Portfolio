@@ -211,6 +211,10 @@ export interface ArgusProjectData {
     caption: string;
     status: EvidenceStatus;
     source: string;
+    focus: {
+      id: string;
+      label: string;
+    };
   };
 }
 
@@ -715,10 +719,14 @@ export const portfolioDocument = {
       ],
       evidenceFigure: {
         src: '/projects/argus.png',
-        alt: 'Argus 대시보드에서 정규화된 시장 snapshot과 공급자별 수집 상태를 확인하는 구현 화면',
-        caption: '실제 대시보드는 공급자별 입력을 정규화한 snapshot과 판단 결과가 한 흐름으로 연결됨을 보여줍니다.',
+        alt: 'Argus 대시보드의 Overview Desk와 판단 근거 카드를 원본 크기에 가깝게 확대한 상세 화면',
+        caption: 'Overview Desk를 원본 크기에 가깝게 확대한 상세로, 정규화된 snapshot과 판단 근거의 연결을 보여줍니다.',
         status: 'verified',
         source: 'public/projects/argus.png',
+        focus: {
+          id: 'overview-desk',
+          label: 'Argus Overview Desk 확대 상세',
+        },
       },
     } satisfies ArgusProjectData,
   },

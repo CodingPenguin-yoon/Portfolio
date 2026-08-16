@@ -1,4 +1,63 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function getMutedCopyContrastViolations(page: Page) {
+  return page.locator('.portfolio-document').evaluate((documentRoot) => {
+    const minimumGray = [75, 85, 99];
+    const intentionalColorSelector = [
+      '.status-badge',
+      '.evidence-status',
+      '.connection-status',
+      '.architecture-operational-note',
+      '.scope-limit .diagram-label',
+      '.scope-limit-list li',
+      '.resume-project-scope',
+      '.resume-contacts a strong',
+    ].join(',');
+    const linearize = (channel: number) => {
+      const value = channel / 255;
+      return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = ([red, green, blue]: number[]) =>
+      0.2126 * linearize(red) + 0.7152 * linearize(green) + 0.0722 * linearize(blue);
+    const parseRgba = (color: string) => {
+      const channels = color.match(/[\d.]+/g)?.map(Number) ?? [255, 255, 255];
+      return {
+        rgb: channels.slice(0, 3),
+        alpha: channels[3] ?? 1,
+      };
+    };
+    const compositeAgainstWhite = (rgb: number[], alpha: number) =>
+      rgb.map((channel) => channel * alpha + 255 * (1 - alpha));
+    const minimumGrayLuminance = luminance(minimumGray);
+
+    return Array.from(documentRoot.querySelectorAll<HTMLElement>('p, li, td, th, figcaption, a, small, span, strong'))
+      .filter((element) => {
+        const style = window.getComputedStyle(element);
+        const bounds = element.getBoundingClientRect();
+        return bounds.width > 1 && bounds.height > 1 && style.visibility !== 'hidden';
+      })
+      .filter((element) => !element.matches(intentionalColorSelector))
+      .map((element) => {
+        const parsedColor = parseRgba(window.getComputedStyle(element).color);
+        let effectiveAlpha = parsedColor.alpha;
+        let ancestor: HTMLElement | null = element;
+
+        while (ancestor && ancestor !== documentRoot) {
+          effectiveAlpha *= Number.parseFloat(window.getComputedStyle(ancestor).opacity);
+          ancestor = ancestor.parentElement;
+        }
+
+        return {
+          caseId:
+            element.getAttribute('data-contrast-case') ??
+            `${element.tagName.toLowerCase()}.${typeof element.className === 'string' ? element.className : ''}`,
+          compositedChannels: compositeAgainstWhite(parsedColor.rgb, effectiveAlpha),
+        };
+      })
+      .filter(({ compositedChannels }) => luminance(compositedChannels) > minimumGrayLuminance + 0.001)
+      .map(({ caseId }) => caseId);
+  });
+}
 
 test('every page has one visible h2 and a page label', async ({ page }) => {
   await page.goto('/portfolio');
@@ -406,27 +465,89 @@ test('Argus stays supporting evidence with one normalized provider flow', async 
   expect((await caption.textContent())?.trim().length).toBeGreaterThan(20);
 });
 
-test('Argus evidence remains recruiter-readable rather than thumbnail-sized', async ({ page }) => {
+test('Argus evidence presents a substantial near-source-scale focused detail', async ({ page }) => {
   await page.goto('/portfolio');
 
-  const measurement = await page.locator('[data-portfolio-page="12"] .evidence-figure').evaluate((evidence) => {
-    const image = evidence.querySelector<HTMLImageElement>('img');
-    if (!image) throw new Error('Argus evidence image is missing');
+  const evidence = page.locator('[data-portfolio-page="12"] .evidence-figure');
+  const focus = evidence.locator('[data-evidence-focus="overview-desk"]');
+  const image = focus.locator('img');
 
-    const evidenceBounds = evidence.getBoundingClientRect();
+  await expect(evidence).toHaveAttribute('data-evidence-presentation', 'focused-detail');
+  await expect(focus).toHaveCount(1);
+  await expect(focus).toHaveAttribute('aria-label', /확대/);
+  await expect(image).toHaveAttribute('alt', /확대/);
+  await expect(evidence.locator('figcaption strong')).toContainText('확대');
+
+  const measurement = await evidence.evaluate((figure) => {
+    const focusViewport = figure.querySelector<HTMLElement>('[data-evidence-focus="overview-desk"]');
+    const image = focusViewport?.querySelector<HTMLImageElement>('img');
+    if (!focusViewport || !image) throw new Error('Argus focused evidence is missing');
+
+    const figureBounds = figure.getBoundingClientRect();
+    const viewportBounds = focusViewport.getBoundingClientRect();
     const imageBounds = image.getBoundingClientRect();
+    const viewportStyle = window.getComputedStyle(focusViewport);
+    const sourcePixelsPerEffectiveRenderedPixel = image.naturalWidth / imageBounds.width;
+
     return {
-      evidenceWidth: evidenceBounds.width,
-      imageWidth: imageBounds.width,
-      imageHeight: imageBounds.height,
-      naturalWidth: image.naturalWidth,
+      viewportWidth: viewportBounds.width,
+      viewportHeight: viewportBounds.height,
+      sourcePixelsPerEffectiveRenderedPixel,
+      visibleSourceWidth: viewportBounds.width * sourcePixelsPerEffectiveRenderedPixel,
+      visibleSourceHeight: viewportBounds.height * sourcePixelsPerEffectiveRenderedPixel,
+      clipsX: ['clip', 'hidden'].includes(viewportStyle.overflowX),
+      clipsY: ['clip', 'hidden'].includes(viewportStyle.overflowY),
+      viewportContained:
+        viewportBounds.left >= figureBounds.left &&
+        viewportBounds.right <= figureBounds.right &&
+        viewportBounds.top >= figureBounds.top &&
+        viewportBounds.bottom <= figureBounds.bottom,
+      imageExtendsLeft: imageBounds.left < viewportBounds.left - 100,
+      imageExtendsTop: imageBounds.top < viewportBounds.top - 250,
+      imageExtendsRight: imageBounds.right > viewportBounds.right + 100,
+      imageExtendsBottom: imageBounds.bottom > viewportBounds.bottom + 50,
     };
   });
 
-  expect(measurement.evidenceWidth).toBeGreaterThanOrEqual(620);
-  expect(measurement.imageWidth).toBeGreaterThanOrEqual(620);
-  expect(measurement.imageHeight).toBeGreaterThanOrEqual(340);
-  expect(measurement.naturalWidth).toBeGreaterThanOrEqual(1400);
+  expect(measurement.viewportWidth).toBeGreaterThanOrEqual(620);
+  expect(measurement.viewportHeight).toBeGreaterThanOrEqual(320);
+  expect(measurement.sourcePixelsPerEffectiveRenderedPixel).toBeGreaterThanOrEqual(0.9);
+  expect(measurement.sourcePixelsPerEffectiveRenderedPixel).toBeLessThanOrEqual(1.3);
+  expect(measurement.visibleSourceWidth).toBeGreaterThanOrEqual(600);
+  expect(measurement.visibleSourceHeight).toBeGreaterThanOrEqual(300);
+  expect(measurement.clipsX).toBe(true);
+  expect(measurement.clipsY).toBe(true);
+  expect(measurement.viewportContained).toBe(true);
+  expect(measurement.imageExtendsLeft).toBe(true);
+  expect(measurement.imageExtendsTop).toBe(true);
+  expect(measurement.imageExtendsRight).toBe(true);
+  expect(measurement.imageExtendsBottom).toBe(true);
+});
+
+test('resume project numbering is visual only inside the semantic ordered list', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const projectNumbers = page.locator('[data-portfolio-page="13"] .resume-project-heading > span');
+  await expect(projectNumbers).toHaveCount(4);
+  expect(await projectNumbers.evaluateAll((items) => items.map((item) => item.getAttribute('aria-hidden')))).toEqual(
+    Array(4).fill('true')
+  );
+});
+
+test('rendered copy contrast audit catches cool gray and alpha-composited regressions', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  await page.locator('[data-portfolio-page="13"] .page-body').evaluate((body) => {
+    const fixture = document.createElement('div');
+    fixture.setAttribute('data-contrast-regression-fixture', '');
+    fixture.innerHTML = `
+      <span data-contrast-case="cool-gray" style="display:block;color:rgb(103 118 139)">Cool gray regression</span>
+      <span data-contrast-case="alpha-gray" style="display:block;color:rgb(75 85 99 / 55%)">Alpha gray regression</span>
+    `;
+    body.append(fixture);
+  });
+
+  expect(await getMutedCopyContrastViolations(page)).toEqual(['cool-gray', 'alpha-gray']);
 });
 
 test('document closes with four scoped project summaries and actionable contact links', async ({ page }) => {
@@ -462,18 +583,6 @@ test('document typography and body contrast preserve the editorial floor', async
 
   const metrics = await page.locator('.portfolio-document').evaluate((documentRoot) => {
     const pages = Array.from(documentRoot.querySelectorAll<HTMLElement>('[data-portfolio-page]'));
-    const minimumGray = [75, 85, 99];
-    const linearize = (channel: number) => {
-      const value = channel / 255;
-      return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-    };
-    const luminance = ([red, green, blue]: number[]) =>
-      0.2126 * linearize(red) + 0.7152 * linearize(green) + 0.0722 * linearize(blue);
-    const parseRgb = (color: string) =>
-      color
-        .match(/[\d.]+/g)
-        ?.slice(0, 3)
-        .map(Number) ?? [255, 255, 255];
     const bodyText = Array.from(
       documentRoot.querySelectorAll<HTMLElement>('p, li, td, th, figcaption, a, small, span, strong')
     ).filter((element) => {
@@ -481,11 +590,6 @@ test('document typography and body contrast preserve the editorial floor', async
       const bounds = element.getBoundingClientRect();
       return bounds.width > 1 && bounds.height > 1 && style.visibility !== 'hidden';
     });
-    const bodyGrayLuminances = bodyText
-      .map((element) => parseRgb(window.getComputedStyle(element).color))
-      .filter((channels) => Math.max(...channels) - Math.min(...channels) <= 30)
-      .map(luminance);
-
     return {
       titleSizes: pages.map(
         (portfolioPage) =>
@@ -500,15 +604,13 @@ test('document typography and body contrast preserve the editorial floor', async
       minimumBodySize: Math.min(
         ...bodyText.map((element) => Number.parseFloat(window.getComputedStyle(element).fontSize) * 0.75)
       ),
-      maximumBodyGrayLuminance: Math.max(...bodyGrayLuminances),
-      minimumGrayLuminance: luminance(minimumGray),
     };
   });
 
   expect(metrics.titleSizes.every((size) => size >= 24.9 && size <= 31.1)).toBe(true);
   expect(metrics.thesisSizes.every((size) => size >= 11.9 && size <= 15.1)).toBe(true);
   expect(metrics.minimumBodySize).toBeGreaterThanOrEqual(9.4);
-  expect(metrics.maximumBodyGrayLuminance).toBeLessThanOrEqual(metrics.minimumGrayLuminance + 0.001);
+  expect(await getMutedCopyContrastViolations(page)).toEqual([]);
 });
 
 test('system and project content stays inside the nested A4 page bounds', async ({ page }) => {
@@ -527,7 +629,15 @@ test('system and project content stays inside the nested A4 page bounds', async 
       const renderedDescendants = Array.from(body.querySelectorAll<HTMLElement>('*')).filter((element) => {
         const bounds = element.getBoundingClientRect();
         const style = window.getComputedStyle(element);
-        return bounds.width > 0 && bounds.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+        const focusViewport = element.closest<HTMLElement>('[data-evidence-focus]');
+        const isClippedFocusContent = focusViewport && focusViewport !== element;
+        return (
+          !isClippedFocusContent &&
+          bounds.width > 0 &&
+          bounds.height > 0 &&
+          style.display !== 'none' &&
+          style.visibility !== 'hidden'
+        );
       });
       const tolerance = 1;
       const withinBounds = (bounds: DOMRect, container: DOMRect) =>

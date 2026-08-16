@@ -960,10 +960,17 @@ ul {
 }
 
 [data-portfolio-page='12'] .evidence-media {
+  position: relative;
+  height: 88mm;
   min-height: 0;
 }
 
 [data-portfolio-page='12'] .evidence-media img {
+  position: absolute;
+  top: -430px;
+  left: -190px;
+  width: 1432px;
+  max-width: none;
   max-height: none;
 }
 

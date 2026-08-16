@@ -471,7 +471,7 @@ const scopeLimitLabels: Record<ScopeLimit, string> = {
             closingSummary.projectSummaries.map((project, index) => (
               <li data-summary-project={project.id} data-summary-boundary={project.boundary}>
                 <div class="resume-project-heading">
-                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
                   <strong>{project.name}</strong>
                 </div>
                 <p class="resume-project-scope">{project.scope}</p>

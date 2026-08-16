@@ -101,7 +101,7 @@ Expected: 1 test passed. `npm run build` also succeeds through `webServer.comman
 - Create: `src/data/portfolio-document.ts`
 - Create: `tests/portfolio-document-data.spec.ts`
 
-- [ ] **Step 1: 페이지 수·순서·상태·금지 문구 테스트 작성**
+- [ ] **Step 1: 페이지 수·순서·상태·증거 범위 테스트 작성**
 
 ```ts
 import { expect, test } from '@playwright/test';
@@ -114,24 +114,31 @@ test('portfolio editorial contract', () => {
   );
   expect(new Set(portfolioDocument.pages.map((page) => page.slug)).size).toBe(13);
   expect(portfolioDocument.pages.filter((page) => page.status === 'planned')).toHaveLength(1);
-
-  const copy = JSON.stringify(portfolioDocument);
-  expect(copy).not.toContain('이미지 롤백 구현');
-  expect(copy).not.toContain('VM 수명주기 전체');
-  expect(copy).not.toContain('DB purge 구현');
+  expect(portfolioDocument.pages.find((page) => page.status === 'planned')?.slug).toBe(
+    'external-exposure'
+  );
 });
 ```
 
-- [ ] **Step 2: 테스트를 실행해 모듈 부재로 실패하는지 확인**
+- [ ] **Step 2: 테스트가 실제 데이터 계약에서 실패하도록 RED 확인**
 
 Run: `npm run test:portfolio -- tests/portfolio-document-data.spec.ts`
 
-Expected: `src/data/portfolio-document.ts`를 찾지 못해 실패한다.
+Expected: 첫 실행은 모듈 부재를 확인한다. 아래 최소 모듈을 만든 뒤 다시 실행해 `pages` 길이 불일치로 실패하는지 확인한다.
+
+```ts
+export const portfolioDocument = { pages: [] } as const;
+```
 
 - [ ] **Step 3: 문서 데이터 타입과 13페이지 원고 구현**
 
 ```ts
 export type DocumentStatus = 'implemented' | 'previous' | 'planned';
+export type ScopeLimit =
+  | 'release-image-rollback'
+  | 'database-backup-restore'
+  | 'database-purge'
+  | 'vm-full-lifecycle';
 
 export interface PortfolioPageData {
   number: number;
@@ -141,6 +148,7 @@ export interface PortfolioPageData {
   thesis: string;
   status?: DocumentStatus;
   statusNote?: string;
+  limitations?: ScopeLimit[];
 }
 
 export const portfolioDocument = {
@@ -168,17 +176,23 @@ export const portfolioDocument = {
 } as const;
 ```
 
-실제 데이터에는 콘텐츠 아키텍처와 근거표를 바탕으로 페이지별 `facts`, `decisions`, `flows`, `evidence`, `limitations`를 추가한다. 모든 문장은 `/docs/superpowers/specs/2026-08-17-portfolio-evidence-matrix.md`의 표현 범위 안에 둔다.
+실제 데이터에는 콘텐츠 아키텍처와 근거표를 바탕으로 페이지별 `facts`, `decisions`, `flows`, `evidence`, `limitations`를 추가한다. K-Le-PaaS에는 `teamSize: 2`와 개인 기여 식별자를 별도 필드로 둔다. 모든 문장은 `/docs/superpowers/specs/2026-08-17-portfolio-evidence-matrix.md`의 표현 범위 안에 둔다.
 
-- [ ] **Step 4: 개인 기여와 한계 문구를 추가 검증**
+- [ ] **Step 4: 개인 기여와 구현 한계를 구조화된 값으로 추가 검증**
 
 ```ts
 test('team contribution and limitations are explicit', () => {
-  const copy = JSON.stringify(portfolioDocument);
-  expect(copy).toContain('2인 팀');
-  expect(copy).toContain('개인 기여');
-  expect(copy).toContain('release rollback은 비범위');
-  expect(copy).toContain('DB backup·restore는 비범위');
+  const klepaas = portfolioDocument.projects.klepaas;
+  expect(klepaas.teamSize).toBe(2);
+  expect(klepaas.personalContributions).toHaveLength(4);
+
+  const heimdallFailure = portfolioDocument.pages.find((page) => page.slug === 'heimdall-failure');
+  expect(heimdallFailure?.limitations).toEqual(
+    expect.arrayContaining(['release-image-rollback', 'database-backup-restore'])
+  );
+
+  const gjallar = portfolioDocument.pages.find((page) => page.slug === 'gjallar');
+  expect(gjallar?.limitations).toContain('vm-full-lifecycle');
 });
 ```
 
@@ -301,17 +315,13 @@ Expected: 13개 section, 페이지별 h2 1개, 01~13 페이지 라벨이 통과�
 - [ ] **Step 1: 초반 5페이지 핵심 서사 테스트 작성**
 
 ```ts
-test('opening story moves from repetition to responsibility split', async ({ page }) => {
+test('opening story exposes the manual flow, evolution, and team scopes', async ({ page }) => {
   await page.goto('/portfolio');
-  const copy = await page.locator('main').innerText();
-  expect(copy).toContain('VM 생성');
-  expect(copy).toContain('IP·네트워크');
-  expect(copy).toContain('Terraform');
-  expect(copy).toContain('Ansible');
-  expect(copy).toContain('Gjallar');
-  expect(copy).toContain('Heimdall');
-  expect(copy).toContain('2인 팀');
-  expect(copy).toContain('개인 기여');
+  await expect(page.locator('[data-portfolio-page="3"] [data-origin-step]')).toHaveCount(4);
+  await expect(page.locator('[data-portfolio-page="4"] [data-evolution-stage]')).toHaveCount(4);
+  await expect(page.locator('[data-portfolio-page="4"] [data-responsibility-split]')).toHaveCount(1);
+  await expect(page.locator('[data-portfolio-page="5"] [data-team-scope="team"]')).toHaveCount(1);
+  await expect(page.locator('[data-portfolio-page="5"] [data-team-scope="personal"]')).toHaveCount(1);
 });
 ```
 
@@ -370,18 +380,15 @@ Expected: 1 test passed.
 - [ ] **Step 1: 현재 구조와 Gjallar 범위 테스트 작성**
 
 ```ts
-test('system map separates lifecycles and Gjallar scope', async ({ page }) => {
+test('system map separates lifecycles and Gjallar execution layers', async ({ page }) => {
   await page.goto('/portfolio');
   const system = page.locator('[data-portfolio-page="6"]');
-  await expect(system).toContainText('Runtime VM');
-  await expect(system).toContainText('Storage VM');
+  await expect(system.locator('[data-system-node="runtime"]')).toHaveCount(1);
+  await expect(system.locator('[data-system-node="storage"]')).toHaveCount(1);
 
   const gjallar = page.locator('[data-portfolio-page="8"]');
-  await expect(gjallar).toContainText('Proxmox inventory');
-  await expect(gjallar).toContainText('VM Profile');
-  await expect(gjallar).toContainText('preflight');
-  await expect(gjallar).toContainText('approval');
-  await expect(gjallar).not.toContainText('모든 VM 수명주기');
+  await expect(gjallar.locator('[data-gjallar-layer]')).toHaveCount(5);
+  await expect(gjallar.locator('[data-scope-limit="vm-full-lifecycle"]')).toHaveCount(1);
 });
 ```
 
@@ -445,10 +452,12 @@ test('Heimdall implementation and external plan are visibly separated', async ({
   await expect(page.locator('[data-portfolio-page="11"]')).toHaveAttribute('data-page-status', 'planned');
 
   const failurePage = page.locator('[data-portfolio-page="10"]');
-  await expect(failurePage).toContainText('last-known-good');
-  await expect(failurePage).toContainText('reconciliation');
-  await expect(failurePage).toContainText('release rollback은 비범위');
-  await expect(failurePage).toContainText('DB backup·restore는 비범위');
+  await expect(failurePage.locator('[data-failure-mode]')).toHaveCount(4);
+  await expect(failurePage.locator('[data-scope-limit="release-image-rollback"]')).toHaveCount(1);
+  await expect(failurePage.locator('[data-scope-limit="database-backup-restore"]')).toHaveCount(1);
+
+  const external = page.locator('[data-portfolio-page="11"]');
+  await expect(external.locator('[data-connection-status="planned"]')).toHaveCount(1);
 });
 ```
 
@@ -521,16 +530,12 @@ Expected: 1 test passed.
 - [ ] **Step 1: 종료 페이지와 전체 카피 테스트 작성**
 
 ```ts
-test('document closes with evidence and contact, not a thank-you slide', async ({ page }) => {
+test('document closes with project evidence and actionable contact links', async ({ page }) => {
   await page.goto('/portfolio');
   const last = page.locator('[data-portfolio-page="13"]');
-  await expect(last).toContainText('Platform Engineer');
-  await expect(last).toContainText('GitHub');
-  await expect(last).toContainText('Email');
-  await expect(last).not.toContainText('감사합니다');
-
-  const body = await page.locator('body').innerText();
-  expect(body).not.toMatch(/생태계에 끼쳐도 될까|완벽한|혁신적인/);
+  await expect(last.locator('[data-summary-project]')).toHaveCount(4);
+  await expect(last.locator('a[href^="mailto:"]')).toHaveCount(1);
+  await expect(last.locator('a[data-contact="github"]')).toHaveCount(1);
 });
 ```
 
@@ -538,7 +543,7 @@ test('document closes with evidence and contact, not a thank-you slide', async (
 
 Run: `npm run test:portfolio -- tests/portfolio-document-route.spec.ts -g "document closes"`
 
-Expected: 연락처나 금지 표현 계약이 충족되지 않아 실패한다.
+Expected: 프로젝트 요약 또는 실제 연락처 링크 계약이 충족되지 않아 실패한다.
 
 - [ ] **Step 3: 12 Argus 구현**
 

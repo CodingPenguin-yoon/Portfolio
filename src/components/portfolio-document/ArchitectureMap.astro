@@ -8,8 +8,8 @@ export interface ArchitectureZone {
 }
 
 export interface ArchitectureConnection {
-  from: string;
-  to: string;
+  fromZoneId: ArchitectureZone['id'];
+  toZoneId: ArchitectureZone['id'];
   label: string;
   status: ArchitectureConnectionStatus;
 }
@@ -28,6 +28,20 @@ const connectionStatusLabels: Record<ArchitectureConnectionStatus, string> = {
   planned: '계획 연결',
   external: '외부 경계',
 };
+
+const zonesById = new Map(zones.map((zone) => [zone.id, zone] as const));
+const resolvedConnections = connections.map((connection) => {
+  const fromZone = zonesById.get(connection.fromZoneId);
+  const toZone = zonesById.get(connection.toZoneId);
+
+  if (!fromZone || !toZone) {
+    throw new Error(
+      `Architecture connection references an unknown zone: ${connection.fromZoneId} → ${connection.toZoneId}`
+    );
+  }
+
+  return { ...connection, fromLabel: fromZone.label, toLabel: toZone.label };
+});
 ---
 
 <figure class="architecture-map" data-architecture-map aria-label={label}>
@@ -44,12 +58,16 @@ const connectionStatusLabels: Record<ArchitectureConnectionStatus, string> = {
   </div>
   <ul class="architecture-connections" aria-label="영역 간 연결 상태">
     {
-      connections.map((connection) => (
-        <li data-connection-status={connection.status}>
+      resolvedConnections.map((connection) => (
+        <li
+          data-connection-status={connection.status}
+          data-from-zone={connection.fromZoneId}
+          data-to-zone={connection.toZoneId}
+        >
           <span class="connection-route">
-            <strong>{connection.from}</strong>
+            <strong>{connection.fromLabel}</strong>
             <span aria-hidden="true">→</span>
-            <strong>{connection.to}</strong>
+            <strong>{connection.toLabel}</strong>
           </span>
           <span>{connection.label}</span>
           <span class="connection-status">{connectionStatusLabels[connection.status]}</span>

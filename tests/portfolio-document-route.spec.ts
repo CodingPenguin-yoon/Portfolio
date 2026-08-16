@@ -11,3 +11,14 @@ test('every page has one visible h2 and a page label', async ({ page }) => {
     await expect(pages.nth(index).locator('[data-page-number]')).toContainText(String(index + 1).padStart(2, '0'));
   }
 });
+
+test('document typography keeps Korean status in sans and page numbers in mono', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  const statusBadge = page.locator('[data-portfolio-page="5"] .status-badge');
+  const pageNumber = page.locator('[data-portfolio-page="5"] [data-page-number]');
+
+  await expect(statusBadge).toHaveCSS('font-family', /IBM Plex Sans KR/);
+  await expect(statusBadge).not.toHaveCSS('font-family', /IBM Plex Mono/);
+  await expect(pageNumber).toHaveCSS('font-family', /IBM Plex Mono/);
+});

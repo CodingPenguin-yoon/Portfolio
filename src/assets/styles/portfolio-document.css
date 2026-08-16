@@ -86,13 +86,17 @@ ul {
 }
 
 .page-eyebrow,
+[data-page-number] {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.page-eyebrow,
 .page-footer,
 .diagram-label,
 .flow-diagram li > span,
 .status-badge,
 .evidence-status,
 .connection-status {
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 9.5pt;
   font-weight: 500;
   letter-spacing: 0.075em;

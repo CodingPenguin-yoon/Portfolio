@@ -1,10 +1,7 @@
 ---
-export type FlowSteps =
-  | readonly [string, string, string]
-  | readonly [string, string, string, string]
-  | readonly [string, string, string, string, string]
-  | readonly [string, string, string, string, string, string]
-  | readonly [string, string, string, string, string, string, string];
+import type { FlowStepData } from '~/data/portfolio-document';
+
+export type FlowSteps = readonly FlowStepData[];
 
 export interface Props {
   steps: FlowSteps;
@@ -19,10 +16,11 @@ const { steps, label, caption } = Astro.props;
   <ol aria-label={label}>
     {
       steps.map((step, index) => (
-        <li>
+        <li data-flow-step={step.id}>
           <>
             <span>{String(index + 1).padStart(2, '0')}</span>
-            <strong>{step}</strong>
+            <strong>{step.label}</strong>
+            {step.summary && <small>{step.summary}</small>}
           </>
         </li>
       ))

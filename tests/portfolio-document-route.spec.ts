@@ -243,10 +243,96 @@ test('Gjallar evidence is eager, accessible, and scoped to the implementation pa
   await expect(page.locator('[data-portfolio-page="7"] .evidence-figure')).toHaveCount(0);
 });
 
-test('current system, responsibility, and Gjallar content stay inside their A4 pages', async ({ page }) => {
+test('Heimdall implementation and external plan are visibly separated', async ({ page }) => {
   await page.goto('/portfolio');
 
-  for (const pageNumber of [6, 7, 8]) {
+  const promotion = page.locator('[data-portfolio-page="9"]');
+  await expect(promotion).toHaveAttribute('data-page-status', 'implemented');
+  const promotionSteps = promotion.locator('[data-flow-step]');
+  await expect(promotionSteps).toHaveCount(7);
+  expect(
+    await promotionSteps.evaluateAll((steps) =>
+      steps.map((step) => ({
+        id: step.getAttribute('data-flow-step'),
+        label: step.querySelector('strong')?.textContent?.trim(),
+      }))
+    )
+  ).toEqual([
+    { id: 'exact-commit', label: 'Exact Commit' },
+    { id: 'build', label: 'Build' },
+    { id: 'generation-network', label: 'Generation Network' },
+    { id: 'candidate-start', label: 'Candidate Start' },
+    { id: 'service-health', label: 'Service Health' },
+    { id: 'nginx-validate-route-probe', label: 'Nginx Validate + Route Probe' },
+    { id: 'current-metadata-previous-retirement', label: 'Current Metadata + Previous Retirement' },
+  ]);
+  expect(
+    await promotion
+      .locator('[data-promotion-outcome]')
+      .evaluateAll((outcomes) => outcomes.map((outcome) => outcome.getAttribute('data-promotion-outcome')))
+  ).toEqual(['execution-success', 'traffic-activation-success']);
+
+  const failure = page.locator('[data-portfolio-page="10"]');
+  await expect(failure).toHaveAttribute('data-page-status', 'implemented');
+  const failureModes = failure.locator('[data-failure-mode]');
+  await expect(failureModes).toHaveCount(4);
+  expect(
+    await failureModes.evaluateAll((modes) => modes.map((mode) => mode.getAttribute('data-failure-mode')))
+  ).toEqual(['build-health', 'nginx-activation', 'worker-interruption', 'app-deployment-data']);
+  await expect(failure.locator('[data-scope-limit="release-image-rollback"]')).toHaveCount(1);
+  await expect(failure.locator('[data-scope-limit="database-backup-restore"]')).toHaveCount(1);
+  await expect(failure.locator('[data-scope-limit="database-purge"]')).toHaveCount(1);
+  await expect(failure.locator('[data-reconciliation-policy="preserve-unknown"]')).toHaveCount(1);
+  await expect(failure.locator('[data-storage-boundary="user-confirmed-operational"]')).toHaveCount(1);
+
+  const external = page.locator('[data-portfolio-page="11"]');
+  await expect(external).toHaveAttribute('data-page-status', 'planned');
+  expect(
+    await external
+      .locator('[data-architecture-zone]')
+      .evaluateAll((zones) => zones.map((zone) => zone.getAttribute('data-architecture-zone')))
+  ).toEqual([
+    'control-dns',
+    'deployment-dns',
+    'oci-edge',
+    'wireguard',
+    'external-network-ingress',
+    'project-gateway',
+    'runtime-application',
+    'storage-postgresql',
+  ]);
+  const plannedConnections = external.locator('[data-connection-status]');
+  await expect(plannedConnections).toHaveCount(7);
+  expect(
+    await plannedConnections.evaluateAll((connections) =>
+      connections.map((connection) => ({
+        status: connection.getAttribute('data-connection-status'),
+        from: connection.getAttribute('data-from-zone'),
+        to: connection.getAttribute('data-to-zone'),
+      }))
+    )
+  ).toEqual([
+    { status: 'planned', from: 'control-dns', to: 'oci-edge' },
+    { status: 'planned', from: 'deployment-dns', to: 'oci-edge' },
+    { status: 'planned', from: 'oci-edge', to: 'wireguard' },
+    { status: 'planned', from: 'wireguard', to: 'external-network-ingress' },
+    { status: 'planned', from: 'external-network-ingress', to: 'project-gateway' },
+    { status: 'planned', from: 'project-gateway', to: 'runtime-application' },
+    { status: 'planned', from: 'runtime-application', to: 'storage-postgresql' },
+  ]);
+  expect(
+    await plannedConnections.evaluateAll((connections) =>
+      connections.map((connection) => window.getComputedStyle(connection).borderBottomStyle)
+    )
+  ).toEqual(Array(7).fill('dashed'));
+  await expect(external.locator('[data-routing-owner="internal"]')).toHaveCount(1);
+  await expect(page.locator('[data-portfolio-page="6"] [data-connection-status="planned"]')).toHaveCount(0);
+});
+
+test('system and project content stays inside the nested A4 page bounds', async ({ page }) => {
+  await page.goto('/portfolio');
+
+  for (const pageNumber of [6, 7, 8, 9, 10, 11]) {
     const measurement = await page.locator(`[data-portfolio-page="${pageNumber}"]`).evaluate((portfolioPage) => {
       const body = portfolioPage.querySelector<HTMLElement>('.page-body');
       const footer = portfolioPage.querySelector<HTMLElement>('.page-footer');

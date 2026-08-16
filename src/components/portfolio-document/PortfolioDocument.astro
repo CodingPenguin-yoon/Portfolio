@@ -3,6 +3,7 @@ import { portfolioDocument, type ScopeLimit } from '~/data/portfolio-document';
 
 import ArchitectureMap from './ArchitectureMap.astro';
 import EvidenceFigure from './EvidenceFigure.astro';
+import FlowDiagram from './FlowDiagram.astro';
 import PortfolioPage from './PortfolioPage.astro';
 
 const [
@@ -14,6 +15,9 @@ const [
   systemPage,
   responsibilityPage,
   gjallarPage,
+  heimdallPromotionPage,
+  heimdallFailurePage,
+  externalExposurePage,
   ...remainingPages
 ] = portfolioDocument.pages;
 const { person, openingStory } = portfolioDocument;
@@ -21,6 +25,15 @@ const klepaas = portfolioDocument.projects.klepaas;
 const currentSystem = portfolioDocument.projects.currentSystem;
 const responsibilitySplit = portfolioDocument.projects.responsibilitySplit;
 const gjallar = portfolioDocument.projects.gjallar;
+const heimdall = portfolioDocument.projects.heimdall;
+const externalExposure = portfolioDocument.projects.externalExposure;
+
+const scopeLimitLabels: Record<ScopeLimit, string> = {
+  'release-image-rollback': 'Stored-image release rollback',
+  'database-backup-restore': 'Database backup · restore',
+  'database-purge': 'Database purge · rotation',
+  'vm-full-lifecycle': 'Full VM lifecycle',
+};
 ---
 
 <main class="portfolio-document" aria-labelledby="portfolio-document-title">
@@ -291,6 +304,115 @@ const gjallar = portfolioDocument.projects.gjallar;
         }
       </div>
     </div>
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={heimdallPromotionPage.number}
+    eyebrow={heimdallPromotionPage.eyebrow}
+    title={heimdallPromotionPage.title}
+    thesis={heimdallPromotionPage.thesis}
+    status={heimdallPromotionPage.status}
+    statusNote={heimdallPromotionPage.statusNote}
+  >
+    <FlowDiagram
+      steps={heimdall.promotion.steps}
+      label="Heimdall generation promotion의 일곱 단계"
+      caption="Candidate 실행 성공과 운영 트래픽 활성화 성공을 서로 다른 판정으로 기록합니다."
+    />
+    <section class="responsibility-transition" aria-labelledby="promotion-outcome-title">
+      <h3 id="promotion-outcome-title">두 개의 성공 판정</h3>
+      <div>
+        {
+          heimdall.promotion.outcomes.map((outcome) => (
+            <article data-promotion-outcome={outcome.id}>
+              <p class="diagram-label">{outcome.label}</p>
+              <p>{outcome.summary}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+    <ul class="architecture-connections" aria-label="Heimdall 데이터베이스 구현 범위">
+      {
+        heimdall.promotion.databaseCapabilities.map((capability) => (
+          <li data-database-capability={capability.id}>
+            <strong>{capability.label}</strong>
+            <span>{capability.summary}</span>
+            <span class="evidence-status">Implemented</span>
+          </li>
+        ))
+      }
+    </ul>
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={heimdallFailurePage.number}
+    eyebrow={heimdallFailurePage.eyebrow}
+    title={heimdallFailurePage.title}
+    thesis={heimdallFailurePage.thesis}
+    status={heimdallFailurePage.status}
+    statusNote={heimdallFailurePage.statusNote}
+  >
+    <table class="responsibility-table">
+      <caption>실패 유형별 정리와 보존 경계</caption>
+      <thead>
+        <tr>
+          <th scope="col">Failure</th>
+          <th scope="col">Handling</th>
+          <th scope="col">Preserved</th>
+          <th scope="col">Limit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          heimdall.failureModes.map((mode) => (
+            <tr data-failure-mode={mode.id}>
+              <th scope="row">{mode.failure}</th>
+              <td>{mode.handling}</td>
+              <td>{mode.preserved}</td>
+              <td>
+                <span>{mode.limitation}</span>
+                {mode.scopeLimits.map((scopeLimit: ScopeLimit) => (
+                  <span data-scope-limit={scopeLimit}>{scopeLimitLabels[scopeLimit]}</span>
+                ))}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <ul class="architecture-connections" aria-label="불확실 상태와 데이터 보존 원칙">
+      <li data-reconciliation-policy="preserve-unknown">
+        <strong>Unknown Runtime State</strong>
+        <span>{heimdall.reconciliationPolicy}</span>
+        <span class="connection-status">Preserve</span>
+      </li>
+      <li data-storage-boundary="user-confirmed-operational">
+        <strong>PostgreSQL Boundary</strong>
+        <span>{heimdall.storageBoundary}</span>
+        <span class="connection-status">Operational</span>
+      </li>
+    </ul>
+  </PortfolioPage>
+
+  <PortfolioPage
+    number={externalExposurePage.number}
+    eyebrow={externalExposurePage.eyebrow}
+    title={externalExposurePage.title}
+    thesis={externalExposurePage.thesis}
+    status={externalExposurePage.status}
+    statusNote={externalExposurePage.statusNote}
+  >
+    <ArchitectureMap
+      zones={externalExposure.zones}
+      connections={externalExposure.connections}
+      label="고정 외부 Edge와 내부 동적 routing 계획"
+      caption={externalExposure.caption}
+    />
+    <p class="system-map-decision" data-routing-owner="internal">
+      <strong>Dynamic Route Owner</strong>
+      {externalExposure.routingBoundary}
+    </p>
   </PortfolioPage>
 
   {

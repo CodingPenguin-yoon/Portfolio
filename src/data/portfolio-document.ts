@@ -22,6 +22,12 @@ export interface ArchitectureConnectionData {
   status: ArchitectureConnectionStatus;
 }
 
+export interface FlowStepData {
+  id: string;
+  label: string;
+  summary?: string;
+}
+
 export interface PortfolioEvidence {
   label: string;
   status: EvidenceStatus;
@@ -115,6 +121,66 @@ export interface GjallarProjectData {
     source: string;
   };
   scopeLimit: string;
+}
+
+export type HeimdallPromotionStepId =
+  | 'exact-commit'
+  | 'build'
+  | 'generation-network'
+  | 'candidate-start'
+  | 'service-health'
+  | 'nginx-validate-route-probe'
+  | 'current-metadata-previous-retirement';
+
+export type HeimdallPromotionOutcomeId = 'execution-success' | 'traffic-activation-success';
+
+export type HeimdallFailureModeId = 'build-health' | 'nginx-activation' | 'worker-interruption' | 'app-deployment-data';
+
+export interface HeimdallProjectData {
+  promotion: {
+    steps: readonly (FlowStepData & { id: HeimdallPromotionStepId })[];
+    outcomes: readonly {
+      id: HeimdallPromotionOutcomeId;
+      label: string;
+      summary: string;
+    }[];
+    databaseCapabilities: readonly {
+      id: 'project-db-role-provisioning' | 'deployment-database-injection';
+      label: string;
+      summary: string;
+    }[];
+  };
+  failureModes: readonly {
+    id: HeimdallFailureModeId;
+    failure: string;
+    handling: string;
+    preserved: string;
+    limitation: string;
+    scopeLimits: readonly ScopeLimit[];
+  }[];
+  reconciliationPolicy: string;
+  storageBoundary: string;
+}
+
+export type ExternalExposureZoneId =
+  | 'control-dns'
+  | 'deployment-dns'
+  | 'oci-edge'
+  | 'wireguard'
+  | 'external-network-ingress'
+  | 'project-gateway'
+  | 'runtime-application'
+  | 'storage-postgresql';
+
+export interface ExternalExposureData {
+  zones: readonly (ArchitectureZoneData & { id: ExternalExposureZoneId })[];
+  connections: readonly (ArchitectureConnectionData & {
+    fromZoneId: ExternalExposureZoneId;
+    toZoneId: ExternalExposureZoneId;
+    status: 'planned';
+  })[];
+  caption: string;
+  routingBoundary: string;
 }
 
 export const portfolioDocument = {
@@ -383,6 +449,184 @@ export const portfolioDocument = {
       scopeLimit:
         '현재 구현은 Native Create와 stopped VM의 제한된 gated Start입니다. 전체 VM lifecycle과 destructive control은 범위가 아닙니다.',
     } satisfies GjallarProjectData,
+    heimdall: {
+      promotion: {
+        steps: [
+          { id: 'exact-commit', label: 'Exact Commit' },
+          { id: 'build', label: 'Build' },
+          {
+            id: 'generation-network',
+            label: 'Generation Network',
+          },
+          {
+            id: 'candidate-start',
+            label: 'Candidate Start',
+          },
+          {
+            id: 'service-health',
+            label: 'Service Health',
+          },
+          {
+            id: 'nginx-validate-route-probe',
+            label: 'Nginx Validate + Route Probe',
+          },
+          {
+            id: 'current-metadata-previous-retirement',
+            label: 'Current Metadata + Previous Retirement',
+          },
+        ],
+        outcomes: [
+          {
+            id: 'execution-success',
+            label: 'Execution Success',
+            summary: 'candidate가 시작되고 service health를 통과한 상태입니다. 아직 운영 트래픽 승격은 아닙니다.',
+          },
+          {
+            id: 'traffic-activation-success',
+            label: 'Traffic Activation Success',
+            summary: 'Nginx 검증과 실제 route probe가 끝나 current metadata를 전환할 수 있는 상태입니다.',
+          },
+        ],
+        databaseCapabilities: [
+          {
+            id: 'project-db-role-provisioning',
+            label: 'Project DB · Role',
+            summary: '프로젝트별 PostgreSQL DB와 login role을 만들고 연결을 검증합니다.',
+          },
+          {
+            id: 'deployment-database-injection',
+            label: 'Deploy-time Injection',
+            summary: 'DB 접근을 선언한 서비스에만 연결 정보와 read-only secret을 전달합니다.',
+          },
+        ],
+      },
+      failureModes: [
+        {
+          id: 'build-health',
+          failure: 'Build / Health',
+          handling: '실패한 배포 ID와 label이 정확히 일치하는 candidate만 정리',
+          preserved: '기존 Current와 active metadata',
+          limitation: '저장된 image 재사용 없음',
+          scopeLimits: ['release-image-rollback'],
+        },
+        {
+          id: 'nginx-activation',
+          failure: 'Nginx Activation',
+          handling: 'last-known-good 설정 복원 후 실패 candidate를 exact-label 정리',
+          preserved: '이전 route와 generation',
+          limitation: 'release rollback 아님',
+          scopeLimits: [],
+        },
+        {
+          id: 'worker-interruption',
+          failure: 'Worker Interruption',
+          handling: 'Control DB·Nginx marker·Docker label을 비교해 reconcile',
+          preserved: '상태가 불확실한 candidate',
+          limitation: '확정할 수 없으면 수동 판단',
+          scopeLimits: [],
+        },
+        {
+          id: 'app-deployment-data',
+          failure: 'App Deployment / Data',
+          handling: 'runtime generation과 PostgreSQL 데이터 실패 범위를 분리',
+          preserved: '별도 Storage VM의 사용자 데이터',
+          limitation: 'DB purge·backup·restore와 data rollback 비범위',
+          scopeLimits: ['database-backup-restore', 'database-purge'],
+        },
+      ],
+      reconciliationPolicy:
+        'Worker가 중단된 뒤 runtime 상태를 확정할 수 없으면 자동 삭제보다 candidate 보존을 선택합니다.',
+      storageBoundary:
+        '프로젝트별 DB·role provisioning과 배포 연동은 구현됐습니다. 별도 PostgreSQL Storage VM은 사용자 확인 운영 구조이며 기본 Compose의 물리 격리를 뜻하지 않습니다.',
+    } satisfies HeimdallProjectData,
+    externalExposure: {
+      zones: [
+        {
+          id: 'control-dns',
+          label: 'control.example.com',
+          responsibility: 'Control Web 진입점을 가리키는 DNS 역할입니다.',
+          details: ['Control Web'],
+        },
+        {
+          id: 'deployment-dns',
+          label: '*.deploy.example.com',
+          responsibility: '사용자 deployment Host를 수용하는 wildcard DNS 역할입니다.',
+          details: ['Deployment wildcard'],
+        },
+        {
+          id: 'oci-edge',
+          label: 'OCI Edge Nginx',
+          responsibility: '고정된 공인 경계에서 TLS를 종료하고 Host를 전달합니다.',
+          details: ['Fixed TLS', 'Host forward'],
+        },
+        {
+          id: 'wireguard',
+          label: 'WireGuard',
+          responsibility: 'Edge와 홈랩 외부 네트워크 사이의 tunnel입니다.',
+        },
+        {
+          id: 'external-network-ingress',
+          label: 'External Network · Internal Ingress',
+          responsibility: '홈랩 외부망을 분리하고 도메인별 동적 route를 선택합니다.',
+          details: ['Internal Ingress Nginx'],
+        },
+        {
+          id: 'project-gateway',
+          label: 'Project Gateway',
+          responsibility: '프로젝트 서비스와 승격된 generation으로 요청을 연결합니다.',
+        },
+        {
+          id: 'runtime-application',
+          label: 'Runtime Application',
+          responsibility: 'Heimdall이 승격한 애플리케이션 generation을 실행합니다.',
+          systemNode: 'runtime',
+        },
+        {
+          id: 'storage-postgresql',
+          label: 'Storage VM PostgreSQL',
+          responsibility: 'runtime generation과 분리된 사용자 데이터 경계입니다.',
+          systemNode: 'storage',
+        },
+      ],
+      connections: [
+        { fromZoneId: 'control-dns', toZoneId: 'oci-edge', label: 'Control Web Host', status: 'planned' },
+        {
+          fromZoneId: 'deployment-dns',
+          toZoneId: 'oci-edge',
+          label: 'Deployment wildcard Host',
+          status: 'planned',
+        },
+        { fromZoneId: 'oci-edge', toZoneId: 'wireguard', label: '고정 Host 전달', status: 'planned' },
+        {
+          fromZoneId: 'wireguard',
+          toZoneId: 'external-network-ingress',
+          label: '홈랩 외부망 진입',
+          status: 'planned',
+        },
+        {
+          fromZoneId: 'external-network-ingress',
+          toZoneId: 'project-gateway',
+          label: '내부 동적 routing',
+          status: 'planned',
+        },
+        {
+          fromZoneId: 'project-gateway',
+          toZoneId: 'runtime-application',
+          label: '승격된 generation',
+          status: 'planned',
+        },
+        {
+          fromZoneId: 'runtime-application',
+          toZoneId: 'storage-postgresql',
+          label: '프로젝트 DB 연결',
+          status: 'planned',
+        },
+      ],
+      caption:
+        '모든 점선은 계획 연결입니다. 실제 도메인·IP·방화벽 규칙·secret·certificate는 이 설계에 포함하지 않습니다.',
+      routingBoundary:
+        'OCI Edge는 배포마다 바뀌지 않습니다. deployment별 동적 routing은 Internal Ingress와 Project Gateway가 소유합니다.',
+    } satisfies ExternalExposureData,
   },
   pages: [
     {
@@ -598,13 +842,13 @@ export const portfolioDocument = {
       ],
       flows: [
         [
-          'commit checkout',
-          'image build',
-          'candidate 실행',
-          'health check',
-          'Nginx 검증·교체',
-          'route probe',
-          'current 승격',
+          'Exact Commit',
+          'Build',
+          'Generation Network',
+          'Candidate Start',
+          'Service Health',
+          'Nginx Validate + Route Probe',
+          'Current Metadata + Previous Retirement',
         ],
       ],
       evidence: [
@@ -624,7 +868,7 @@ export const portfolioDocument = {
           source: 'heimdall_final/backend/src/heimdall/project_database/service.py:38-160',
         },
       ],
-      limitations: ['release-image-rollback', 'database-backup-restore'],
+      limitations: [],
     },
     {
       number: 10,

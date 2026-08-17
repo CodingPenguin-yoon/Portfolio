@@ -5,6 +5,7 @@ import StatusBadge from './StatusBadge.astro';
 
 export interface Props {
   number: number;
+  slug: string;
   eyebrow: string;
   title: string;
   subline?: string;
@@ -12,11 +13,17 @@ export interface Props {
   statusNote?: string;
 }
 
-const { number, eyebrow, title, subline, status, statusNote } = Astro.props;
+const { number, slug, eyebrow, title, subline, status, statusNote } = Astro.props;
 const titleId = `portfolio-page-${number}-title`;
 ---
 
-<section class="portfolio-page" data-portfolio-page={number} data-page-status={status} aria-labelledby={titleId}>
+<section
+  class="portfolio-page"
+  data-portfolio-page={number}
+  data-page-slug={slug}
+  data-page-status={status}
+  aria-labelledby={titleId}
+>
   <header class="page-header">
     <p class="page-eyebrow">{eyebrow}</p>
     {status && <StatusBadge status={status} note={statusNote} />}
@@ -26,6 +33,6 @@ const titleId = `portfolio-page-${number}-title`;
   <div class="slide-body"><slot /></div>
   <footer class="page-footer">
     <span>YUNHO CHO · PLATFORM ENGINEER</span>
-    <span data-page-number>{String(number).padStart(2, '0')} / 11</span>
+    <span data-page-number>{String(number).padStart(2, '0')} / 14</span>
   </footer>
 </section>

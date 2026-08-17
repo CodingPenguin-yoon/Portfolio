@@ -8,34 +8,7 @@ import { chromium } from '@playwright/test';
 const defaultOutputPath = fileURLToPath(new URL('../output/pdf/yunho-cho-portfolio.pdf', import.meta.url));
 const defaultSourceUrl = 'http://127.0.0.1:4322/portfolio';
 const portfolioIdentity = 'yunho-cho-platform-engineer-portfolio';
-// Chromium 140 serializes CSS A4 with a small device-unit rounding error. Keep
-// the replacement byte length identical so every xref offset remains valid.
-const chromiumA4MediaBox = Buffer.from('/MediaBox [0 0 594.95996 841.91998]');
-const canonicalA4MediaBox = Buffer.from('/MediaBox [0 0 595.28000 841.89000]');
-
-function normalizeA4MediaBoxes(pdf, expectedPageCount) {
-  if (chromiumA4MediaBox.length !== canonicalA4MediaBox.length) {
-    throw new Error('Canonical A4 MediaBox replacement must preserve PDF byte offsets');
-  }
-
-  const normalizedPdf = Buffer.from(pdf);
-  let searchOffset = 0;
-  let replacements = 0;
-
-  while (searchOffset < normalizedPdf.length) {
-    const mediaBoxOffset = normalizedPdf.indexOf(chromiumA4MediaBox, searchOffset);
-    if (mediaBoxOffset === -1) break;
-    canonicalA4MediaBox.copy(normalizedPdf, mediaBoxOffset);
-    replacements += 1;
-    searchOffset = mediaBoxOffset + canonicalA4MediaBox.length;
-  }
-
-  if (replacements !== expectedPageCount) {
-    throw new Error(`Expected ${expectedPageCount} Chromium A4 page boxes; found ${replacements}`);
-  }
-
-  return normalizedPdf;
-}
+const expectedPortfolioPageCount = 14;
 
 function parseArguments(argumentsToParse) {
   const options = {
@@ -96,7 +69,11 @@ export async function exportPortfolioPdf(
   { renameFile = rename } = {}
 ) {
   const resolvedOutputPath = resolve(outputPath);
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(
+    process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
+      : undefined
+  );
 
   try {
     const page = await browser.newPage();
@@ -122,9 +99,9 @@ export async function exportPortfolioPdf(
     }
 
     const portfolioPageCount = await page.locator('section[data-portfolio-page]').count();
-    if (portfolioPageCount !== 13) {
+    if (portfolioPageCount !== expectedPortfolioPageCount) {
       throw new Error(
-        `Portfolio preview page count mismatch at ${sourceUrl}: expected 13, found ${portfolioPageCount}`
+        `Portfolio preview page count mismatch at ${sourceUrl}: expected ${expectedPortfolioPageCount}, found ${portfolioPageCount}`
       );
     }
 
@@ -152,8 +129,7 @@ export async function exportPortfolioPdf(
       displayHeaderFooter: false,
       tagged: true,
     });
-    const normalizedPdf = normalizeA4MediaBoxes(chromiumPdf, portfolioPageCount);
-    await replaceFileAtomically(resolvedOutputPath, normalizedPdf, renameFile);
+    await replaceFileAtomically(resolvedOutputPath, chromiumPdf, renameFile);
   } finally {
     await browser.close();
   }

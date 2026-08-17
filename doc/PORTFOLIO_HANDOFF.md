@@ -2,19 +2,21 @@
 
 이 문서는 조윤호의 채용 포트폴리오 작업을 다른 Codex 세션이나 다른 컴퓨터에서 바로 이어가기 위한 단일 인수인계 문서다. 대화에서 확정한 프로젝트 서사, 기술적 사실, 표현 경계, 현재 산출물, Git 상태, 검증 방법, 다음 16:9 작업 방향을 한곳에 모았다.
 
+> 2026-08-17 현재 상태: 아래 A4 기록은 의사결정 이력을 보존하기 위한 이전 기준이다. 대표 `/portfolio`와 `output/pdf/yunho-cho-portfolio.pdf`는 14페이지 16:9 편집본으로 교체됐다. 최신 페이지별 설계와 완료 기준은 `docs/portfolio-editorial-brief.md`를 우선한다.
+
 ## 0. 가장 먼저 확인할 것
 
 - 저장소: `https://github.com/CodingPenguin-yoon/Portfolio.git`
 - 작업 브랜치: `codex/portfolio-document`
-- A4 구현 기준 커밋: `c677b93` (`fix: harden tagged portfolio PDF export`)
+- 이전 A4 구현 기준 커밋: `c677b93` (`fix: harden tagged portfolio PDF export`)
 - 브랜치 상태: `origin/codex/portfolio-document`에 푸시됨
 - `main` 병합: 아직 하지 않음
 - Pull Request: 아직 만들지 않음
 - 현재 완성본:
   - 웹 미리보기: `/portfolio`
   - PDF: `output/pdf/yunho-cho-portfolio.pdf`
-  - 형식: A4 세로 13페이지
-- 다음 유력 작업: 기존 A4를 단순 확대하지 않고, 흰색 기반 16:9 포트폴리오로 재편집
+  - 형식: 16:9 가로 14페이지
+- 현재 작업: 14페이지 편집본의 문구·근거 화면·면접용 설명을 사용자와 함께 미세 조정
 
 새 세션은 이 문서를 먼저 읽고 다음 세 문서를 필요할 때만 상세 근거로 확인한다.
 

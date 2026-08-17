@@ -121,7 +121,6 @@ const currentRoutes = [
     <figure
       class="architecture-map architecture-map--current slide-visual"
       data-diagram="current-system"
-      data-primary-visual
       aria-label={label}
     >
       <div class="ownership-columns ownership-columns--current">
@@ -162,7 +161,9 @@ const currentRoutes = [
             ))}
           </span>
         ))}
-        <span class="current-operational-note">Operational · 사용자 확인 Storage VM</span>
+        <span class="current-operational-note" data-storage-boundary="user-confirmed-operational">
+          Operational · 사용자 확인 Storage VM
+        </span>
       </div>
       <figcaption>Storage VM은 사용자 확인 운영 구조이며 애플리케이션 세대와 데이터 수명주기를 분리합니다.</figcaption>
     </figure>
@@ -170,7 +171,6 @@ const currentRoutes = [
     <figure
       class="architecture-map architecture-map--planned slide-visual"
       data-diagram="planned-exposure"
-      data-primary-visual
       aria-label={label}
     >
       <div class="ownership-columns ownership-columns--planned">

@@ -16,7 +16,12 @@ const portfolioQaOutputDir = join(portfolioQaRoot, `playwright-portfolio-documen
 export default defineConfig({
   outputDir: portfolioQaOutputDir,
   testDir: './tests',
-  use: { baseURL: 'http://127.0.0.1:4322' },
+  use: {
+    baseURL: 'http://127.0.0.1:4322',
+    launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
+      : undefined,
+  },
   webServer: {
     command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4322',
     url: 'http://127.0.0.1:4322',

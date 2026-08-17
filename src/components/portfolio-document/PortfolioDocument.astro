@@ -10,26 +10,29 @@ import PortfolioPage from './PortfolioPage.astro';
 
 const [
   coverPage,
-  problemPage,
-  evolutionPage,
+  originPage,
+  lensPage,
+  firstArchitecturePage,
+  frictionPage,
+  decisionPage,
   currentPage,
-  responsibilityPage,
-  gjallarPage,
+  gjallarDecisionPage,
+  gjallarEvidencePage,
   promotionPage,
   failurePage,
-  plannedPage,
-  originPage,
+  heimdallEvidencePage,
+  transferPage,
   closingPage,
 ] = portfolioDocument.pages;
 const { person, openingStory, projects, closingSummary } = portfolioDocument;
 
 const scopeLimitLabels: Record<ScopeLimit, string> = {
-  'release-image-rollback': 'Image rollback · Not implemented',
-  'database-backup-restore': 'DB backup / restore · Not implemented',
-  'database-purge': 'DB purge · Not implemented',
-  'database-credential-rotation': 'Credential rotation · Not implemented',
-  'data-rollback': 'User-data rollback · Not implemented',
-  'vm-full-lifecycle': 'Full VM lifecycle · Out of scope',
+  'release-image-rollback': '저장 image 즉시 rollback · 미구현',
+  'database-backup-restore': 'DB backup / restore · 미구현',
+  'database-purge': 'DB purge · 미구현',
+  'database-credential-rotation': 'Credential rotation · 미구현',
+  'data-rollback': 'User-data rollback · 미구현',
+  'vm-full-lifecycle': '전체 VM lifecycle · 현재 범위 아님',
 };
 ---
 
@@ -41,195 +44,254 @@ const scopeLimitLabels: Record<ScopeLimit, string> = {
   <h1 id="portfolio-document-title" class="visually-hidden">조윤호 플랫폼 엔지니어 포트폴리오</h1>
 
   <PortfolioPage {...coverPage}>
-    <div class="cover-layout">
-      <div class="cover-identity">
-        <p class="cover-name">{person.name}</p>
-        <p class="cover-role">{person.role}</p>
+    <div class="cover-layout" data-primary-visual>
+      <div class="cover-copy">
+        <div class="cover-identity">
+          <p class="cover-name">{person.name}</p>
+          <p class="cover-role">{person.role}</p>
+        </div>
+        <p class="cover-summary">
+          홈랩 운영의 반복을 줄이기 위해 자동화를 시작했습니다. 범위가 커지며 생긴 결합과 실패를 겪은 뒤, VM
+          생성·애플리케이션 배포·사용자 데이터의 수명주기를 분리했습니다.
+        </p>
+        <ul class="cover-contacts" aria-label="연락처">
+          {
+            person.contacts.map((contact) => (
+              <li>
+                <a class="contact-link" href={contact.href}>
+                  {contact.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
       </div>
-      <ol class="cover-spine" data-diagram="cover-judgement" aria-label="운영 문제를 다루는 네 단계">
+      <ol class="story-spine" aria-label="설계 판단이 변화한 과정">
         {
           openingStory.spine.map((step, index) => (
-            <li class="diagram-node" data-diagram-node={`cover-${index + 1}`}>
-              <Icon name={index === 0 ? 'tabler:alert-circle' : index === 3 ? 'tabler:shield-lock' : 'tabler:check'} />
-              <strong data-node-title>{step}</strong>
-              {index < openingStory.spine.length - 1 && (
-                <span
-                  class="cover-connector"
-                  data-connector-segment
-                  data-from-node={`cover-${index + 1}`}
-                  data-to-node={`cover-${index + 2}`}
-                  aria-hidden="true"
-                >
-                  <Icon name="tabler:arrow-right" />
-                </span>
-              )}
+            <li>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <strong>{step}</strong>
             </li>
           ))
         }
       </ol>
-      <ul class="cover-contacts" aria-label="연락처">
-        {
-          person.contacts.map((contact) => (
-            <li>
-              <a class="contact-link" href={contact.href}>
-                {contact.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
     </div>
   </PortfolioPage>
 
-  <PortfolioPage {...problemPage}>
-    <div class="problem-layout slide-visual" data-primary-visual>
+  <PortfolioPage {...originPage}>
+    <div class="narrative-split origin-layout" data-primary-visual>
+      <div class="narrative-copy">
+        <p>
+          홈랩에 프로그램을 올리는 일은 애플리케이션 배포만으로 끝나지 않았습니다. VM과 네트워크를 준비하고 Docker와
+          내부 실행 환경을 구성한 뒤에야 배포를 시작할 수 있었습니다.
+        </p>
+        <p>
+          프로젝트가 늘수록 같은 작업을 반복했고, 설정은 조금씩 달라졌습니다. 문제가 생기면 애플리케이션, 네트워크, 실행
+          환경 중 어디서 실패했는지 다시 추적해야 했습니다.
+        </p>
+        <blockquote>처음의 목표는 거대한 플랫폼이 아니라, 매번 반복하던 준비 작업을 줄이는 것이었습니다.</blockquote>
+      </div>
       <FlowDiagram
         steps={openingStory.problem}
         label="새 서비스를 위한 반복 환경 구성 흐름"
         diagram="repeated-environment-loop"
         variant="loop"
-        caption="NEXT SERVICE · 같은 준비 흐름으로 복귀"
+        caption="새 프로젝트가 생기면 처음부터 다시 시작"
       />
-      <ul class="cost-labels" aria-label="반복 구성의 운영 비용">
-        {
-          openingStory.costs.map((cost) => (
-            <li>
-              <>
-                <Icon name="tabler:alert-circle" />
-                <strong>{cost}</strong>
-              </>
-            </li>
-          ))
-        }
-      </ul>
     </div>
   </PortfolioPage>
 
-  <PortfolioPage {...evolutionPage}>
-    <div class="evolution-layout slide-visual" data-primary-visual>
-      <FlowDiagram
-        steps={openingStory.evolution}
-        label="자동화 범위가 책임 분리로 이어진 과정"
-        diagram="automation-evolution"
-      />
-      <div class="fork-point" data-fork-point aria-hidden="true"><span></span><Icon name="tabler:arrow-down" /></div>
-      <div class="evolution-fork" data-diagram="evolution-ownership">
-        <article class="diagram-node ownership-result" data-diagram-node="evolution-gjallar">
-          <Icon name="tabler:server" />
-          <strong data-node-title>Gjallar</strong>
-          <span>Infrastructure Create</span>
+  <PortfolioPage {...lensPage}>
+    <div class="evidence-split evidence-split--reverse" data-primary-visual>
+      <EvidenceFigure {...projects.klepaas.evidenceFigure} />
+      <div class="evidence-narrative">
+        <p>
+          자연어 요청은 그대로 실행할 수 있는 입력이 아니었습니다. 의도와 대상을 해석하고 실행 가능한 CommandPlan으로
+          정규화한 뒤 Kubernetes·NCP 작업에 연결했습니다.
+        </p>
+        <p class="decision-note">
+          <strong>개인 기여</strong> Gemini 의도·엔티티 해석, CommandPlan 경계, Kubernetes 명령 계획, 도메인 동기화와 NKS
+          모니터링
+        </p>
+        <FlowDiagram
+          steps={projects.klepaas.pipeline}
+          label="K-Le-PaaS 입력 정규화와 실행 피드백 흐름"
+          diagram="klepaas-command-plan"
+        />
+        <p class="takeaway">입력과 실행 사이에 계획과 확인 단계를 두는 관점이 홈랩 자동화의 출발점이 됐습니다.</p>
+      </div>
+    </div>
+  </PortfolioPage>
+
+  <PortfolioPage {...firstArchitecturePage}>
+    <div class="first-architecture" data-primary-visual data-diagram="first-architecture">
+      <div class="narrative-copy">
+        <p>
+          반복 작업을 한 번의 요청으로 줄이기 위해 초기 Heimdall은 Terraform 기반 VM 생성, Ansible 기반 설정, 네트워크
+          구성과 Docker 배포를 하나의 흐름에서 처리했습니다.
+        </p>
+        <p>실행 경로가 하나면 상태를 추적하기 쉽고 새 서비스를 더 빠르게 올릴 수 있다고 판단했습니다.</p>
+        <div class="expectation-list"><span>한 번의 요청</span><span>반복 감소</span><span>한 경로에서 추적</span></div>
+      </div>
+      <div class="architecture-chain" aria-label="초기 Heimdall 통합 자동화 구조">
+        <article><span>01</span><strong>배포 요청</strong></article>
+        <Icon name="tabler:arrow-right" />
+        <article class="architecture-chain__core">
+          <span>02</span><strong>초기 Heimdall</strong><small>통합 Orchestrator</small>
         </article>
-        <span
-          class="fork-connector fork-connector--left"
-          data-connector-segment
-          data-from-node="scope-growth"
-          data-to-node="evolution-gjallar"
-          aria-hidden="true"></span>
-        <article class="diagram-node ownership-result" data-diagram-node="evolution-heimdall">
-          <Icon name="tabler:box" />
-          <strong data-node-title>Heimdall</strong>
-          <span>Application Release</span>
-        </article>
-        <span
-          class="fork-connector fork-connector--right"
-          data-connector-segment
-          data-from-node="scope-growth"
-          data-to-node="evolution-heimdall"
-          aria-hidden="true"></span>
+        <Icon name="tabler:arrow-right" />
+        <div class="tool-stack"><article>Terraform</article><article>Ansible</article><article>Docker</article></div>
+        <Icon name="tabler:arrow-right" />
+        <article><span>03</span><strong>VM + Application</strong></article>
+      </div>
+    </div>
+  </PortfolioPage>
+
+  <PortfolioPage {...frictionPage}>
+    <div class="friction-layout" data-primary-visual>
+      <div class="friction-copy">
+        <p>
+          VM 생성과 애플리케이션 배포는 변경되는 이유가 달랐습니다. 인프라 용량과 네트워크를 바꾸는 일, 애플리케이션
+          코드와 설정을 배포하는 일이 같은 실행 경로에서 실패했습니다.
+        </p>
+        <p>Terraform·Ansible·Docker 의존성을 함께 관리하면서 기능을 추가할수록 책임의 소유자가 흐려졌습니다.</p>
+      </div>
+      <ol class="causal-map" aria-label="책임 결합이 운영 비용으로 이어진 과정">
+        <li><strong>책임 결합</strong><span>인프라와 배포가 함께 변경</span></li>
+        <li><strong>실행 경로 확대</strong><span>의존성과 실패 지점 증가</span></li>
+        <li><strong>복구 범위 확대</strong><span>서로 다른 실패를 함께 복구</span></li>
+      </ol>
+      <div class="decision-crossroad">
+        <span>기존 구조 확장</span><span>전체 재작성</span><strong>책임 경계를 다시 정하기</strong>
+      </div>
+    </div>
+  </PortfolioPage>
+
+  <PortfolioPage {...decisionPage}>
+    <div class="decision-layout" data-primary-visual>
+      <div class="decision-context">
+        <p>
+          복잡성이 사라진 것은 아닙니다. 두 시스템 사이의 계약과 상태 관찰이 필요해졌지만, 실패했을 때 무엇을 멈추고
+          무엇을 보존해야 하는지는 더 명확해졌습니다.
+        </p>
+      </div>
+      <div class="before-after">
+        <section class="before-panel">
+          <span>BEFORE · Previous</span><strong>초기 Heimdall</strong><p>VM 생성 + 설정 + 배포</p>
+        </section>
+        <div class="decision-axis">
+          <Icon name="tabler:arrow-right" /><strong>변경 이유와 실패 영향으로 분리</strong>
+        </div>
+        <section class="after-panel">
+          <article><span>GJALLAR</span><strong>Infrastructure Create</strong><small>Proxmox VM</small></article>
+          <article><span>HEIMDALL</span><strong>Application Release</strong><small>Generation & Route</small></article>
+        </section>
+      </div>
+      <div class="tradeoff-row">
+        <span>얻은 것 · 결합과 복구 범위 축소</span><span>감수한 것 · 시스템 간 계약과 관찰 필요</span>
       </div>
     </div>
   </PortfolioPage>
 
   <PortfolioPage {...currentPage}>
-    <ArchitectureMap variant="current" label="현재 시스템의 네 가지 책임과 수명주기" />
-  </PortfolioPage>
-
-  <PortfolioPage {...responsibilityPage}>
-    <div class="responsibility-visual slide-visual" data-primary-visual>
-      <div class="responsibility-heading" aria-hidden="true">
-        <span>DIMENSION</span><strong>GJALLAR</strong><strong>HEIMDALL</strong>
-      </div>
-      <dl class="responsibility-grid">
-        {
-          projects.responsibilitySplit.rows.map((row) => (
-            <div data-responsibility-row={row.id}>
-              <dt>{row.label}</dt>
-              <dd>{row.gjallar}</dd>
-              <dd>{row.heimdall}</dd>
-            </div>
-          ))
-        }
-      </dl>
-      <p class="ownership-statement"><Icon name="tabler:shield-lock" />{projects.responsibilitySplit.statement}</p>
+    <div class="system-layout" data-primary-visual>
+      <p class="page-intro">
+        Gjallar는 Proxmox의 실제 상태와 승인된 VM 생성을, Heimdall은 고정한 commit의 배포 후보와 승격을 맡습니다.
+        애플리케이션 실행 세대와 PostgreSQL 사용자 데이터는 같은 실패 정책으로 다루지 않습니다.
+      </p>
+      <ArchitectureMap variant="current" label="현재 시스템의 제어·배포·데이터 경계" />
     </div>
   </PortfolioPage>
 
-  <PortfolioPage {...gjallarPage}>
-    <div class="gjallar-layout slide-visual" data-primary-visual>
-      <div class="gjallar-flow">
-        <FlowDiagram
-          steps={projects.gjallar.path}
-          label="Gjallar 승인 기반 native create 흐름"
-          diagram="gjallar-native-create"
-        />
-        <p class="scope-line" data-scope-limit="vm-full-lifecycle">{projects.gjallar.scopeLimit}</p>
+  <PortfolioPage {...gjallarDecisionPage}>
+    <div class="narrative-split gjallar-decision" data-primary-visual>
+      <div class="narrative-copy">
+        <p>
+          현재 문제에는 Terraform·Ansible을 active dependency로 유지하는 것보다 Proxmox API 기반 Native Create가 더
+          직접적이었습니다. 도구를 포기한 것이 아니라 실제 상태와 승인 경계를 직접 제어하기 위해 다시 선택했습니다.
+        </p>
+        <p>Inventory를 기준으로 Profile과 template·IP·network·storage 조건을 생성 전에 확인합니다.</p>
+        <p class="scope-callout" data-scope-limit="vm-full-lifecycle">{scopeLimitLabels['vm-full-lifecycle']}</p>
       </div>
+      <FlowDiagram
+        steps={projects.gjallar.path}
+        label="Gjallar 승인 기반 Native Create 흐름"
+        diagram="gjallar-native-create"
+      />
+    </div>
+  </PortfolioPage>
+
+  <PortfolioPage {...gjallarEvidencePage}>
+    <div class="evidence-page" data-primary-visual>
       <EvidenceFigure {...projects.gjallar.evidenceFigure} />
+      <ol class="evidence-callouts" aria-label="Gjallar 화면에서 확인할 근거">
+        <li><span>01</span><strong>Actual inventory</strong><p>Proxmox node와 VM 상태를 변경 전 기준으로 확인</p></li>
+        <li><span>02</span><strong>Capacity & storage</strong><p>생성 조건과 운영 자원을 같은 화면에서 확인</p></li>
+        <li><span>03</span><strong>Job status</strong><p>요청과 실행 결과를 다시 추적할 수 있는 상태 기록</p></li>
+      </ol>
     </div>
   </PortfolioPage>
 
   <PortfolioPage {...promotionPage}>
-    <div class="promotion-visual slide-visual" data-primary-visual>
-      <section class="promotion-lane" aria-labelledby="candidate-lane-title">
-        <h3 id="candidate-lane-title">CANDIDATE · EXECUTION SUCCESS</h3>
-        <FlowDiagram
+    <div class="promotion-layout" data-primary-visual>
+      <div class="promotion-copy">
+        <p>
+          이전 MVP의 stop-old-then-run-new 방식은 새 배포 실패가 기존 서비스까지 영향을 줄 수 있었습니다. 현재는 고정한
+          commit과 설정 snapshot으로 Candidate를 만들고 Current와 분리해 검증합니다.
+        </p>
+      </div>
+      <section class="promotion-lane">
+        <h3>CANDIDATE · EXECUTION</h3><FlowDiagram
           steps={projects.heimdall.candidate}
-          label="Heimdall candidate 실행 흐름"
+          label="Candidate 실행 흐름"
           diagram="heimdall-candidate"
         />
       </section>
-      <section class="promotion-lane" aria-labelledby="activation-lane-title">
-        <h3 id="activation-lane-title">ACTIVATION · TRAFFIC SUCCESS</h3>
-        <FlowDiagram
+      <section class="promotion-lane">
+        <h3>ACTIVATION · TRAFFIC</h3><FlowDiagram
           steps={projects.heimdall.activation}
-          label="Heimdall 트래픽 활성화 흐름"
+          label="트래픽 활성화 흐름"
           diagram="heimdall-activation"
         />
       </section>
-      <p class="retirement-note"><Icon name="tabler:check" />Current 결정 뒤에만 Previous Retirement</p>
+      <div class="invariant-row">
+        <span>검증 전 Current 유지</span><span>Route probe 성공 후 metadata 전환</span><span
+          >성공 확정 뒤 Previous 회수</span
+        >
+      </div>
     </div>
   </PortfolioPage>
 
   <PortfolioPage {...failurePage}>
-    <div class="failure-visual slide-visual" data-diagram="heimdall-failure-boundary" data-primary-visual>
-      <div class="failure-branches">
+    <div class="failure-data-layout" data-primary-visual data-diagram="heimdall-failure-boundary">
+      <div class="failure-column">
         {
           projects.heimdall.failureModes.map((mode) => (
             <article class="failure-branch" data-failure-branch={mode.id}>
-              <div class="diagram-node failure-node" data-diagram-node={`failure-${mode.id}`}>
-                <Icon name="tabler:alert-circle" />
-                <strong data-node-title>{mode.failure}</strong>
-              </div>
-              <span
-                class="failure-connector"
-                data-connector-segment
-                data-from-node={`failure-${mode.id}`}
-                data-to-node={`preserved-${mode.id}`}
-                aria-hidden="true"
-              >
+              <>
+                <div>
+                  <>
+                    <span>{mode.failure}</span>
+                    <strong>{mode.handling}</strong>
+                  </>
+                </div>
                 <Icon name="tabler:arrow-right" />
-              </span>
-              <div class="diagram-node preserved-node" data-diagram-node={`preserved-${mode.id}`}>
-                <span>{mode.handling}</span>
-                <strong data-node-title>{mode.preserved}</strong>
-              </div>
+                <p>{mode.preserved}</p>
+              </>
             </article>
           ))
         }
       </div>
-      <div class="data-rail" data-storage-boundary="user-confirmed-operational">
-        <span>Runtime generation</span><strong>≠</strong><span>PostgreSQL data lifecycle</span>
-        <Icon name="tabler:database" /><small>Separate Storage VM · Operational</small>
+      <div class="lifecycle-column">
+        <h3>서로 다른 수명주기</h3>
+        <article>
+          <Icon name="tabler:box" /><strong>Runtime Generation</strong><span>검증된 후보 단위로 교체</span>
+        </article>
+        <strong class="not-equal">≠</strong>
+        <article>
+          <Icon name="tabler:database" /><strong>PostgreSQL Data</strong><span>별도 Storage VM · Operational</span>
+        </article>
       </div>
       <ul class="scope-limit-strip" aria-label="구현하지 않은 복구 범위">
         {
@@ -241,48 +303,79 @@ const scopeLimitLabels: Record<ScopeLimit, string> = {
     </div>
   </PortfolioPage>
 
-  <PortfolioPage {...plannedPage}>
-    <ArchitectureMap variant="planned" label="계획된 외부 노출과 내부 데이터 경계" />
+  <PortfolioPage {...heimdallEvidencePage}>
+    <div class="evidence-page evidence-page--heimdall" data-primary-visual>
+      <EvidenceFigure {...projects.heimdall.evidenceFigure} />
+      <ol class="evidence-callouts" aria-label="Heimdall 화면에서 확인할 근거">
+        <li><span>01</span><strong>Exact commit</strong><p>요청 시점의 commit과 설정 snapshot을 고정</p></li>
+        <li><span>02</span><strong>Generation state</strong><p>Candidate의 실행과 health 상태를 추적</p></li>
+        <li><span>03</span><strong>Current route</strong><p>검증을 통과해 운영 경로가 된 세대를 확인</p></li>
+      </ol>
+    </div>
   </PortfolioPage>
 
-  <PortfolioPage {...originPage}>
-    <div class="transfer-visual slide-visual" data-primary-visual>
-      <section class="transfer-pipeline" aria-labelledby="klepaas-title">
-        <header><h3 id="klepaas-title">K-Le-PaaS</h3><span>Previous</span></header>
-        <FlowDiagram
-          steps={projects.klepaas.pipeline}
-          label="K-Le-PaaS 입력 정규화 흐름"
-          diagram="klepaas-command-plan"
-        />
-        <div class="transfer-evidence">
-          <div class="ownership-notes">
-            <p data-team-scope="team"><strong>2인 팀</strong> · 자연어 입력부터 실행 피드백까지</p>
-            <p data-team-scope="personal"><strong>개인 기여</strong> · Intent & Entity → CommandPlan 경계</p>
-          </div>
-          <EvidenceFigure {...projects.klepaas.evidenceFigure} />
+  <PortfolioPage {...transferPage}>
+    <div class="transfer-layout" data-primary-visual>
+      <EvidenceFigure {...projects.argus.evidenceFigure} />
+      <div class="transfer-copy">
+        <p>
+          K-Le-PaaS에서는 자연어 입력을 CommandPlan으로 정규화했습니다. Argus에서는 서로 다른 공급자를 adapter로
+          수집하고 normalized snapshot을 거쳐 판단 로직이 원천 차이를 직접 떠안지 않게 했습니다.
+        </p>
+        <div class="transfer-comparison">
+          <article>
+            <span>Previous · K-Le-PaaS</span><strong>Input → CommandPlan → Execution</strong><small
+              >2인 팀 · 검증된 개인 기여 분리</small
+            >
+          </article>
+          <article>
+            <span>Implemented · Argus</span><strong>Provider → Snapshot → Judgement</strong><small
+              >공급자 경계와 정규화된 상태</small
+            >
+          </article>
         </div>
-      </section>
-      <section class="transfer-pipeline transfer-pipeline--secondary" aria-labelledby="argus-title">
-        <header><h3 id="argus-title">Argus</h3><span>Implemented</span></header>
-        <FlowDiagram steps={projects.argus.pipeline} label="Argus 공급자 정규화 흐름" diagram="argus-normalization" />
-        <EvidenceFigure {...projects.argus.evidenceFigure} />
-      </section>
+        <blockquote>도메인은 달라도 입력을 바로 핵심 실행 로직에 연결하지 않는 판단은 같았습니다.</blockquote>
+      </div>
     </div>
   </PortfolioPage>
 
   <PortfolioPage {...closingPage}>
-    <div class="closing-layout">
-      <ol class="project-strip" aria-label="프로젝트별 검증 범위">
-        {
-          closingSummary.projectSummaries.map((project) => (
-            <li data-summary-project={project.id} data-summary-boundary={project.boundary}>
-              <span>{project.status}</span>
-              <strong>{project.name}</strong>
-              <p>{project.summary}</p>
-            </li>
-          ))
-        }
-      </ol>
+    <div class="closing-layout" data-primary-visual>
+      <div class="closing-copy">
+        <p>
+          완성된 구조만 보여주기보다 첫 판단이 왜 바뀌었는지, 실패했을 때 무엇을 지키려 했는지, 아직 구현하지 않은
+          범위까지 설명할 수 있는 엔지니어가 되고자 합니다.
+        </p>
+        <ol class="principle-list">
+          {
+            closingSummary.principles.map((principle, index) => (
+              <li>
+                <>
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <strong>{principle}</strong>
+                </>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+      <div class="closing-status">
+        <h3>현재 범위</h3>
+        <ul>
+          {
+            closingSummary.projectSummaries.map((project) => (
+              <li data-summary-project={project.id}>
+                <>
+                  <span>{project.status}</span>
+                  <strong>{project.name}</strong>
+                  <p>{project.summary}</p>
+                </>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="planned-note"><strong>Planned</strong> External Exposure Architecture</p>
+      </div>
       <dl class="resume-row">
         <div><dt>CORE</dt><dd>{closingSummary.technologies}</dd></div>
         <div><dt>EDUCATION</dt><dd>{closingSummary.education}</dd></div>
@@ -292,7 +385,7 @@ const scopeLimitLabels: Record<ScopeLimit, string> = {
         {
           person.contacts.map((contact) => (
             <li>
-              <a class="contact-link" href={contact.href}>
+              <a href={contact.href}>
                 <>
                   <strong>{contact.label}</strong>
                   <span>{contact.value}</span>

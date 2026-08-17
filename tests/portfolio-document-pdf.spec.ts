@@ -61,7 +61,7 @@ async function listSiblingPdfTemps(outputPath: string) {
   return (await readdir(dirname(outputPath))).filter((name) => name.startsWith(prefix) && name.endsWith('.tmp')).sort();
 }
 
-test('exporter writes exactly 13 A4 pages to the requested output', async ({ page: _page }, testInfo) => {
+test('exporter writes exactly 14 widescreen pages to the requested output', async ({ page: _page }, testInfo) => {
   test.setTimeout(120_000);
   const outputPath = join(pdfTempDirectory, `portfolio-export-${testInfo.workerIndex}.pdf`);
   await mkdir(pdfTempDirectory, { recursive: true });
@@ -71,13 +71,13 @@ test('exporter writes exactly 13 A4 pages to the requested output', async ({ pag
       cwd: repositoryRoot,
     });
 
-    const { stdout } = await execFileAsync('pdfinfo', ['-f', '1', '-l', '13', '-box', outputPath], {
+    const { stdout } = await execFileAsync('pdfinfo', ['-f', '1', '-l', '14', '-box', outputPath], {
       cwd: repositoryRoot,
     });
-    expect(stdout).toMatch(/^Pages:\s+13$/m);
+    expect(stdout).toMatch(/^Pages:\s+14$/m);
     expect(stdout).toMatch(/^Tagged:\s+yes$/m);
     const pageSizes = Array.from(
-      stdout.matchAll(/^Page\s+(\d+) size:\s+([\d.]+) x ([\d.]+) pts \(A4\)$/gm),
+      stdout.matchAll(/^Page\s+(\d+) size:\s+([\d.]+) x ([\d.]+) pts$/gm),
       ([, pageNumber, width, height]) => ({ pageNumber: Number(pageNumber), width, height })
     );
     const mediaBoxes = Array.from(
@@ -86,15 +86,15 @@ test('exporter writes exactly 13 A4 pages to the requested output', async ({ pag
     );
 
     expect(pageSizes).toEqual(
-      Array.from({ length: 13 }, (_, index) => ({ pageNumber: index + 1, width: '595.28', height: '841.89' }))
+      Array.from({ length: 14 }, (_, index) => ({ pageNumber: index + 1, width: '960', height: '540' }))
     );
     expect(mediaBoxes).toEqual(
-      Array.from({ length: 13 }, (_, index) => ({
+      Array.from({ length: 14 }, (_, index) => ({
         pageNumber: index + 1,
         left: '0.00',
         bottom: '0.00',
-        right: '595.28',
-        top: '841.89',
+        right: '960.00',
+        top: '540.00',
       }))
     );
 
@@ -112,17 +112,17 @@ test('exporter writes exactly 13 A4 pages to the requested output', async ({ pag
       .split('\n')
       .filter((line) => /^\s+\d+\s+\d+\s+image\s/.test(line))
       .map((line) => Number.parseInt(line.trim().split(/\s+/)[0], 10));
-    expect(imagePages).toEqual([5, 8, 12]);
+    expect(imagePages).toEqual([3, 9, 12, 13]);
 
     const { stdout: extractedText } = await execFileAsync('pdftotext', ['-layout', outputPath, '-'], {
       cwd: repositoryRoot,
     });
     const extractedPages = extractedText.split('\f').filter((text) => text.trim().length > 0);
-    expect(extractedPages).toHaveLength(13);
-    expect(extractedPages.map((text, index) => text.includes(`${String(index + 1).padStart(2, '0')} / 13`))).toEqual(
-      Array(13).fill(true)
+    expect(extractedPages).toHaveLength(14);
+    expect(extractedPages.map((text, index) => text.includes(`${String(index + 1).padStart(2, '0')} / 14`))).toEqual(
+      Array(14).fill(true)
     );
-    const coverReadingOrder = ['PORTFOLIO', '조윤호', 'PLATFORM ENGINEER', 'Email', 'GitHub', 'Web'];
+    const coverReadingOrder = ['PORTFOLIO', 'PLATFORM ENGINEER', '조윤호', 'Email', 'GitHub', 'Web'];
     const coverOffsets = coverReadingOrder.map((fragment) => extractedPages[0].indexOf(fragment));
     expect(coverOffsets.every((offset) => offset >= 0)).toBe(true);
     expect(coverOffsets).toEqual([...coverOffsets].sort((left, right) => left - right));
@@ -222,7 +222,7 @@ test('exporter rejects an HTTP 200 page with the wrong portfolio identity', asyn
   const { fixturePath, sourceUrl } = await createServedFixture(
     'wrong-identity',
     testInfo.workerIndex,
-    createHttpFixture({ identity: 'unrelated-document', pageCount: 13 })
+    createHttpFixture({ identity: 'unrelated-document', pageCount: 14 })
   );
   let failure: (Error & { stderr?: string }) | undefined;
 
@@ -250,7 +250,7 @@ test('exporter rejects an HTTP 200 portfolio with the wrong page count', async (
   const { fixturePath, sourceUrl } = await createServedFixture(
     'wrong-page-count',
     testInfo.workerIndex,
-    createHttpFixture({ identity: portfolioIdentity, pageCount: 12 })
+    createHttpFixture({ identity: portfolioIdentity, pageCount: 13 })
   );
   let failure: (Error & { stderr?: string }) | undefined;
 
@@ -265,7 +265,7 @@ test('exporter rejects an HTTP 200 portfolio with the wrong page count', async (
       failure = error as Error & { stderr?: string };
     }
 
-    expect(failure?.stderr).toContain(`Portfolio preview page count mismatch at ${sourceUrl}: expected 13, found 12`);
+    expect(failure?.stderr).toContain(`Portfolio preview page count mismatch at ${sourceUrl}: expected 14, found 13`);
     await expect(access(outputPath)).rejects.toMatchObject({ code: 'ENOENT' });
   } finally {
     await rm(outputPath, { force: true });
@@ -279,7 +279,7 @@ test('exporter reports the source of an image decode failure', async ({ page: _p
   const { fixturePath, sourceUrl } = await createServedFixture(
     'broken-image',
     testInfo.workerIndex,
-    createHttpFixture({ identity: portfolioIdentity, pageCount: 13, imageSource: missingImagePath })
+    createHttpFixture({ identity: portfolioIdentity, pageCount: 14, imageSource: missingImagePath })
   );
   let failure: (Error & { stderr?: string }) | undefined;
 

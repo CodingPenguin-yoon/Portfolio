@@ -42,14 +42,14 @@ npm run build
 - Inspect the canonical artifact:
 
   ```bash
-  pdfinfo -f 1 -l 13 -box output/pdf/yunho-cho-portfolio.pdf
+  pdfinfo -f 1 -l 14 -box output/pdf/yunho-cho-portfolio.pdf
   pdffonts output/pdf/yunho-cho-portfolio.pdf
   pdfimages -list output/pdf/yunho-cho-portfolio.pdf
   pdftotext -layout output/pdf/yunho-cho-portfolio.pdf -
   pdftoppm -r 144 -png output/pdf/yunho-cho-portfolio.pdf tmp/pdfs/pages/page
   ```
 
-  `npm run test:portfolio` automates the 13-page A4, tagged-PDF, embedded-font, image-page, and text-order assertions. The 144 DPI PNGs remain the visual layout check for every page.
+  `npm run test:portfolio` automates the 14-page 16:9, tagged-PDF, embedded-font, image-page, and text-order assertions. The 144 DPI PNGs remain the visual layout check for every page.
 
 ## Docker
 

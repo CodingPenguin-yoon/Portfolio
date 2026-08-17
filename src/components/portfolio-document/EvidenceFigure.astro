@@ -13,7 +13,7 @@ export interface Props {
   };
 }
 
-const { src, alt, caption, status, source, focus } = Astro.props;
+const { src, alt, caption, status, source } = Astro.props;
 
 const evidenceStatusLabels: Record<EvidenceStatus, string> = {
   verified: '저장소 검증',
@@ -22,8 +22,8 @@ const evidenceStatusLabels: Record<EvidenceStatus, string> = {
 };
 ---
 
-<figure class="evidence-figure" data-evidence-status={status} data-evidence-presentation={focus && 'focused-detail'}>
-  <div class="evidence-media" data-evidence-focus={focus?.id} aria-label={focus?.label} role={focus && 'group'}>
+<figure class="evidence-figure" data-evidence-status={status}>
+  <div class="evidence-media">
     <img src={src} alt={alt} loading="eager" />
   </div>
   <figcaption>

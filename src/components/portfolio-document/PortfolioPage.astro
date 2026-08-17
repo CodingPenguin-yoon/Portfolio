@@ -7,12 +7,12 @@ export interface Props {
   number: number;
   eyebrow: string;
   title: string;
-  thesis: string;
+  subline?: string;
   status?: DocumentStatus;
   statusNote?: string;
 }
 
-const { number, eyebrow, title, thesis, status, statusNote } = Astro.props;
+const { number, eyebrow, title, subline, status, statusNote } = Astro.props;
 const titleId = `portfolio-page-${number}-title`;
 ---
 
@@ -22,10 +22,10 @@ const titleId = `portfolio-page-${number}-title`;
     {status && <StatusBadge status={status} note={statusNote} />}
   </header>
   <h2 id={titleId}>{title}</h2>
-  <p class="page-thesis">{thesis}</p>
-  <div class="page-body"><slot /></div>
+  {subline && <p class="page-subline">{subline}</p>}
+  <div class="slide-body"><slot /></div>
   <footer class="page-footer">
     <span>YUNHO CHO · PLATFORM ENGINEER</span>
-    <span data-page-number>{String(number).padStart(2, '0')} / 13</span>
+    <span data-page-number>{String(number).padStart(2, '0')} / 11</span>
   </footer>
 </section>

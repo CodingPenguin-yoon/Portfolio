@@ -1,37 +1,58 @@
 ---
+import { Icon } from 'astro-icon/components';
+
 import type { FlowStepData } from '~/data/portfolio-document';
 
-export type FlowSteps = readonly FlowStepData[];
-
 export interface Props {
-  steps: FlowSteps;
+  steps: readonly (FlowStepData | string)[];
   label: string;
+  diagram: string;
+  variant?: 'linear' | 'loop';
   caption?: string;
 }
 
-const { steps, label, caption } = Astro.props;
+const { steps, label, diagram, variant = 'linear', caption } = Astro.props;
+const normalized = steps.map((step, index) =>
+  typeof step === 'string' ? { id: `${diagram}-${index + 1}`, label: step } : step
+);
 ---
 
-<figure class="flow-diagram" data-flow-diagram>
-  <ol aria-label={label}>
+<figure class={`flow-diagram flow-diagram--${variant} slide-visual`} data-diagram={diagram} aria-label={label}>
+  <ol>
     {
-      steps.map((step, index) => (
-        <li data-flow-step={step.id}>
-          <>
-            <span>{String(index + 1).padStart(2, '0')}</span>
-            <strong>{step.label}</strong>
-            {step.summary && <small>{step.summary}</small>}
-            {step.operations && (
-              <ul class="flow-step-operations" aria-label={`${step.label} 세부 작업`}>
-                {step.operations.map((operation) => (
-                  <li data-flow-operation={operation.id}>{operation.label}</li>
-                ))}
-              </ul>
-            )}
-          </>
+      normalized.map((step, index) => (
+        <li class="diagram-node flow-node" data-diagram-node={step.id}>
+          <span class="node-index">{String(index + 1).padStart(2, '0')}</span>
+          <strong data-node-title>{step.label}</strong>
+          {step.qualifier && <small>{step.qualifier}</small>}
+          {index < normalized.length - 1 && (
+            <span
+              class="flow-connector"
+              data-connector-segment
+              data-from-node={step.id}
+              data-to-node={normalized[index + 1].id}
+              aria-hidden="true"
+            >
+              <Icon name="tabler:arrow-right" />
+            </span>
+          )}
         </li>
       ))
     }
   </ol>
+  {
+    variant === 'loop' && (
+      <div
+        class="loop-return"
+        data-connector-segment
+        data-from-node={normalized.at(-1)?.id}
+        data-to-node={normalized[0]?.id}
+        aria-label="다음 서비스에서 같은 흐름 반복"
+      >
+        <span />
+        <Icon name="tabler:arrow-left" />
+      </div>
+    )
+  }
   {caption && <figcaption>{caption}</figcaption>}
 </figure>

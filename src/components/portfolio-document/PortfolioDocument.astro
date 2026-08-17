@@ -1,4 +1,6 @@
 ---
+import { Icon } from 'astro-icon/components';
+
 import { portfolioDocument, type ScopeLimit } from '~/data/portfolio-document';
 
 import ArchitectureMap from './ArchitectureMap.astro';
@@ -8,36 +10,26 @@ import PortfolioPage from './PortfolioPage.astro';
 
 const [
   coverPage,
-  profilePage,
-  originPage,
+  problemPage,
   evolutionPage,
-  klepaasPage,
-  systemPage,
+  currentPage,
   responsibilityPage,
   gjallarPage,
-  heimdallPromotionPage,
-  heimdallFailurePage,
-  externalExposurePage,
-  argusPage,
-  resumeContactPage,
+  promotionPage,
+  failurePage,
+  plannedPage,
+  originPage,
+  closingPage,
 ] = portfolioDocument.pages;
-const { person, openingStory } = portfolioDocument;
-const klepaas = portfolioDocument.projects.klepaas;
-const currentSystem = portfolioDocument.projects.currentSystem;
-const responsibilitySplit = portfolioDocument.projects.responsibilitySplit;
-const gjallar = portfolioDocument.projects.gjallar;
-const heimdall = portfolioDocument.projects.heimdall;
-const externalExposure = portfolioDocument.projects.externalExposure;
-const argus = portfolioDocument.projects.argus;
-const closingSummary = portfolioDocument.closingSummary;
+const { person, openingStory, projects, closingSummary } = portfolioDocument;
 
 const scopeLimitLabels: Record<ScopeLimit, string> = {
-  'release-image-rollback': 'Stored-image release rollback',
-  'database-backup-restore': 'Database backup · restore',
-  'database-purge': 'Database purge · rotation',
-  'database-credential-rotation': 'Database credential rotation',
-  'data-rollback': 'User data rollback',
-  'vm-full-lifecycle': 'Full VM lifecycle',
+  'release-image-rollback': 'Image rollback · Not implemented',
+  'database-backup-restore': 'DB backup / restore · Not implemented',
+  'database-purge': 'DB purge · Not implemented',
+  'database-credential-rotation': 'Credential rotation · Not implemented',
+  'data-rollback': 'User-data rollback · Not implemented',
+  'vm-full-lifecycle': 'Full VM lifecycle · Out of scope',
 };
 ---
 
@@ -46,502 +38,270 @@ const scopeLimitLabels: Record<ScopeLimit, string> = {
   data-portfolio-document="yunho-cho-platform-engineer-portfolio"
   aria-labelledby="portfolio-document-title"
 >
-  <h1 id="portfolio-document-title" class="visually-hidden">
-    {portfolioDocument.person.name} 플랫폼 엔지니어 포트폴리오
-  </h1>
+  <h1 id="portfolio-document-title" class="visually-hidden">조윤호 플랫폼 엔지니어 포트폴리오</h1>
 
-  <PortfolioPage
-    number={coverPage.number}
-    eyebrow={coverPage.eyebrow}
-    title={coverPage.title}
-    thesis={coverPage.thesis}
-  >
-    <p class="diagram-label">{person.role}</p>
-    <ul class="architecture-connections" aria-label="연락처">
-      {
-        person.contacts.map((contact) => (
-          <li>
-            <strong>{contact.label}</strong>
-            <a href={contact.href}>{contact.value}</a>
-          </li>
-        ))
-      }
-    </ul>
-  </PortfolioPage>
-
-  <PortfolioPage
-    number={profilePage.number}
-    eyebrow={profilePage.eyebrow}
-    title={profilePage.title}
-    thesis={profilePage.thesis}
-  >
-    <div class="architecture-zones" aria-label="핵심 역량과 대표 프로젝트">
-      {
-        openingStory.profileAxes.map((axis) => (
-          <section class="architecture-zone">
-            <p class="diagram-label">{axis.label}</p>
-            <h3>{axis.project}</h3>
-            <p>{axis.summary}</p>
-          </section>
-        ))
-      }
-    </div>
-    <ul class="architecture-connections" aria-label="보조 프로젝트">
-      <li>
-        <strong>보조 프로젝트</strong>
-        <strong>{openingStory.secondaryProject.name}</strong>
-        <span>{openingStory.secondaryProject.summary}</span>
-      </li>
-    </ul>
-  </PortfolioPage>
-
-  <PortfolioPage
-    number={originPage.number}
-    eyebrow={originPage.eyebrow}
-    title={originPage.title}
-    thesis={originPage.thesis}
-  >
-    <figure class="flow-diagram">
-      <ol aria-label="자동화 이전의 반복 수동 흐름">
+  <PortfolioPage {...coverPage}>
+    <div class="cover-layout">
+      <div class="cover-identity">
+        <p class="cover-name">{person.name}</p>
+        <p class="cover-role">{person.role}</p>
+      </div>
+      <ol class="cover-spine" data-diagram="cover-judgement" aria-label="운영 문제를 다루는 네 단계">
         {
-          originPage.flows[0].map((step, index) => (
-            <li data-origin-step>
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <strong>{step}</strong>
+          openingStory.spine.map((step, index) => (
+            <li class="diagram-node" data-diagram-node={`cover-${index + 1}`}>
+              <Icon name={index === 0 ? 'tabler:alert-circle' : index === 3 ? 'tabler:shield-lock' : 'tabler:check'} />
+              <strong data-node-title>{step}</strong>
+              {index < openingStory.spine.length - 1 && (
+                <span
+                  class="cover-connector"
+                  data-connector-segment
+                  data-from-node={`cover-${index + 1}`}
+                  data-to-node={`cover-${index + 2}`}
+                  aria-hidden="true"
+                >
+                  <Icon name="tabler:arrow-right" />
+                </span>
+              )}
             </li>
           ))
         }
       </ol>
-      <figcaption>새 프로그램을 올릴 때마다 같은 순서로 환경을 준비했습니다.</figcaption>
-    </figure>
-    <ul class="architecture-connections" aria-label="반복 작업의 운영 비용">
-      {
-        openingStory.originCosts.map((cost) => (
-          <li>
-            <strong>{cost.label}</strong>
-            <span>{cost.summary}</span>
-          </li>
-        ))
-      }
-    </ul>
-    <p>{originPage.facts[0]}</p>
-  </PortfolioPage>
-
-  <PortfolioPage
-    number={evolutionPage.number}
-    eyebrow={evolutionPage.eyebrow}
-    title={evolutionPage.title}
-    thesis={evolutionPage.thesis}
-  >
-    <figure class="flow-diagram">
-      <ol aria-label="자동화 설계의 단일 진화 연대기">
+      <ul class="cover-contacts" aria-label="연락처">
         {
-          openingStory.evolutionStages.map((stage, index) => (
-            <li data-evolution-stage>
-              <span>{'status' in stage ? stage.status : String(index + 1).padStart(2, '0')}</span>
-              <strong>{stage.label}</strong>
-              <small>{stage.summary}</small>
-            </li>
-          ))
-        }
-      </ol>
-    </figure>
-    <section class="architecture-map" data-responsibility-split aria-labelledby="responsibility-split-title">
-      <h3 id="responsibility-split-title">현재 책임 분리</h3>
-      <div class="architecture-zones">
-        {
-          openingStory.responsibilitySplit.map((scope) => (
-            <section class="architecture-zone">
-              <h3>{scope.owner}</h3>
-              <p>{scope.responsibility}</p>
-            </section>
-          ))
-        }
-      </div>
-      <p>VM 생성과 애플리케이션 배포는 변경 주기가 달랐습니다.</p>
-      <p>한쪽 실패가 다른 쪽의 상태와 복구 경로에 미치는 영향도 달랐습니다.</p>
-    </section>
-  </PortfolioPage>
-
-  <PortfolioPage
-    number={klepaasPage.number}
-    eyebrow={klepaasPage.eyebrow}
-    title={klepaasPage.title}
-    thesis={klepaasPage.thesis}
-    status={klepaasPage.status}
-    statusNote={klepaasPage.statusNote}
-  >
-    <dl class="klepaas-context" data-klepaas-context aria-label="K-Le-PaaS 프로젝트 맥락">
-      <div>
-        <dt>기간</dt>
-        <dd data-klepaas-period>{klepaas.period}</dd>
-      </div>
-      <div>
-        <dt>직접 소유한 설계 판단</dt>
-        <dd data-klepaas-personal-decision>{klepaas.personalDecision.summary}</dd>
-      </div>
-    </dl>
-    <figure class="flow-diagram">
-      <ol aria-label="K-Le-PaaS 자동화 흐름">
-        {
-          klepaasPage.flows[0].map((step, index) => (
+          person.contacts.map((contact) => (
             <li>
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <strong>{step}</strong>
+              <a class="contact-link" href={contact.href}>
+                {contact.label}
+              </a>
             </li>
           ))
         }
-      </ol>
-    </figure>
-    <div class="klepaas-scopes">
-      <section class="klepaas-scope" data-team-scope="team">
-        <h3 class="klepaas-scope-title">2인 팀 성과</h3>
-        <div class="klepaas-team-layout">
-          <ul class="klepaas-outcome-list">
-            {klepaas.teamOutcome.map((outcome) => <li>{outcome}</li>)}
-          </ul>
-          <EvidenceFigure {...klepaas.evidenceFigure} />
-        </div>
-      </section>
-      <section class="klepaas-scope" data-team-scope="personal">
-        <h3 class="klepaas-scope-title">검증된 개인 기여</h3>
-        <ul class="klepaas-contribution-list">
-          {
-            klepaas.personalContributions.map((contribution) => (
-              <li data-contribution-id={contribution.id}>{contribution.summary}</li>
-            ))
-          }
-        </ul>
-      </section>
+      </ul>
     </div>
-    <section class="opening-lessons" aria-labelledby="klepaas-lessons-title">
-      <h3 id="klepaas-lessons-title">여기서 얻은 학습</h3>
-      <ol class="opening-lessons-list">
+  </PortfolioPage>
+
+  <PortfolioPage {...problemPage}>
+    <div class="problem-layout slide-visual" data-primary-visual>
+      <FlowDiagram
+        steps={openingStory.problem}
+        label="새 서비스를 위한 반복 환경 구성 흐름"
+        diagram="repeated-environment-loop"
+        variant="loop"
+        caption="NEXT SERVICE · 같은 준비 흐름으로 복귀"
+      />
+      <ul class="cost-labels" aria-label="반복 구성의 운영 비용">
         {
-          klepaas.lessons.map((lesson) => (
+          openingStory.costs.map((cost) => (
             <li>
-              <strong>{lesson}</strong>
+              <>
+                <Icon name="tabler:alert-circle" />
+                <strong>{cost}</strong>
+              </>
             </li>
           ))
         }
-      </ol>
-    </section>
+      </ul>
+    </div>
   </PortfolioPage>
 
-  <PortfolioPage
-    number={systemPage.number}
-    eyebrow={systemPage.eyebrow}
-    title={systemPage.title}
-    thesis={systemPage.thesis}
-    status={systemPage.status}
-    statusNote={systemPage.statusNote}
-  >
-    <ArchitectureMap
-      zones={currentSystem.zones}
-      connections={currentSystem.connections}
-      label="현재 시스템의 책임과 운영 연결"
-      caption={currentSystem.caption}
-    />
-    <p class="system-map-decision">
-      <strong>Lifecycle boundary</strong>
-      애플리케이션 실행 환경과 사용자 데이터의 수명주기를 분리했습니다.
-    </p>
-  </PortfolioPage>
-
-  <PortfolioPage
-    number={responsibilityPage.number}
-    eyebrow={responsibilityPage.eyebrow}
-    title={responsibilityPage.title}
-    thesis={responsibilityPage.thesis}
-    status={responsibilityPage.status}
-  >
-    <table class="responsibility-table">
-      <caption>Gjallar와 Heimdall의 현재 책임 경계</caption>
-      <thead>
-        <tr>
-          <th scope="col">구분</th>
-          <th scope="col">Gjallar</th>
-          <th scope="col">Heimdall</th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          responsibilitySplit.rows.map((row) => (
-            <tr data-responsibility-row={row.id}>
-              <th scope="row">{row.label}</th>
-              <td>{row.gjallar}</td>
-              <td>{row.heimdall}</td>
-            </tr>
-          ))
-        }
-      </tbody>
-    </table>
-    <section class="responsibility-transition" aria-labelledby="responsibility-transition-title">
-      <h3 id="responsibility-transition-title">Before / After</h3>
-      <div>
-        <article data-responsibility-state="before">
-          <p class="diagram-label">{responsibilitySplit.before.label}</p>
-          <p>{responsibilitySplit.before.summary}</p>
+  <PortfolioPage {...evolutionPage}>
+    <div class="evolution-layout slide-visual" data-primary-visual>
+      <FlowDiagram
+        steps={openingStory.evolution}
+        label="자동화 범위가 책임 분리로 이어진 과정"
+        diagram="automation-evolution"
+      />
+      <div class="fork-point" data-fork-point aria-hidden="true"><span></span><Icon name="tabler:arrow-down" /></div>
+      <div class="evolution-fork" data-diagram="evolution-ownership">
+        <article class="diagram-node ownership-result" data-diagram-node="evolution-gjallar">
+          <Icon name="tabler:server" />
+          <strong data-node-title>Gjallar</strong>
+          <span>Infrastructure Create</span>
         </article>
-        <article data-responsibility-state="after">
-          <p class="diagram-label">{responsibilitySplit.after.label}</p>
-          <p>{responsibilitySplit.after.summary}</p>
+        <span
+          class="fork-connector fork-connector--left"
+          data-connector-segment
+          data-from-node="scope-growth"
+          data-to-node="evolution-gjallar"
+          aria-hidden="true"></span>
+        <article class="diagram-node ownership-result" data-diagram-node="evolution-heimdall">
+          <Icon name="tabler:box" />
+          <strong data-node-title>Heimdall</strong>
+          <span>Application Release</span>
         </article>
-      </div>
-    </section>
-  </PortfolioPage>
-
-  <PortfolioPage
-    number={gjallarPage.number}
-    eyebrow={gjallarPage.eyebrow}
-    title={gjallarPage.title}
-    thesis={gjallarPage.thesis}
-    status={gjallarPage.status}
-    statusNote={gjallarPage.statusNote}
-  >
-    <div class="gjallar-layout">
-      <ol class="gjallar-layers" aria-label="Gjallar VM 생성 제어 계층">
-        {
-          gjallar.layers.map((layer) => (
-            <li data-gjallar-layer={layer.id}>
-              <p class="diagram-label">{layer.label}</p>
-              <h3>{layer.title}</h3>
-              <p>{layer.summary}</p>
-            </li>
-          ))
-        }
-      </ol>
-      <div class="gjallar-evidence">
-        <EvidenceFigure {...gjallar.evidenceFigure} />
-        {
-          gjallarPage.limitations.map((limitation: ScopeLimit) => (
-            <aside class="scope-limit" data-scope-limit={limitation} aria-label="Gjallar 현재 구현 한계">
-              <p class="diagram-label">Scope Limit</p>
-              <p>{gjallar.scopeLimit}</p>
-            </aside>
-          ))
-        }
+        <span
+          class="fork-connector fork-connector--right"
+          data-connector-segment
+          data-from-node="scope-growth"
+          data-to-node="evolution-heimdall"
+          aria-hidden="true"></span>
       </div>
     </div>
   </PortfolioPage>
 
-  <PortfolioPage
-    number={heimdallPromotionPage.number}
-    eyebrow={heimdallPromotionPage.eyebrow}
-    title={heimdallPromotionPage.title}
-    thesis={heimdallPromotionPage.thesis}
-    status={heimdallPromotionPage.status}
-    statusNote={heimdallPromotionPage.statusNote}
-  >
-    <FlowDiagram
-      steps={heimdall.promotion.steps}
-      label="Heimdall generation promotion의 일곱 단계"
-      caption="Candidate 실행 성공과 운영 트래픽 활성화 성공을 서로 다른 판정으로 기록합니다."
-    />
-    <section class="responsibility-transition" aria-labelledby="promotion-outcome-title">
-      <h3 id="promotion-outcome-title">두 개의 성공 판정</h3>
-      <div>
+  <PortfolioPage {...currentPage}>
+    <ArchitectureMap variant="current" label="현재 시스템의 네 가지 책임과 수명주기" />
+  </PortfolioPage>
+
+  <PortfolioPage {...responsibilityPage}>
+    <div class="responsibility-visual slide-visual" data-primary-visual>
+      <div class="responsibility-heading" aria-hidden="true">
+        <span>DIMENSION</span><strong>GJALLAR</strong><strong>HEIMDALL</strong>
+      </div>
+      <dl class="responsibility-grid">
         {
-          heimdall.promotion.outcomes.map((outcome) => (
-            <article data-promotion-outcome={outcome.id}>
-              <p class="diagram-label">{outcome.label}</p>
-              <p>{outcome.summary}</p>
+          projects.responsibilitySplit.rows.map((row) => (
+            <div data-responsibility-row={row.id}>
+              <dt>{row.label}</dt>
+              <dd>{row.gjallar}</dd>
+              <dd>{row.heimdall}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="ownership-statement"><Icon name="tabler:shield-lock" />{projects.responsibilitySplit.statement}</p>
+    </div>
+  </PortfolioPage>
+
+  <PortfolioPage {...gjallarPage}>
+    <div class="gjallar-layout slide-visual" data-primary-visual>
+      <div class="gjallar-flow">
+        <FlowDiagram
+          steps={projects.gjallar.path}
+          label="Gjallar 승인 기반 native create 흐름"
+          diagram="gjallar-native-create"
+        />
+        <p class="scope-line" data-scope-limit="vm-full-lifecycle">{projects.gjallar.scopeLimit}</p>
+      </div>
+      <EvidenceFigure {...projects.gjallar.evidenceFigure} />
+    </div>
+  </PortfolioPage>
+
+  <PortfolioPage {...promotionPage}>
+    <div class="promotion-visual slide-visual" data-primary-visual>
+      <section class="promotion-lane" aria-labelledby="candidate-lane-title">
+        <h3 id="candidate-lane-title">CANDIDATE · EXECUTION SUCCESS</h3>
+        <FlowDiagram
+          steps={projects.heimdall.candidate}
+          label="Heimdall candidate 실행 흐름"
+          diagram="heimdall-candidate"
+        />
+      </section>
+      <section class="promotion-lane" aria-labelledby="activation-lane-title">
+        <h3 id="activation-lane-title">ACTIVATION · TRAFFIC SUCCESS</h3>
+        <FlowDiagram
+          steps={projects.heimdall.activation}
+          label="Heimdall 트래픽 활성화 흐름"
+          diagram="heimdall-activation"
+        />
+      </section>
+      <p class="retirement-note"><Icon name="tabler:check" />Current 결정 뒤에만 Previous Retirement</p>
+    </div>
+  </PortfolioPage>
+
+  <PortfolioPage {...failurePage}>
+    <div class="failure-visual slide-visual" data-diagram="heimdall-failure-boundary" data-primary-visual>
+      <div class="failure-branches">
+        {
+          projects.heimdall.failureModes.map((mode) => (
+            <article class="failure-branch" data-failure-branch={mode.id}>
+              <div class="diagram-node failure-node" data-diagram-node={`failure-${mode.id}`}>
+                <Icon name="tabler:alert-circle" />
+                <strong data-node-title>{mode.failure}</strong>
+              </div>
+              <span
+                class="failure-connector"
+                data-connector-segment
+                data-from-node={`failure-${mode.id}`}
+                data-to-node={`preserved-${mode.id}`}
+                aria-hidden="true"
+              >
+                <Icon name="tabler:arrow-right" />
+              </span>
+              <div class="diagram-node preserved-node" data-diagram-node={`preserved-${mode.id}`}>
+                <span>{mode.handling}</span>
+                <strong data-node-title>{mode.preserved}</strong>
+              </div>
             </article>
           ))
         }
       </div>
-    </section>
-    <ul class="promotion-claims" aria-label="Heimdall 구현 근거 요약">
-      {
-        heimdall.promotion.implementationClaims.map((claim) => (
-          <li data-implementation-claim={claim.id}>
-            <span class="promotion-claim-copy">
-              <strong>{claim.label}</strong>
-              <span>{claim.summary}</span>
-            </span>
-            <span class="evidence-status">Implemented</span>
-          </li>
-        ))
-      }
-      {
-        heimdall.promotion.databaseCapabilities.map((capability) => (
-          <li data-database-capability={capability.id}>
-            <span class="promotion-claim-copy">
-              <strong>{capability.label}</strong>
-              <span>{capability.summary}</span>
-            </span>
-            <span class="evidence-status">Implemented</span>
-          </li>
-        ))
-      }
-    </ul>
-  </PortfolioPage>
-
-  <PortfolioPage
-    number={heimdallFailurePage.number}
-    eyebrow={heimdallFailurePage.eyebrow}
-    title={heimdallFailurePage.title}
-    thesis={heimdallFailurePage.thesis}
-    status={heimdallFailurePage.status}
-    statusNote={heimdallFailurePage.statusNote}
-  >
-    <table class="responsibility-table">
-      <caption>실패 유형별 정리와 보존 경계</caption>
-      <thead>
-        <tr>
-          <th scope="col">Failure</th>
-          <th scope="col">Handling</th>
-          <th scope="col">Preserved</th>
-          <th scope="col">Limit</th>
-        </tr>
-      </thead>
-      <tbody>
+      <div class="data-rail" data-storage-boundary="user-confirmed-operational">
+        <span>Runtime generation</span><strong>≠</strong><span>PostgreSQL data lifecycle</span>
+        <Icon name="tabler:database" /><small>Separate Storage VM · Operational</small>
+      </div>
+      <ul class="scope-limit-strip" aria-label="구현하지 않은 복구 범위">
         {
-          heimdall.failureModes.map((mode) => (
-            <tr data-failure-mode={mode.id}>
-              <th scope="row">{mode.failure}</th>
-              <td>{mode.handling}</td>
-              <td>{mode.preserved}</td>
-              <td>
-                <p class="failure-limit-summary">{mode.limitation}</p>
-                {mode.scopeLimits.length > 0 && (
-                  <ul class="scope-limit-list" data-scope-limit-list aria-label={`${mode.failure} 현재 구현 한계`}>
-                    {mode.scopeLimits.map((scopeLimit: ScopeLimit) => (
-                      <li data-scope-limit={scopeLimit}>{scopeLimitLabels[scopeLimit]}</li>
-                    ))}
-                  </ul>
-                )}
-              </td>
-            </tr>
+          failurePage.limitations.map((limit: ScopeLimit) => (
+            <li data-scope-limit={limit}>{scopeLimitLabels[limit]}</li>
           ))
         }
-      </tbody>
-    </table>
-    <ul class="architecture-connections" aria-label="불확실 상태와 데이터 보존 원칙">
-      <li data-reconciliation-policy="preserve-unknown">
-        <strong>Unknown Runtime State</strong>
-        <span>{heimdall.reconciliationPolicy}</span>
-        <span class="connection-status">Preserve</span>
-      </li>
-      <li data-storage-boundary="user-confirmed-operational">
-        <strong>PostgreSQL Boundary</strong>
-        <span>{heimdall.storageBoundary}</span>
-        <span class="connection-status">Operational</span>
-      </li>
-    </ul>
+      </ul>
+    </div>
   </PortfolioPage>
 
-  <PortfolioPage
-    number={externalExposurePage.number}
-    eyebrow={externalExposurePage.eyebrow}
-    title={externalExposurePage.title}
-    thesis={externalExposurePage.thesis}
-    status={externalExposurePage.status}
-    statusNote={externalExposurePage.statusNote}
-  >
-    <ArchitectureMap
-      zones={externalExposure.zones}
-      connections={externalExposure.connections}
-      label="고정 외부 Edge와 내부 동적 routing 계획"
-      caption={externalExposure.caption}
-    />
-    <p class="system-map-decision" data-routing-owner="internal">
-      <strong>Dynamic Route Owner</strong>
-      {externalExposure.routingBoundary}
-    </p>
+  <PortfolioPage {...plannedPage}>
+    <ArchitectureMap variant="planned" label="계획된 외부 노출과 내부 데이터 경계" />
   </PortfolioPage>
 
-  <PortfolioPage
-    number={argusPage.number}
-    eyebrow={argusPage.eyebrow}
-    title={argusPage.title}
-    thesis={argusPage.thesis}
-    status={argusPage.status}
-    statusNote={argusPage.statusNote}
-  >
-    <ol class="argus-flow" aria-label="Argus 공급자 입력 정규화 흐름">
-      {
-        argus.stages.map((stage) => (
-          <li data-argus-stage={stage.id}>
-            <strong>{stage.label}</strong>
-          </li>
-        ))
-      }
-    </ol>
-    <EvidenceFigure {...argus.evidenceFigure} />
-  </PortfolioPage>
-
-  <PortfolioPage
-    number={resumeContactPage.number}
-    eyebrow={resumeContactPage.eyebrow}
-    title={resumeContactPage.title}
-    thesis={resumeContactPage.thesis}
-  >
-    <div class="resume-layout">
-      <section class="resume-section resume-projects" aria-labelledby="resume-projects-title">
-        <h3 id="resume-projects-title">Selected Project Scope</h3>
-        <ol class="resume-project-list">
-          {
-            closingSummary.projectSummaries.map((project, index) => (
-              <li data-summary-project={project.id} data-summary-boundary={project.boundary}>
-                <div class="resume-project-heading">
-                  <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-                  <strong>{project.name}</strong>
-                </div>
-                <p class="resume-project-scope">{project.scope}</p>
-                <p>{project.summary}</p>
-              </li>
-            ))
-          }
-        </ol>
+  <PortfolioPage {...originPage}>
+    <div class="transfer-visual slide-visual" data-primary-visual>
+      <section class="transfer-pipeline" aria-labelledby="klepaas-title">
+        <header><h3 id="klepaas-title">K-Le-PaaS</h3><span>Previous</span></header>
+        <FlowDiagram
+          steps={projects.klepaas.pipeline}
+          label="K-Le-PaaS 입력 정규화 흐름"
+          diagram="klepaas-command-plan"
+        />
+        <div class="transfer-evidence">
+          <div class="ownership-notes">
+            <p data-team-scope="team"><strong>2인 팀</strong> · 자연어 입력부터 실행 피드백까지</p>
+            <p data-team-scope="personal"><strong>개인 기여</strong> · Intent & Entity → CommandPlan 경계</p>
+          </div>
+          <EvidenceFigure {...projects.klepaas.evidenceFigure} />
+        </div>
       </section>
+      <section class="transfer-pipeline transfer-pipeline--secondary" aria-labelledby="argus-title">
+        <header><h3 id="argus-title">Argus</h3><span>Implemented</span></header>
+        <FlowDiagram steps={projects.argus.pipeline} label="Argus 공급자 정규화 흐름" diagram="argus-normalization" />
+        <EvidenceFigure {...projects.argus.evidenceFigure} />
+      </section>
+    </div>
+  </PortfolioPage>
 
-      <div class="resume-sidebar">
-        <section class="resume-section" aria-labelledby="resume-technologies-title">
-          <h3 id="resume-technologies-title">Core Technologies</h3>
-          <ul class="resume-tech-list">
-            {
-              closingSummary.techCategories.map((category) => (
-                <li data-tech-category={category.id}>
-                  <strong>{category.label}</strong>
-                  <span>{category.items.join(' · ')}</span>
-                </li>
-              ))
-            }
-          </ul>
-        </section>
-
-        <section class="resume-section resume-profile" aria-labelledby="resume-profile-title">
-          <h3 id="resume-profile-title">Education · Certification · Contact</h3>
-          <div class="resume-education" data-resume-fact="education">
-            <p class="diagram-label">Education</p>
-            <strong>{closingSummary.education.school}</strong>
-            <span>
-              {closingSummary.education.major} · {closingSummary.education.status} · {closingSummary.education.date}
-            </span>
-          </div>
-          <div class="resume-certifications">
-            <p class="diagram-label">Certification</p>
-            <ul>
-              {
-                closingSummary.certifications.map((certification) => (
-                  <li data-resume-fact="certification">{certification}</li>
-                ))
-              }
-            </ul>
-          </div>
-          <address class="resume-contacts">
-            {
-              person.contacts.map((contact) => (
-                <a href={contact.href} data-contact={contact.label.toLowerCase()}>
-                  <span>{contact.label}</span>
-                  <strong>{contact.value}</strong>
-                </a>
-              ))
-            }
-          </address>
-        </section>
-      </div>
+  <PortfolioPage {...closingPage}>
+    <div class="closing-layout">
+      <ol class="project-strip" aria-label="프로젝트별 검증 범위">
+        {
+          closingSummary.projectSummaries.map((project) => (
+            <li data-summary-project={project.id} data-summary-boundary={project.boundary}>
+              <span>{project.status}</span>
+              <strong>{project.name}</strong>
+              <p>{project.summary}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <dl class="resume-row">
+        <div><dt>CORE</dt><dd>{closingSummary.technologies}</dd></div>
+        <div><dt>EDUCATION</dt><dd>{closingSummary.education}</dd></div>
+        <div><dt>CERTIFICATION</dt><dd>{closingSummary.certifications}</dd></div>
+      </dl>
+      <ul class="closing-contacts" aria-label="연락처">
+        {
+          person.contacts.map((contact) => (
+            <li>
+              <a class="contact-link" href={contact.href}>
+                <>
+                  <strong>{contact.label}</strong>
+                  <span>{contact.value}</span>
+                </>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </PortfolioPage>
 </main>

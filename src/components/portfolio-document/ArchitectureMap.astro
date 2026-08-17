@@ -1,79 +1,229 @@
 ---
-import type {
-  ArchitectureConnectionData,
-  ArchitectureConnectionStatus,
-  ArchitectureZoneData,
-} from '~/data/portfolio-document';
+import { Icon } from 'astro-icon/components';
+
+import { portfolioDocument } from '~/data/portfolio-document';
 
 export interface Props {
-  zones: readonly ArchitectureZoneData[];
-  connections: readonly ArchitectureConnectionData[];
+  variant: 'current' | 'planned';
   label: string;
-  caption?: string;
 }
 
-const { zones, connections, label, caption } = Astro.props;
+const { variant, label } = Astro.props;
+const currentZones = portfolioDocument.projects.currentSystem.zones;
+const plannedZones = portfolioDocument.projects.externalExposure.zones;
 
-const connectionStatusLabels: Record<ArchitectureConnectionStatus, string> = {
-  active: '현재 연결',
-  operational: '운영 연결',
-  planned: '계획 연결',
-  external: '외부 경계',
-};
+const plannedNodes = [
+  {
+    id: 'control-dns',
+    title: 'control.example.com',
+    qualifier: 'Control Web',
+    icon: 'tabler:world',
+    position: 'control',
+  },
+  {
+    id: 'deploy-dns',
+    title: '*.deploy.example.com',
+    qualifier: 'Deployment wildcard',
+    icon: 'tabler:world',
+    position: 'deploy',
+  },
+  { id: 'oci-edge', title: 'OCI Edge Nginx', qualifier: 'Fixed TLS & Host', icon: 'tabler:server', position: 'edge' },
+  {
+    id: 'wireguard',
+    title: 'WireGuard',
+    qualifier: 'Encrypted tunnel',
+    icon: 'tabler:shield-lock',
+    position: 'wireguard',
+  },
+  {
+    id: 'internal-ingress',
+    title: 'Internal Ingress Nginx',
+    qualifier: 'Dynamic host routing',
+    icon: 'tabler:route',
+    position: 'ingress',
+  },
+  {
+    id: 'project-gateway',
+    title: 'Project Gateway',
+    qualifier: 'Current generation',
+    icon: 'tabler:box',
+    position: 'gateway',
+  },
+  {
+    id: 'runtime-application',
+    title: 'Runtime Application',
+    qualifier: 'Promoted generation',
+    icon: 'tabler:box',
+    position: 'runtime',
+  },
+  {
+    id: 'storage-postgresql',
+    title: 'Storage VM PostgreSQL',
+    qualifier: 'Separate data lifecycle',
+    icon: 'tabler:database',
+    position: 'storage',
+  },
+] as const;
 
-const zonesById = new Map(zones.map((zone) => [zone.id, zone] as const));
-const resolvedConnections = connections.map((connection) => {
-  const fromZone = zonesById.get(connection.fromZoneId);
-  const toZone = zonesById.get(connection.toZoneId);
+const plannedRoutes = [
+  { from: 'control-dns', to: 'oci-edge', type: 'request', segments: ['control-out', 'control-down', 'control-in'] },
+  { from: 'deploy-dns', to: 'oci-edge', type: 'request', segments: ['deploy-out', 'deploy-up', 'deploy-in'] },
+  { from: 'oci-edge', to: 'wireguard', type: 'request', segments: ['edge-wireguard'] },
+  {
+    from: 'wireguard',
+    to: 'internal-ingress',
+    type: 'request',
+    segments: ['wireguard-out', 'boundary-up', 'ingress-in'],
+  },
+  { from: 'internal-ingress', to: 'project-gateway', type: 'request', segments: ['ingress-gateway'] },
+  {
+    from: 'project-gateway',
+    to: 'runtime-application',
+    type: 'request',
+    segments: ['gateway-out', 'runtime-up', 'runtime-in'],
+  },
+  { from: 'runtime-application', to: 'storage-postgresql', type: 'data', segments: ['runtime-storage'] },
+] as const;
 
-  if (!fromZone || !toZone) {
-    throw new Error(
-      `Architecture connection references an unknown zone: ${connection.fromZoneId} → ${connection.toZoneId}`
-    );
-  }
+const currentNodes = [
+  { id: 'proxmox-actual', title: 'Actual Inventory', icon: 'tabler:server', position: 'proxmox-actual' },
+  { id: 'proxmox-runtime', title: 'VM Runtime Base', icon: 'tabler:server', position: 'proxmox-runtime' },
+  { id: 'gjallar-profile', title: 'VM Profile', icon: 'tabler:server', position: 'gjallar-profile' },
+  { id: 'gjallar-preflight', title: 'Preflight & Approval', icon: 'tabler:shield-lock', position: 'gjallar-preflight' },
+  { id: 'gjallar-create', title: 'Native Create', icon: 'tabler:check', position: 'gjallar-create' },
+  { id: 'runtime-worker', title: 'Heimdall Worker', icon: 'tabler:box', position: 'runtime-worker' },
+  { id: 'runtime-gateway', title: 'Project Gateway', icon: 'tabler:route', position: 'runtime-gateway' },
+  { id: 'runtime-generations', title: 'App Generations', icon: 'tabler:box', position: 'runtime-generations' },
+  { id: 'storage-vm', title: 'Storage VM', icon: 'tabler:server', position: 'storage-vm' },
+  { id: 'storage-postgresql-current', title: 'PostgreSQL', icon: 'tabler:database', position: 'storage-postgresql' },
+  { id: 'storage-project-db', title: 'Project DB & Role', icon: 'tabler:database', position: 'storage-project-db' },
+] as const;
 
-  return { ...connection, fromLabel: fromZone.label, toLabel: toZone.label };
-});
+const currentRoutes = [
+  { from: 'gjallar-create', to: 'proxmox-runtime', type: 'control', segments: ['control-direct'] },
+  {
+    from: 'proxmox-runtime',
+    to: 'runtime-worker',
+    type: 'runtime',
+    segments: ['runtime-out', 'runtime-up', 'runtime-across', 'runtime-in'],
+  },
+  {
+    from: 'runtime-generations',
+    to: 'storage-postgresql-current',
+    type: 'data',
+    segments: ['data-direct'],
+  },
+] as const;
 ---
 
-<figure class="architecture-map" data-architecture-map aria-label={label}>
-  <p class="diagram-label">{label}</p>
-  <div class="architecture-zones">
-    {
-      zones.map((zone) => (
-        <section class="architecture-zone" data-architecture-zone={zone.id} data-system-node={zone.systemNode}>
-          <h3>{zone.label}</h3>
-          <p>{zone.responsibility}</p>
-          {zone.details && (
-            <ul class="architecture-zone-details" aria-label={`${zone.label} 구성`}>
-              {zone.details.map((detail) => (
-                <li>{detail}</li>
-              ))}
-            </ul>
-          )}
-          {zone.operationalNote && <p class="architecture-operational-note">{zone.operationalNote}</p>}
-        </section>
-      ))
-    }
-  </div>
-  <ul class="architecture-connections" aria-label="영역 간 연결 상태">
-    {
-      resolvedConnections.map((connection) => (
-        <li
-          data-connection-status={connection.status}
-          data-from-zone={connection.fromZoneId}
-          data-to-zone={connection.toZoneId}
-        >
-          <span class="connection-route" aria-label={`${connection.fromLabel}에서 ${connection.toLabel}로 연결`}>
-            <strong>{connection.fromLabel}</strong>
-            <span class="connection-edge" data-connection-edge aria-hidden="true" />
-            <strong>{connection.toLabel}</strong>
+{
+  variant === 'current' ? (
+    <figure
+      class="architecture-map architecture-map--current slide-visual"
+      data-diagram="current-system"
+      data-primary-visual
+      aria-label={label}
+    >
+      <div class="ownership-columns ownership-columns--current">
+        {currentZones.map((zone) => (
+          <section class="ownership-column" data-architecture-zone={zone.id}>
+            <header>
+              <strong>{zone.label}</strong>
+              <span>{zone.responsibility}</span>
+            </header>
+          </section>
+        ))}
+      </div>
+      <div class="current-canvas">
+        {currentNodes.map((node) => (
+          <article
+            class={`diagram-node architecture-node current-node current-node--${node.position}`}
+            data-diagram-node={node.id}
+          >
+            <Icon name={node.icon} />
+            <strong data-node-title>{node.title}</strong>
+          </article>
+        ))}
+        {currentRoutes.map((route) => (
+          <span
+            class={`connector-route connector-route--${route.type}`}
+            data-connector-route={route.type}
+            data-from-node={route.from}
+            data-to-node={route.to}
+            aria-hidden="true"
+          >
+            {route.segments.map((segment: string) => (
+              <i
+                class={`current-segment current-segment--${segment}`}
+                data-connector-segment
+                data-from-node={route.from}
+                data-to-node={route.to}
+              />
+            ))}
           </span>
-          <span>{connection.label}</span>
-          <span class="connection-status">{connectionStatusLabels[connection.status]}</span>
-        </li>
-      ))
-    }
-  </ul>
-  {caption && <figcaption>{caption}</figcaption>}
-</figure>
+        ))}
+        <span class="current-operational-note">Operational · 사용자 확인 Storage VM</span>
+      </div>
+      <figcaption>Storage VM은 사용자 확인 운영 구조이며 애플리케이션 세대와 데이터 수명주기를 분리합니다.</figcaption>
+    </figure>
+  ) : (
+    <figure
+      class="architecture-map architecture-map--planned slide-visual"
+      data-diagram="planned-exposure"
+      data-primary-visual
+      aria-label={label}
+    >
+      <div class="ownership-columns ownership-columns--planned">
+        {plannedZones.map((zone) => (
+          <section class="ownership-column" data-ownership-column={zone.id}>
+            <header>
+              <strong>{zone.label}</strong>
+              <span>{zone.responsibility}</span>
+            </header>
+          </section>
+        ))}
+      </div>
+      <div class="planned-canvas">
+        {plannedNodes.map((node) => (
+          <article
+            class={`diagram-node architecture-node planned-node planned-node--${node.position}`}
+            data-diagram-node={node.id}
+          >
+            <Icon name={node.icon} />
+            <div>
+              <strong data-node-title>{node.title}</strong>
+              <small>{node.qualifier}</small>
+            </div>
+          </article>
+        ))}
+        {plannedRoutes.map((route) => (
+          <span
+            class={`connector-route connector-route--${route.type}`}
+            data-connector-route={route.type}
+            data-from-node={route.from}
+            data-to-node={route.to}
+            aria-hidden="true"
+          >
+            {route.segments.map((segment: string) => (
+              <i
+                class={`planned-segment planned-segment--${segment}`}
+                data-connector-segment
+                data-from-node={route.from}
+                data-to-node={route.to}
+              />
+            ))}
+          </span>
+        ))}
+        <span class="merge-point" data-merge-point aria-label="DNS request merge" />
+        <span class="home-lab-boundary" data-boundary="home-lab">
+          HOME LAB BOUNDARY
+        </span>
+        <span class="route-label route-label--request">REQUEST</span>
+        <span class="route-label route-label--data">DATA</span>
+      </div>
+      <figcaption>
+        Public request는 Runtime Application에서 끝나며 PostgreSQL 접근은 별도 내부 data route입니다.
+      </figcaption>
+    </figure>
+  )
+}

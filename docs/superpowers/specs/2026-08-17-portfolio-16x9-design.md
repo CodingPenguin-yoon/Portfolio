@@ -1,10 +1,10 @@
 # 16:9 Architecture-led Portfolio Design Specification
 
-**Date:** 2026-08-17  
-**Status:** Approved visual direction  
-**Selected reference:** `docs/superpowers/specs/assets/portfolio-16x9-selected-ownership-columns.png`  
-**Replaces:** the canonical A4 `/portfolio` document and `output/pdf/yunho-cho-portfolio.pdf`  
-**Recovery:** the A4 version remains recoverable from Git commit `c677b93`
+- **Date:** 2026-08-17
+- **Status:** Approved visual direction
+- **Selected reference:** `docs/superpowers/specs/assets/portfolio-16x9-selected-ownership-columns.png`
+- **Replaces:** the canonical A4 `/portfolio` document and `output/pdf/yunho-cho-portfolio.pdf`
+- **Recovery:** the A4 version remains recoverable from Git commit `c677b93`
 
 ## 1. Outcome
 

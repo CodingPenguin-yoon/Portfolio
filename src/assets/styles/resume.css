@@ -61,6 +61,7 @@ body:has(.resume-page) {
 .resume-project-meta,
 .resume-project-category,
 .resume-project-role,
+.resume-project-evidence,
 .resume-project-stack,
 .resume-project-links,
 .resume-project-visual span,
@@ -120,11 +121,41 @@ body:has(.resume-page) {
 }
 
 .resume-page {
+  display: flex;
   overflow: hidden;
+  flex-direction: column;
   background: #f4f1e9;
   color: #111214;
   font-family: var(--aw-font-sans), sans-serif;
   letter-spacing: 0;
+}
+
+.resume-hero {
+  order: 1;
+}
+
+.resume-profile {
+  order: 2;
+}
+
+.resume-projects {
+  order: 3;
+}
+
+.resume-skills {
+  order: 4;
+}
+
+.resume-infrastructure {
+  order: 5;
+}
+
+.resume-credentials {
+  order: 6;
+}
+
+.resume-contact {
+  order: 7;
 }
 
 .resume-page :where(section[id]) {
@@ -385,6 +416,29 @@ body:has(.resume-page) {
   background: #ffffff;
 }
 
+.resume-validation-facts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 3rem 0 0;
+  padding: 0;
+  border-top: 2px solid #111214;
+  border-bottom: 1px solid #111214;
+  list-style: none;
+}
+
+.resume-validation-facts li {
+  min-width: 0;
+  border-right: 1px solid #111214;
+  padding: 1.2rem 1.35rem;
+  font-family: var(--aw-font-mono);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.resume-validation-facts li:first-child {
+  border-left: 1px solid #111214;
+}
+
 .resume-infrastructure-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -623,6 +677,26 @@ body:has(.resume-page) {
   height: 2px;
   background: var(--resume-tone);
   content: '';
+}
+
+.resume-project-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.9rem;
+  align-items: center;
+  margin-top: 1.25rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.resume-project-evidence span {
+  color: #65686f;
+}
+
+.resume-project-evidence a {
+  border-bottom: 1px solid currentColor;
+  color: #111214;
+  text-decoration: none;
 }
 
 .resume-project-stack {
@@ -912,6 +986,22 @@ body:has(.resume-page) {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .resume-validation-facts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .resume-validation-facts li {
+    border-bottom: 1px solid #111214;
+  }
+
+  .resume-validation-facts li:nth-child(2) {
+    border-right: 1px solid #111214;
+  }
+
+  .resume-validation-facts li:nth-child(n + 3) {
+    border-bottom: 0;
+  }
+
   .resume-infrastructure-grid article {
     min-height: 16rem;
     border-bottom: 1px solid #111214;
@@ -1020,6 +1110,25 @@ body:has(.resume-page) {
   .resume-infrastructure-grid {
     grid-template-columns: 1fr;
     margin-top: 2.5rem;
+  }
+
+  .resume-validation-facts {
+    grid-template-columns: 1fr;
+    margin-top: 2.5rem;
+  }
+
+  .resume-validation-facts li,
+  .resume-validation-facts li:first-child,
+  .resume-validation-facts li:nth-child(2),
+  .resume-validation-facts li:nth-child(n + 3) {
+    border-right: 0;
+    border-bottom: 1px solid #111214;
+    border-left: 0;
+    padding: 1rem 0;
+  }
+
+  .resume-validation-facts li:last-child {
+    border-bottom: 0;
   }
 
   .resume-infrastructure-grid article,
@@ -1169,7 +1278,7 @@ body:has(.resume-page) {
 
 @page {
   size: A4;
-  margin: 11mm 12mm;
+  margin: 8mm 10mm;
 }
 
 @media print {
@@ -1191,7 +1300,8 @@ body:has(.resume-page) {
   .resume-hero-overlay,
   .resume-hero-actions,
   .resume-project-visual,
-  .resume-project-links {
+  .resume-project-links,
+  .resume-contact {
     display: none !important;
   }
 
@@ -1219,16 +1329,15 @@ body:has(.resume-page) {
   }
 
   .resume-infrastructure {
-    order: 3;
+    order: 5;
   }
 
   .resume-skills {
     order: 4;
-    break-before: page;
   }
 
   .resume-projects {
-    order: 5;
+    order: 3;
   }
 
   .resume-credentials {
@@ -1236,7 +1345,6 @@ body:has(.resume-page) {
   }
 
   .resume-contact {
-    display: block;
     order: 7;
     border-top: 1px solid #111214;
     border-bottom: 1px solid #111214;
@@ -1252,7 +1360,7 @@ body:has(.resume-page) {
 
   .resume-hero-inner {
     display: block;
-    padding: 2mm 0 7mm;
+    padding: 1mm 0 4mm;
   }
 
   .resume-hero-facts {
@@ -1268,36 +1376,36 @@ body:has(.resume-page) {
   }
 
   .resume-name-en {
-    margin-top: 5mm;
+    margin-top: 2mm;
   }
 
   .resume-hero h1 {
     margin-top: 1mm;
-    font-size: 26pt;
+    font-size: 23pt;
     line-height: 1;
   }
 
   .resume-role {
-    margin-top: 2mm;
-    font-size: 12pt;
+    margin-top: 1.5mm;
+    font-size: 10.5pt;
   }
 
   .resume-statement {
-    margin-top: 2mm;
+    margin-top: 1.5mm;
     color: #303238;
-    font-size: 9pt;
-    line-height: 1.45;
+    font-size: 8.5pt;
+    line-height: 1.4;
   }
 
   .resume-hero-facts {
     grid-template-columns: 1.1fr 0.8fr 1.3fr 0.8fr;
-    margin-top: 4mm;
+    margin-top: 2.5mm;
     border-top: 1px solid #111214;
     border-bottom: 1px solid #111214;
   }
 
   .resume-hero-facts > div {
-    padding: 2mm 2mm 2mm 0;
+    padding: 1.5mm 2mm 1.5mm 0;
   }
 
   .resume-hero-facts dt {
@@ -1315,7 +1423,7 @@ body:has(.resume-page) {
   }
 
   .resume-section-inner {
-    padding: 6mm 0;
+    padding: 4mm 0;
   }
 
   .resume-section-heading,
@@ -1329,20 +1437,20 @@ body:has(.resume-page) {
   }
 
   .resume-profile h2 {
-    font-size: 21pt;
+    font-size: 16.5pt;
     line-height: 1.15;
   }
 
   .resume-profile-grid > div > p {
     max-width: 100%;
-    margin-top: 4mm;
+    margin-top: 2mm;
     color: #303238;
-    font-size: 9.3pt;
-    line-height: 1.65;
+    font-size: 8.2pt;
+    line-height: 1.45;
   }
 
   .resume-profile .resume-section-inner {
-    padding: 10mm 0;
+    padding: 5mm 0;
   }
 
   .resume-profile .resume-contact-row {
@@ -1431,6 +1539,52 @@ body:has(.resume-page) {
     margin-top: 3mm;
     font-size: 9pt;
     line-height: 1.55;
+  }
+
+  .resume-infrastructure .resume-section-inner {
+    padding: 5mm 0;
+  }
+
+  .resume-infrastructure .resume-section-heading {
+    grid-template-columns: 0.42fr 1.58fr;
+    gap: 4mm;
+    align-items: start;
+  }
+
+  .resume-infrastructure .resume-section-heading h2 {
+    font-size: 13pt;
+  }
+
+  .resume-infrastructure .resume-section-intro {
+    margin-top: 1.5mm;
+    font-size: 7.5pt;
+    line-height: 1.45;
+  }
+
+  .resume-validation-facts {
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 3mm;
+    border-top: 1px solid #111214;
+  }
+
+  .resume-validation-facts li,
+  .resume-validation-facts li:first-child,
+  .resume-validation-facts li:nth-child(2),
+  .resume-validation-facts li:nth-child(n + 3) {
+    border-right: 1px solid #111214;
+    border-bottom: 0;
+    border-left: 0;
+    padding: 2mm;
+    font-size: 6.2pt;
+    line-height: 1.35;
+  }
+
+  .resume-validation-facts li:first-child {
+    border-left: 1px solid #111214;
+  }
+
+  .resume-validation-facts li:last-child {
+    border-right: 1px solid #111214;
   }
 
   .resume-skills {
@@ -1538,16 +1692,19 @@ body:has(.resume-page) {
   }
 
   .resume-projects-heading {
-    display: grid;
+    grid-template-columns: 0.42fr 1.58fr;
+    gap: 4mm;
+    align-items: start;
   }
 
   .resume-projects-heading > div h2 {
     margin-top: 0;
+    font-size: 13pt;
   }
 
   .resume-project-list {
     display: block;
-    margin-top: 7mm;
+    margin-top: 3mm;
     border-top: 0;
   }
 
@@ -1557,12 +1714,12 @@ body:has(.resume-page) {
     break-inside: avoid;
     border: 0;
     border-top: 1px solid #111214;
-    padding: 8mm 0;
+    padding: 5mm 0;
   }
 
   .resume-project:nth-child(3) {
     break-before: page;
-    padding-top: 12mm;
+    padding-top: 8mm;
   }
 
   .resume-project-meta {
@@ -1585,7 +1742,7 @@ body:has(.resume-page) {
   }
 
   .resume-project-copy {
-    margin-top: 3mm;
+    margin-top: 2mm;
   }
 
   .resume-project-copy h3 {
@@ -1594,29 +1751,29 @@ body:has(.resume-page) {
   }
 
   .resume-project-title {
-    margin-top: 1.5mm;
-    font-size: 10.5pt;
+    margin-top: 1mm;
+    font-size: 10pt;
   }
 
   .resume-project-summary {
-    margin-top: 3mm;
-    font-size: 8.5pt;
-    line-height: 1.55;
+    margin-top: 2mm;
+    font-size: 8pt;
+    line-height: 1.45;
   }
 
   .resume-project-role {
-    margin-top: 2mm;
+    margin-top: 1.5mm;
   }
 
   .resume-project-highlights {
-    gap: 1.5mm;
-    margin-top: 4mm;
+    gap: 1mm;
+    margin-top: 2.5mm;
   }
 
   .resume-project-highlights li {
     padding-left: 3mm;
-    font-size: 8pt;
-    line-height: 1.5;
+    font-size: 7.6pt;
+    line-height: 1.4;
   }
 
   .resume-project-highlights li::before {
@@ -1624,9 +1781,15 @@ body:has(.resume-page) {
     width: 1.5mm;
   }
 
+  .resume-project-evidence {
+    gap: 1mm 2mm;
+    margin-top: 2mm;
+    font-size: 6pt;
+  }
+
   .resume-project-stack {
     gap: 1mm 2mm;
-    margin-top: 3mm;
+    margin-top: 2mm;
     font-size: 6pt;
   }
 

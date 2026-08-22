@@ -256,8 +256,8 @@ const sectionHref = (id: (typeof portfolioSectionIds)[keyof typeof portfolioSect
 export const portfolioProfile: PortfolioProfile = {
   name: '조윤호',
   nameEn: 'Yunho Cho',
-  role: '플랫폼·데브옵스 엔지니어',
-  intro: '프로비저닝, 배포, 상태 추적 흐름을 API와 워크플로로 정리하는 플랫폼·데브옵스 엔지니어입니다.',
+  role: 'Platform Engineer',
+  intro: 'Git 기반 Preview 배포와 Kubernetes·Proxmox 운영 도구를 구현합니다.',
   email: 'code.penguin.yoon@gmail.com',
   resumeHref: '/resume/yunho-cho-resume.pdf',
   resumePageHref: '/resume',
@@ -341,7 +341,7 @@ export const portfolioHome: PortfolioHomeCopy = {
     title: '연락처, 저장소, 이력서',
     description: '필요한 링크만 정리했습니다.',
   },
-  footerSummary: '요청 모델, 오케스트레이션, 실행 로그를 중심으로 시스템을 설계합니다.',
+  footerSummary: '배포와 인프라 운영을 자동화하고, 실행 후 실제 상태까지 확인합니다.',
 };
 
 export const portfolioResume: PortfolioResumeCopy = {
@@ -392,7 +392,8 @@ const projectSource: Omit<PortfolioProject, 'directHref'>[] = [
     coreStack: ['Kubernetes', 'FastAPI', 'GitHub Actions', 'Slack API', 'NCP'],
     narrative: {
       problem: '배포 요청 추적 경로가 길었습니다.',
-      structure: 'FastAPI를 컨트롤 플레인으로 두고 Actions, Kubernetes, Slack을 하나의 실행 파이프라인으로 묶고 로그까지 연결했습니다.',
+      structure:
+        'FastAPI를 컨트롤 플레인으로 두고 Actions, Kubernetes, Slack을 하나의 실행 파이프라인으로 묶고 로그까지 연결했습니다.',
       result: '입력 채널과 무관하게 같은 요청 모델로 추적할 수 있게 만들었습니다.',
     },
     resultLine: '요청 -> 실행 -> 상태 확인 -> 피드백',
@@ -437,7 +438,8 @@ const projectSource: Omit<PortfolioProject, 'directHref'>[] = [
       implementation: {
         eyebrow: '아키텍처',
         title: '요청 모델 + 오케스트레이션 + 실행 로그',
-        description: '입력 형식과 무관하게 같은 요청 스키마를 사용하고, Actions, Kubernetes, Slack 이벤트를 하나의 로그로 모았습니다.',
+        description:
+          '입력 형식과 무관하게 같은 요청 스키마를 사용하고, Actions, Kubernetes, Slack 이벤트를 하나의 로그로 모았습니다.',
         items: [
           '자연어 명령 파서',
           '실행 API',
@@ -576,7 +578,8 @@ const projectSource: Omit<PortfolioProject, 'directHref'>[] = [
       implementation: {
         eyebrow: '아키텍처',
         title: '프로비저닝 컨트롤러 + 상태 저장소',
-        description: 'UI 요청, Proxmox 클론, Terraform 프로비저닝, Ansible 후처리, 상태 추적을 하나의 흐름으로 연결했습니다.',
+        description:
+          'UI 요청, Proxmox 클론, Terraform 프로비저닝, Ansible 후처리, 상태 추적을 하나의 흐름으로 연결했습니다.',
         items: [
           '프로비저닝 요청 API',
           'Proxmox 클론 단계',
@@ -703,8 +706,7 @@ const projectSource: Omit<PortfolioProject, 'directHref'>[] = [
       problemBlock: {
         eyebrow: '문제',
         title: '먼저 읽어야 할 순서가 보이지 않았습니다',
-        body:
-          '뉴스, 파생, 매크로 데이터를 많이 쌓아도 먼저 봐야 할 질문이 드러나지 않으면 해석에 걸리는 시간은 줄어들지 않습니다. Argus는 읽는 순서를 다시 설계하는 데 초점을 둔 프로젝트입니다.',
+        body: '뉴스, 파생, 매크로 데이터를 많이 쌓아도 먼저 봐야 할 질문이 드러나지 않으면 해석에 걸리는 시간은 줄어들지 않습니다. Argus는 읽는 순서를 다시 설계하는 데 초점을 둔 프로젝트입니다.',
         structureTitle: '소스 차이는 프로바이더-어댑터 계층에서 흡수했습니다',
         structureBody:
           '뉴스, 파생, 매크로 데이터를 소스별로 수집하고 프로바이더-어댑터 계층에서 형식 차이를 흡수했습니다. 덕분에 UI는 소스별 예외를 직접 알지 않고 같은 질문 흐름을 유지할 수 있었습니다.',

@@ -29,23 +29,26 @@ const zones = [
 <section id="infrastructure" class="infrastructure-page" aria-labelledby="infrastructure-title">
   <div class="infrastructure-inner">
     <header class="infrastructure-heading">
-      <p>My infrastructure</p>
+      <p>Validation environment</p>
       <div>
-        <h2 id="infrastructure-title">Inside My Home Lab.</h2>
-        <p>외부 서비스는 OCI와 WireGuard를 거쳐 ORANGE로 연결하고, IPFire로 각 영역의 접근을 분리했습니다.</p>
+        <h2 id="infrastructure-title">Built and verified on real infrastructure.</h2>
+        <p>
+          Proxmox 3노드, 분리된 네트워크, NAS/NFS와 외부 접근 경로를 직접 운영하며 Heimdall과 Gjallar를 배포하고
+          검증합니다.
+        </p>
       </div>
     </header>
 
     <div class="architecture-board">
       <div class="board-toolbar">
         <div class="board-lights" aria-hidden="true"><i></i><i></i><i></i></div>
-        <span>HOME LAB / NETWORK ARCHITECTURE</span>
+        <span>VALIDATION ENVIRONMENT / HOME LAB</span>
         <span class="live-status"><i></i>LIVE</span>
       </div>
 
       <div class="board-content">
         <header class="board-heading">
-          <h3>지금 운영하고 있는 구조</h3>
+          <h3>프로젝트를 실제로 배포하고 검증하는 환경</h3>
         </header>
 
         <ol class="external-route" aria-label="외부 서비스 접근 경로">
@@ -90,7 +93,6 @@ const zones = [
 
 <style>
   .infrastructure-page {
-    min-height: calc(100svh - 5rem);
     scroll-margin-top: 0;
     border-bottom: 1px solid #111214;
     background: #f4f1e9;
@@ -99,12 +101,11 @@ const zones = [
 
   .infrastructure-inner {
     display: flex;
-    min-height: calc(100svh - 5rem);
     width: min(100% - 2rem, 92rem);
     flex-direction: column;
     justify-content: center;
     margin: 0 auto;
-    padding: 3rem 0;
+    padding: 6rem 0;
   }
 
   .infrastructure-heading {

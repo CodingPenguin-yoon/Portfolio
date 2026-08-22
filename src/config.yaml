@@ -10,9 +10,9 @@ site:
 # Default SEO metadata
 metadata:
   title:
-    default: 조윤호 | 운영 자동화 · 플랫폼 엔지니어
+    default: 조윤호 | Platform Engineer
     template: '%s | 조윤호'
-  description: 'GitHub Actions, Kubernetes, NCP, Slack, Proxmox, Terraform, Ansible를 연결해 분산된 운영 절차를 재현 가능하고 추적 가능한 실행 구조로 정리한 조윤호의 포트폴리오입니다.'
+  description: 'Git 기반 Preview 배포와 Kubernetes·Proxmox 운영 도구를 구현한 플랫폼 엔지니어 조윤호의 포트폴리오입니다.'
   robots:
     index: true
     follow: true

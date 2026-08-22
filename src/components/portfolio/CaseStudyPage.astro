@@ -12,6 +12,8 @@ export interface Props {
 
 const { project, relatedProjects = [] } = Astro.props;
 const narrative = project.detail.narrative;
+const productSectionNumber = narrative?.proof ? '06' : narrative ? '05' : '03';
+const outcomeLabel = narrative?.outcomeLabel ?? (narrative?.proof ? '07 / Current & next' : '06 / Current & next');
 const metadata = {
   title: `${project.name} | Cho YunHo`,
   description: project.description,
@@ -107,15 +109,41 @@ const metadata = {
             </div>
           </section>
 
-          <section class="case-section case-role" aria-labelledby="role-title">
+          <section
+            id={narrative.ownership ? 'ownership' : undefined}
+            class="case-section case-role"
+            aria-labelledby="role-title"
+          >
             <div class="case-section-inner">
-              <div class="case-section-heading">
-                <p class="case-label">02 / My role</p>
-                <div>
-                  <h2 id="role-title">{narrative.roleTitle}</h2>
-                  <p class="case-section-intro">{narrative.role}</p>
+              {narrative.ownership ? (
+                <>
+                  <div class="case-section-heading">
+                    <p class="case-label">02 / Role &amp; contribution</p>
+                    <h2 id="role-title">{narrative.ownership.title}</h2>
+                  </div>
+
+                  <div class="case-ownership-grid">
+                    <article aria-label="Team scope">
+                      <span>Team scope</span>
+                      <h3>{narrative.ownership.team.title}</h3>
+                      <p>{narrative.ownership.team.description}</p>
+                    </article>
+                    <article aria-label="My contribution">
+                      <span>My contribution</span>
+                      <h3>{narrative.roleTitle}</h3>
+                      <p>{narrative.role}</p>
+                    </article>
+                  </div>
+                </>
+              ) : (
+                <div class="case-section-heading">
+                  <p class="case-label">02 / My role</p>
+                  <div>
+                    <h2 id="role-title">{narrative.roleTitle}</h2>
+                    <p class="case-section-intro">{narrative.role}</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div class="case-role-grid">
                 {narrative.roleItems.map((item) => (
@@ -172,6 +200,40 @@ const metadata = {
               </div>
             </div>
           </section>
+
+          {narrative.proof ? (
+            <section
+              id={narrative.proof.id ?? 'evidence'}
+              class="case-section case-proof"
+              aria-labelledby="proof-title"
+            >
+              <div class="case-section-inner">
+                <div class="case-section-heading">
+                  <p class="case-label">{narrative.proof.label ?? '05 / Evidence'}</p>
+                  <div>
+                    <h2 id="proof-title">{narrative.proof.title}</h2>
+                    <p class="case-section-intro">{narrative.proof.introduction}</p>
+                  </div>
+                </div>
+
+                <div class="case-proof-grid">
+                  {narrative.proof.items.map((item) => (
+                    <article>
+                      <span class="case-proof-badge">{item.badge}</span>
+                      <h3>{item.title}</h3>
+                      <p>{item.description}</p>
+                      {item.href ? (
+                        <a href={item.href} target="_blank" rel="noreferrer">
+                          {item.linkLabel ?? 'View evidence'}
+                          <Icon name="tabler:arrow-up-right" />
+                        </a>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ) : null}
         </>
       ) : (
         <>
@@ -213,7 +275,7 @@ const metadata = {
           <div class="case-section-inner">
             <div class="case-section-heading case-product-heading">
               <div>
-                <p class="case-label">{narrative ? '05' : '03'} / Product</p>
+                <p class="case-label">{productSectionNumber} / Product</p>
                 <h2 id="product-title">Product view.</h2>
               </div>
               <a href={project.repository} target="_blank" rel="noreferrer">
@@ -239,7 +301,7 @@ const metadata = {
         <section class="case-section case-result case-outcome" aria-labelledby="outcome-title">
           <div class="case-section-inner">
             <div class="case-outcome-heading">
-              <p class="case-label">{narrative.outcomeLabel ?? '06 / Current & next'}</p>
+              <p class="case-label">{outcomeLabel}</p>
               <h2 id="outcome-title">{narrative.outcomeTitle ?? '운영 범위와 다음 단계.'}</h2>
             </div>
             <div class="case-outcome-grid">

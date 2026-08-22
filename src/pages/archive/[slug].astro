@@ -5,7 +5,7 @@ import { portfolioProjects } from '~/data/portfolio';
 
 export const getStaticPaths = async () =>
   portfolioProjects
-    .filter((project) => project.routeGroup === 'archive')
+    .filter((project) => project.routeGroup === 'archive' && project.slug !== 'argus')
     .map((project) => ({
       params: { slug: project.slug },
       props: {
@@ -15,10 +15,6 @@ export const getStaticPaths = async () =>
     }));
 
 const { project, relatedProjects } = Astro.props;
-
-if (project.slug === 'argus') {
-  return Astro.redirect('/projects/argus', 301);
-}
 
 const metadata = {
   title: project.fullTitle,

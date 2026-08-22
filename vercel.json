@@ -1,13 +1,6 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "redirects": [
-    {
-      "source": "/archive/argus",
-      "destination": "/projects/argus",
-      "permanent": true
-    }
-  ],
   "headers": [
     {
       "source": "/_astro/(.*)",

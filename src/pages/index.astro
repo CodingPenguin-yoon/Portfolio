@@ -8,14 +8,14 @@ import { portfolioProfile } from '~/data/portfolio';
 
 const metadata = {
   title: 'Yunho Cho | Platform Engineer',
-  description: '빌드, 배포, 서버 운영을 자동화하는 플랫폼 엔지니어 조윤호의 홈페이지입니다.',
+  description:
+    'Git 기반 preview deployment와 안전한 인프라 운영 도구를 만드는 플랫폼 엔지니어 조윤호의 포트폴리오입니다.',
   ignoreTitleTemplate: true,
 };
 
 const githubHref = portfolioProfile.socials.github || 'https://github.com/CodingPenguin-yoon';
 const emailHref = portfolioProfile.email ? `mailto:${portfolioProfile.email}` : undefined;
-const featuredProjects = homeProjects.filter((project) => project.id !== 'argus');
-const sideProject = homeProjects.find((project) => project.id === 'argus');
+const featuredProjects = homeProjects;
 ---
 
 <PageLayout metadata={metadata}>
@@ -43,13 +43,7 @@ const sideProject = homeProjects.find((project) => project.id === 'argus');
 
   <div class="home-page">
     <section id="top" class="home-hero" aria-labelledby="hero-title">
-      <img
-        class="hero-background"
-        src="/projects/klepaas-dashboard.png"
-        alt=""
-        aria-hidden="true"
-        fetchpriority="high"
-      />
+      <img class="hero-background" src="/projects/heimdall.png" alt="" aria-hidden="true" fetchpriority="high" />
       <div class="hero-shade" aria-hidden="true"></div>
 
       <div class="hero-inner">
@@ -61,9 +55,9 @@ const sideProject = homeProjects.find((project) => project.id === 'argus');
           <p class="hero-description">{homeHero.description}</p>
 
           <div class="hero-actions">
-            <a href="#projects">
-              프로젝트 보기
-              <Icon name="tabler:arrow-down" />
+            <a href="/projects/heimdall">
+              Heimdall 보기
+              <Icon name="tabler:arrow-right" />
             </a>
             <a href={portfolioProfile.resumePageHref}>
               이력서
@@ -86,7 +80,6 @@ const sideProject = homeProjects.find((project) => project.id === 'argus');
     </section>
 
     <AboutMeSection />
-    <HomeLabArchitecture />
 
     <section id="projects" class="projects-intro" aria-labelledby="projects-title">
       <div class="section-inner intro-layout">
@@ -185,48 +178,7 @@ const sideProject = homeProjects.find((project) => project.id === 'argus');
       ))
     }
 
-    {
-      sideProject ? (
-        <section id="side-project" class="more-work-section" aria-labelledby="more-work-title">
-          <div class="section-inner more-work-inner">
-            <p class="section-label">More work / Side project</p>
-
-            <article class="more-work-card">
-              <div class="more-work-meta">
-                <span>{sideProject.index}</span>
-                <span>Market data</span>
-              </div>
-
-              <div class="more-work-copy">
-                <h2 id="more-work-title">
-                  <a class="project-title-link" href={sideProject.caseStudyHref}>
-                    {sideProject.name}
-                  </a>
-                </h2>
-                <p>{sideProject.description}</p>
-              </div>
-
-              <ul class="more-work-tags" aria-label={`${sideProject.name} 기술 스택`}>
-                {sideProject.tags.map((tag) => (
-                  <li>{tag}</li>
-                ))}
-              </ul>
-
-              <div class="more-work-links">
-                <a href={sideProject.caseStudyHref}>
-                  Case study
-                  <Icon name="tabler:arrow-right" />
-                </a>
-                <a href={sideProject.repository} target="_blank" rel="noreferrer">
-                  GitHub
-                  <Icon name="tabler:arrow-up-right" />
-                </a>
-              </div>
-            </article>
-          </div>
-        </section>
-      ) : null
-    }
+    <HomeLabArchitecture />
 
     <section id="contact" class="contact-section" aria-labelledby="contact-title">
       <div class="section-inner contact-layout">
@@ -1150,7 +1102,9 @@ const sideProject = homeProjects.find((project) => project.id === 'argus');
     }
 
     .hero-copy h1 {
-      font-size: 2.75rem;
+      font-size: 2.25rem;
+      letter-spacing: -0.04em;
+      line-height: 1;
     }
 
     .hero-description {
@@ -1266,7 +1220,7 @@ const sideProject = homeProjects.find((project) => project.id === 'argus');
 
   @media (max-width: 359px) {
     .hero-copy h1 {
-      font-size: 2.5rem;
+      font-size: 2rem;
     }
   }
 </style>

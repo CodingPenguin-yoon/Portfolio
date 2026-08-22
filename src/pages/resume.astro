@@ -34,8 +34,7 @@ const projects = resumeProjects.map((resume) => {
 
   return { ...project, resume };
 });
-const selectedProjects = projects.filter(({ id }) => id !== 'argus');
-const additionalProject = projects.find(({ id }) => id === 'argus');
+const selectedProjects = projects;
 ---
 
 <PageLayout metadata={metadata}>
@@ -48,9 +47,9 @@ const additionalProject = projects.find(({ id }) => id === 'argus');
 
       <nav class="resume-nav" aria-label="이력서 바로가기">
         <a href="#profile">Profile</a>
-        <a href="#infrastructure">Infrastructure</a>
-        <a href="#skills">Skills</a>
         <a href="#projects">Projects</a>
+        <a href="#skills">Skills</a>
+        <a href="#validation">Validation</a>
         <a href="#credentials">Credentials</a>
       </nav>
 
@@ -119,7 +118,7 @@ const additionalProject = projects.find(({ id }) => id === 'argus');
       <div class="resume-section-inner resume-profile-grid">
         <p class="resume-section-label">Profile</p>
         <div>
-          <h2 id="profile-title">반복되는 운영 문제를 코드와 자동화로 개선합니다.</h2>
+          <h2 id="profile-title">반복되는 배포와 인프라 작업을 직접 자동화했습니다.</h2>
           <p>{resumeProfile.summary}</p>
 
           <div class="resume-contact-row">
@@ -140,32 +139,19 @@ const additionalProject = projects.find(({ id }) => id === 'argus');
       </div>
     </section>
 
-    <section id="infrastructure" class="resume-section resume-infrastructure" aria-labelledby="infrastructure-title">
+    <section id="validation" class="resume-section resume-infrastructure" aria-labelledby="validation-title">
       <div class="resume-section-inner">
         <div class="resume-section-heading">
-          <p class="resume-section-label">Infrastructure experience</p>
+          <p class="resume-section-label">Validation environment</p>
           <div>
-            <h2 id="infrastructure-title">{resumeInfrastructure.title}</h2>
+            <h2 id="validation-title">{resumeInfrastructure.title}</h2>
             <p class="resume-section-intro">{resumeInfrastructure.summary}</p>
           </div>
         </div>
 
-        <div class="resume-infrastructure-grid">
-          {
-            resumeInfrastructure.items.map((item, index) => (
-              <article>
-                <div>
-                  <span>0{index + 1}</span>
-                  <span class:list={['resume-infrastructure-status', `status-${item.status.toLowerCase()}`]}>
-                    {item.status}
-                  </span>
-                </div>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </article>
-            ))
-          }
-        </div>
+        <ul class="resume-validation-facts" aria-label="검증 환경 구성">
+          {resumeInfrastructure.items.map((item) => <li>{item}</li>)}
+        </ul>
       </div>
     </section>
 
@@ -199,7 +185,7 @@ const additionalProject = projects.find(({ id }) => id === 'argus');
         <div class="resume-section-heading resume-projects-heading">
           <p class="resume-section-label">Selected projects</p>
           <div>
-            <h2 id="projects-title">운영 문제에서 시작한 프로젝트.</h2>
+            <h2 id="projects-title">대표 프로젝트.</h2>
           </div>
         </div>
 
@@ -227,6 +213,17 @@ const additionalProject = projects.find(({ id }) => id === 'argus');
                       <li>{highlight}</li>
                     ))}
                   </ul>
+
+                  {project.resume.evidence ? (
+                    <div class="resume-project-evidence" aria-label={`${project.name} 기여 근거`}>
+                      <span>Evidence</span>
+                      {project.resume.evidence.map((item) => (
+                        <a href={item.href} target="_blank" rel="noreferrer">
+                          {item.label}
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
 
                   <ul class="resume-project-stack" aria-label={`${project.name} 기술 스택`}>
                     {project.resume.stack.map((item) => (
@@ -260,47 +257,6 @@ const additionalProject = projects.find(({ id }) => id === 'argus');
             ))
           }
         </div>
-
-        {
-          additionalProject ? (
-            <div class="resume-additional-project">
-              <div class="resume-additional-heading">
-                <p class="resume-section-label">Additional project</p>
-                <p>인프라 프로젝트와 별도로 진행하는 사이드 프로젝트입니다.</p>
-              </div>
-
-              <article class:list={['resume-additional-card', `resume-tone-${additionalProject.tone}`]}>
-                <div class="resume-project-meta">
-                  <span>{additionalProject.index}</span>
-                  <p>{additionalProject.resume.type}</p>
-                  <p>{additionalProject.resume.period}</p>
-                </div>
-                <div>
-                  <p class="resume-project-category">{additionalProject.category}</p>
-                  <h3>
-                    <a href={additionalProject.caseStudyHref}>{additionalProject.name}</a>
-                  </h3>
-                  <p>{additionalProject.resume.summary}</p>
-                </div>
-                <ul class="resume-project-stack" aria-label={`${additionalProject.name} 기술 스택`}>
-                  {additionalProject.resume.stack.map((item) => (
-                    <li>{item}</li>
-                  ))}
-                </ul>
-                <div class="resume-project-links">
-                  <a href={additionalProject.caseStudyHref}>
-                    Case study
-                    <Icon name="tabler:arrow-right" />
-                  </a>
-                  <a href={additionalProject.repository} target="_blank" rel="noreferrer">
-                    GitHub
-                    <Icon name="tabler:arrow-up-right" />
-                  </a>
-                </div>
-              </article>
-            </div>
-          ) : null
-        }
       </div>
     </section>
 
@@ -353,7 +309,7 @@ const additionalProject = projects.find(({ id }) => id === 'argus');
       <div class="resume-section-inner resume-contact-grid">
         <div>
           <p class="resume-section-label">Contact</p>
-          <h2 id="contact-title">Let's talk.</h2>
+          <h2 id="contact-title">연락처.</h2>
         </div>
         <div>
           <a href={emailHref}>
